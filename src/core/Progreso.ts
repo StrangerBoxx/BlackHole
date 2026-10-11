@@ -1,6 +1,8 @@
 // Progreso del jugador (equivale al Autoload Progreso.gd): monedas, objetos tragados y niveles.
 // Un solo objeto compartido por todo el juego. No depende de Phaser, así se puede testear.
-import { nivelesIniciales, type Niveles } from "../logica/mejoras";
+import type { Balance, IdMejora, TipoObjeto } from "../logica/balance";
+import { costoMejora, estadisticas, nivelesIniciales, puedeComprar, type Niveles } from "../logica/mejoras";
+import { objetosDesbloqueados } from "../logica/objetos";
 
 export interface EstadoProgreso {
   monedas: number;
@@ -8,6 +10,10 @@ export interface EstadoProgreso {
   total: number;
   niveles: Niveles;
 }
+
+export type ResultadoCompra =
+  | { comprado: false }
+  | { comprado: true; nivel: number; costo: number; nuevosObjetos: TipoObjeto[] };
 
 type Oyente = (estado: Readonly<EstadoProgreso>) => void;
 
@@ -34,6 +40,30 @@ export class Progreso {
     this.estado.monedas += monedas;
     this.estado.total += 1;
     this.avisar();
+  }
+
+  /**
+   * Compra un nivel de una mejora si alcanza la plata.
+   * Devuelve los objetos que se desbloquearon con esta compra (para avisar "¡Nuevo objeto!").
+   */
+  comprar(b: Balance, id: IdMejora): ResultadoCompra {
+    const m = b.mejoras.find((x) => x.id === id);
+    if (!m) return { comprado: false };
+    const nivel = this.estado.niveles[id];
+    if (!puedeComprar(m, nivel, this.estado.monedas)) return { comprado: false };
+
+    const antes = objetosDesbloqueados(b, estadisticas(b, this.estado.niveles).radioHoyo);
+    const costo = costoMejora(m, nivel);
+    this.estado.monedas -= costo;
+    this.estado.niveles[id] = nivel + 1;
+    const despues = objetosDesbloqueados(b, estadisticas(b, this.estado.niveles).radioHoyo);
+    this.avisar();
+    return {
+      comprado: true,
+      nivel: nivel + 1,
+      costo,
+      nuevosObjetos: despues.filter((t) => !antes.includes(t)),
+    };
   }
 
   /** Avisa cada vez que algo cambia. Devuelve una función para dejar de escuchar. */
