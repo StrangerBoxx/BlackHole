@@ -21,9 +21,15 @@ npm run android:abrir # abre el proyecto en Android Studio
   colores de efectos. Guardar y recargar la página.
   - Efecto lineal: `{ "mejora", "base", "porNivel" }` → `base + nivel*porNivel`.
   - Efecto exponencial: `{ "mejora", "base", "factorPorNivel", "minimo" }` → `max(minimo, base*factor^nivel)`.
-  - Agregar un objeto: una línea en `objetos` + `public/assets/img/objetos/<id>.png`.
+  - Agregar un objeto: una línea en `objetos`, su id en la lista de una zona (`zonas[].objetos`)
+    y `public/assets/img/objetos/<id>.png`.
+  - Agregar una zona: un bloque en `zonas` (8 objetos, jefe, suelo, multiplicador) y su `suelo_<algo>.png`.
+  - Sonidos de eventos nuevos (`sonido.eventos`): reusan un WAV con otro tono y volumen.
 - **Imágenes y sonidos** (`public/assets/`): reemplazar el archivo por otro **con el mismo nombre**. Las escalas
   se calculan solas desde el radio y el tamaño real del PNG. Si falta un WAV, ese sonido no suena (no se cae).
+- **Arte provisorio** de lo nuevo (bomba, jefes, ciudad, luna, dron, materia, suelos): lo dibuja
+  `herramientas/arte.js`. `node herramientas/generar-arte.mjs` crea solo los PNG que **faltan** (no pisa tus
+  dibujos); `--todas` los rehace todos. Necesita Google Chrome.
 
 ## Carpetas
 
@@ -32,11 +38,15 @@ public/data/balance.json   todos los números
 public/assets/             imágenes y sonidos (nombres fijos, ver referencia/LEEME.txt)
 src/main.ts                configuración de Phaser
 src/escenas/               CargaScene (lee balance y assets) · JuegoScene (pasto, hoyo, objetos)
-                           HudScene (marcador, avisos, tienda) · DebugScene (solo desarrollo)
-src/entidades/             Hoyo · Objeto · BotonMejora · Popup ("+N")
+                           HudScene (marcador, avisos, menú, tienda) · PanelScene (Misiones/Álbum)
+                           PestanaColapso (pestaña Colapso) · DebugScene (solo desarrollo)
+src/entidades/             Hoyo · Objeto · Dron · BotonMejora · Popup ("+N" y textos flotantes)
+src/ui/                    Boton (botón reutilizable)
 src/core/                  Progreso (autoload) · Guardado · Sonido · Balance · Debug · pantalla · estilo · assets
 src/logica/                lógica pura sin Phaser: fisica, lanzamiento, captura, mejoras, objetos, aparicion,
-                           monedas, sonido, guardado, balance
+                           monedas, tiros, especiales, hambre, dron, offline, misiones, album, colapso,
+                           economia, sonido, guardado, balance
+herramientas/              generador de arte provisorio
 tests/                     un archivo de tests por módulo de lógica
 android/                   proyecto Android (Capacitor)
 referencia/                prototipo y guías originales
@@ -57,6 +67,33 @@ referencia/                prototipo y guías originales
   Al empezar salen 4 de una vez. Lugar: a más de `min(radio_atracción, 260) + r + 20` del hoyo y a 8 px de otros
   (40 intentos; si no hay lugar, ese turno no sale nada). Si el pasto está lleno, se pierde el turno del reloj.
 - Mejoras: costo `round(base * mult^nivel)`.
+
+### Mecánicas agregadas (después del prototipo)
+
+- **Monedas** = valor × zona × Valor × álbum × Valor eterno × combo × tiros × especial (redondeado).
+- **Combo multiplica:** x(1 + combo×0.25), tope x3. Mejora **Combo**: ventana 2.5 s + 0.3 s/nivel (máx 10).
+- **Tiros especiales** (solo lanzados por el jugador, rapidez ≥ 200):
+  Carambola (rebotó en pared u objeto; también el objeto golpeado por uno lanzado) x1.5 ·
+  Desde lejos (soltado a ≥ 380 px) x1.5 · Directo (entra en ≤ 0.9 s sin tocar nada) x1.25. Se suman: 1 + Σbonus.
+- **Especiales** (una tirada al aparecer): bomba 4% · dorado 4% (+Suerte dorada) · pesado 6% (solo r ≥ 20).
+  Dorado x10. Pesado x4, peso x5 (choca más fuerte, lo atrae menos), **no se agarra**. Bomba: al caer empuja
+  hacia el hoyo todo lo que está a < 460 px con impulso `700 × (1 - d/460) / peso`.
+- **Hambre:** anillo alrededor del hoyo; se llena con el valor base de lo tragado. Meta `150 × 1.5^jefes`.
+  Llena → aparece el **jefe** de la zona (r 72-78, valor 400). El jefe cae si su *centro* entra al hoyo.
+- **Gravedad** (mejora): tirón constante hacia el hoyo en todo el pasto, 18/nivel.
+- **Dron** (mejora): cada `9 × 0.84^nivel` s (mín 1.2) vuela a un objeto agarrable y lo empuja con
+  `v = distancia × 1.6 × 1.12` (llega lento y cae). Lo que empuja no cuenta como tiro especial.
+- **Offline:** al abrir, si hay dron: (segundos / intervalo) × valor promedio × multiplicadores × 50%,
+  máximo 2 h (+Hoyo nocturno), mínimo 1 min.
+- **Misiones:** 3 activas de 9 plantillas (`misiones.plantillas`). Premio = 30 × premio × (dificultad+1) × multiplicadores.
+- **Álbum:** por zona, 8 objetos + jefe. Completo → monedas x1.1 para siempre (se acumula por zona).
+- **Zonas:** Parque (x1) → Ciudad (x12) → Luna (x150). Mismos radios, otros objetos y suelo.
+- **Colapso** (prestigio): requiere Tamaño al máximo. Da `floor(√(monedas de la vuelta / 400))` de materia
+  oscura (mín 1), pasa a la zona siguiente (la Luna se repite) y borra monedas, mejoras, hambre, jefes y misiones.
+  Se conservan álbum, total, materia oscura y permanentes.
+- **Permanentes** (con materia oscura, costo `round(base × mult^nivel)`): Valor eterno (x1 + 0.5/nivel),
+  Empujón inicial (150 monedas/nivel al empezar zona), Combo largo (+0.5 s), Suerte dorada (+2% dorado),
+  Dron de fábrica (empieza con Dron nivel N), Hoyo nocturno (+2 h offline).
 - Sonido: "tragar" con tono `1.3 - tamaño*0.6` (tamaño = r/56, tope 1) y volumen `(0.6 + tamaño*0.8) * vol`;
   "moneda" con tono `2^(combo/12)`, tope 12.
 
@@ -71,7 +108,7 @@ referencia/                prototipo y guías originales
 - **Física propia** en `src/logica/fisica.ts` (no Arcade/Matter): copia exacta del prototipo y se puede testear.
 - **Corrección al prototipo:** al separar dos objetos que se pisan, el prototipo empujaba más al *grande*.
   Aquí se reparte con el inverso de la masa (el chico se mueve más). Entre objetos iguales da lo mismo.
-- **Pantalla = barra (84) + pasto (960) + tienda (162)** → tamaño base 720x1206, como el prototipo
+- **Pantalla = barra (84) + pasto (960) + tienda (282: menú + 2 filas de mejoras + ayuda)** → base 720x1326
   (marcador arriba, campo al medio, mejoras abajo). El pasto se centra en el espacio libre entre barra y tienda,
   así nunca queda tapado. Si la pantalla es más alta o más ancha, sobra espacio color tierra. Medidas en
   `src/core/pantalla.ts`. En el celular se respeta la zona del reloj y de los botones del sistema (safe area).
@@ -79,17 +116,27 @@ referencia/                prototipo y guías originales
   así que el juego revisa en cada cuadro dónde está el dedo y si se levantó. Soltar encima de la tienda funciona.
 - **Tienda:** tocar un botón muestra qué hace el siguiente nivel abajo y compra si alcanza. Borde dorado = alcanza.
 - **Bus de eventos entre escenas** (`game.events`, lista en `src/core/estilo.ts`): `captura` (tipo),
-  `tragado` (tipo, monedas), `aviso` (texto, segundos), `combo` (número), `compra` (id, nivel),
-  `desbloqueo` (objetos nuevos), `reinicio`. El HUD y el sonido escuchan eso en vez de meterse en la escena.
+  `tragado` (InfoTragado: tipo, monedas, especial, tiros, combo, jefe), `aviso` (texto, segundos), `combo`,
+  `tiro`, `jefe`, `dron`, `mision`, `album`, `compra`, `desbloqueo`, `colapso`, `reinicio`.
+  El HUD, el sonido y las misiones escuchan eso en vez de meterse en la escena.
+- **Zonas desde el principio en los datos:** la bomba y los jefes están en `objetos` pero no en ninguna
+  `zonas[].objetos`, así nunca salen como objetos normales.
+- **Reiniciar / colapsar / cambiar de zona** vuelve a armar la escena de juego (`scene.restart`): así el suelo
+  y todo lo de la zona quedan siempre bien.
+- **Panel (Misiones · Álbum · Colapso):** escena encima de todo; pausa el juego mientras está abierta.
+  Cada pestaña se registra con `registrarPestana` (Colapso vive en su propio archivo).
 - **Combo y monedas** usan el tiempo del juego (suma de dt), no el reloj: con velocidad x2 todo sigue cuadrando.
 - **Sonido** (`src/core/Sonido.ts`): "tragar" suena al *empezar* a caer (como el prototipo); "moneda" al terminar.
   Volumen general 0.85 y por archivo en `balance.json` → `sonido`. El ambiente arranca con el primer toque
   (los navegadores no dejan sonar antes). "Sonido: sí/no" arriba a la izquierda; se recuerda en el dispositivo.
-- **Guardado** (`src/core/Guardado.ts`): `localStorage["black-hole-save"]` con `{version, monedas, total, niveles}`.
-  Se guarda en cada cambio y al esconder la app. Al cargar se arreglan datos rotos (niveles > máximo → máximo, etc.).
+- **Guardado** (`src/core/Guardado.ts`): `localStorage["black-hole-save"]`, versión 2: monedas, total, niveles,
+  zona, hambre, jefes, misiones, álbum, materia oscura, permanentes, monedas de la vuelta, colapsos y `ultimaVez`.
+  Se guarda en cada cambio, al esconder la app y cada 30 s. Al cargar se arreglan datos rotos (niveles > máximo
+  → máximo, misiones u objetos que no existen se descartan, etc.). Los guardados viejos (v1) cargan bien.
   "Reiniciar" arriba a la izquierda pide un segundo toque antes de borrar (como el prototipo).
 - **Panel de debug** (`src/escenas/DebugScene.ts`), solo con `npm run dev`: se abre con **F1** o con **3 toques rápidos
-  en la esquina superior derecha**. Trae +1000 / +100 000 monedas, subir/bajar cada mejora (gratis), círculos de choque
+  en la esquina superior derecha**. Trae +1000 / +100 000 monedas, subir/bajar cada mejora (gratis), sacar
+  dorado / pesado / bomba, hambre llena, +10 materia oscura, zona siguiente, círculos de choque
   (rojo objetos, amarillo hoyo, celeste atracción), velocidad x2 (dos pasos de física por cuadro) y reiniciar.
   `npm run build` no lo incluye. En desarrollo también quedan `juego` y `progreso` en la consola del navegador.
 - **Halo, polvo y línea punteada** se dibujan por código (como en el prototipo); sus colores están en `balance.json` → `visual`.
@@ -121,4 +168,18 @@ Pendiente: ícono propio (hoy usa el de Capacitor; se puede generar con `@capaci
 - [x] 5. Aparición y desbloqueos
 - [x] 6. Sonidos
 - [x] 7. Guardado
-- [x] 8. Panel de debug, tests (90) y proyecto Android
+- [x] 8. Panel de debug, tests y proyecto Android
+
+Después (loop y más incremental):
+
+- [x] Combo que multiplica + mejora Combo
+- [x] Tiros especiales
+- [x] Objetos especiales (dorado, pesado, bomba)
+- [x] Hambre y jefes
+- [x] Gravedad y Dron
+- [x] Ganancia offline
+- [x] Misiones y álbum
+- [x] Zonas, colapso, materia oscura y permanentes
+
+Ideas pendientes: arte definitivo de lo nuevo, sonidos propios para eventos (hoy reusan WAV con otro tono),
+más zonas (Puerto, Sistema solar), ícono de la app, ajustar números de balance jugando.
