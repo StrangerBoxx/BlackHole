@@ -4,9 +4,13 @@ import { getBalance } from "../core/Balance";
 import { EVENTOS_GLOBALES } from "../core/estilo";
 import { progreso } from "../core/Progreso";
 import type { IdMejora, Mejora } from "../logica/balance";
-import { costoMejora, estaAlMaximo } from "../logica/mejoras";
+import { costoMejora, describirMejora, estadisticas, estaAlMaximo } from "../logica/mejoras";
 import { formatearNumero } from "../logica/monedas";
+import { mostrarBurbuja } from "./burbuja";
 import type { Interfaz } from "./interfaz";
+
+/** Mantener presionado este tiempo muestra la ayuda (y ese toque ya no compra). */
+const MS_MANTENER = 450;
 
 /** Las del dock, en orden. El resto va en la bandeja "Más". */
 const EN_DOCK: IdMejora[] = ["pull", "force", "size", "spawn", "value"];
@@ -69,10 +73,51 @@ function crearBoton(ui: Interfaz, m: Mejora): BotonDock {
     el.classList.toggle("maximo", max);
   };
 
+  /** "Atracción → Radio de atracción: 111 px" (lo que da el siguiente nivel). */
+  const ayuda = () => {
+    const n = progreso.niveles[m.id];
+    const max = estaAlMaximo(m, n);
+    const s = estadisticas(getBalance(), { ...progreso.niveles, [m.id]: max ? n : n + 1 });
+    mostrarBurbuja(ui, el, `<b>${m.nombre}</b> → ${describirMejora(m.id, s)}${max ? " (máximo)" : ""}`);
+  };
+
+  // Mantener presionado (dedo) → ayuda, y ese toque no compra
+  let espera = 0;
+  let fueAyuda = false;
+  el.addEventListener("pointerdown", (e) => {
+    fueAyuda = false;
+    if (e.pointerType === "mouse") return;
+    espera = window.setTimeout(() => {
+      fueAyuda = true;
+      ayuda();
+    }, MS_MANTENER);
+  });
+  const cancelar = () => clearTimeout(espera);
+  el.addEventListener("pointerup", cancelar);
+  el.addEventListener("pointerleave", cancelar);
+  el.addEventListener("pointercancel", cancelar);
+  el.addEventListener("contextmenu", (e) => e.preventDefault()); // sin menú del navegador al mantener
+  // Pasar el mouse (PC) → ayuda
+  el.addEventListener("pointerenter", (e) => {
+    if (e.pointerType === "mouse") ayuda();
+  });
+
   el.addEventListener("click", () => {
+    if (fueAyuda) {
+      fueAyuda = false;
+      return;
+    }
     el.classList.add("apretado");
     setTimeout(() => el.classList.remove("apretado"), 120);
-    comprarMejora(ui, m);
+    const n = progreso.niveles[m.id];
+    if (estaAlMaximo(m, n)) {
+      mostrarBurbuja(ui, el, `<b>${m.nombre}</b> ya está al máximo`);
+      return;
+    }
+    if (!comprarMejora(ui, m)) {
+      const falta = costoMejora(m, n) - progreso.monedas;
+      mostrarBurbuja(ui, el, `Te faltan <b>${formatearNumero(falta)}</b> chips`, true);
+    }
   });
   return { mejora: m, el, actualizar };
 }

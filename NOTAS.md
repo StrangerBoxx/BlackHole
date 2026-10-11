@@ -95,10 +95,12 @@ public/data/balance.json   todos los números
 public/assets/             imágenes y sonidos (nombres fijos, ver "Assets")
 src/main.ts                configuración de Phaser
 src/escenas/               CargaScene (lee balance y assets) · JuegoScene (piso, hoyo, objetos)
-                           HudScene (marcador, avisos, menú, tienda) · PanelScene (Misiones/Álbum)
+                           PanelScene (Misiones/Álbum)
                            PestanaColapso (pestaña Colapso) · DebugScene (solo desarrollo)
-src/entidades/             Hoyo · Objeto · Dron · BotonMejora · Popup ("+N" y textos flotantes)
-src/ui/                    Boton (botón reutilizable)
+src/entidades/             Hoyo · Objeto · Dron · Popup ("+N" y textos flotantes)
+src/ui/                    interfaz (marcador, ⚙, avisos) · dock (mejoras) · burbuja (ayuda) · interfaz.css
+                           · Boton (botón de los paneles de Phaser)
+public/assets/ui/          íconos SVG de la interfaz (reemplazables)
 src/efectos/               DistorsionFX (shader del piso) · Luz (capa de luz y viñeta)
 src/core/                  Progreso (autoload) · Guardado · Sonido · Balance · Debug · pantalla · estilo · assets
 src/logica/                lógica pura sin Phaser: fisica, lanzamiento, captura, mejoras, objetos, aparicion,
@@ -167,17 +169,47 @@ referencia/                prototipo y guías originales
 - **Física propia** en `src/logica/fisica.ts` (no Arcade/Matter): copia exacta del prototipo y se puede testear.
 - **Corrección al prototipo:** al separar dos objetos que se pisan, el prototipo empujaba más al *grande*.
   Aquí se reparte con el inverso de la masa (el chico se mueve más). Entre objetos iguales da lo mismo.
-- **Pantalla = barra (84) + piso (960) + tienda (282: menú + 2 filas de mejoras + ayuda)** → base 720x1326
-  (marcador arriba, campo al medio, mejoras abajo). El piso se centra en el espacio libre entre barra y tienda,
-  así nunca queda tapado. Si la pantalla es más alta o más ancha, sobra espacio gris claro. Medidas en
-  `src/core/pantalla.ts`. En el celular se respeta la zona del reloj y de los botones del sistema (safe area).
-- **Arrastre leído en cada cuadro:** la barra y la tienda atrapan los toques (para no agarrar objetos al comprar),
-  así que el juego revisa en cada cuadro dónde está el dedo y si se levantó. Soltar encima de la tienda funciona.
-- **Tienda:** tocar un botón muestra qué hace el siguiente nivel abajo y compra si alcanza. Borde naranja = alcanza.
+- **Pantalla completa** (`src/core/pantalla.ts`): el juego mide 720 de ancho y su alto sale de la forma de la
+  pantalla, entre 960 y 1600 (Scale.FIT). El mundo mide lo mismo que la pantalla: las paredes están en los
+  bordes. Si el alto pasa de 960, el suelo se repite hacia abajo en filas de 80 px saltándose las primeras 80
+  (`src/efectos/Suelo.ts`). En PC (pantalla ancha) queda 720x960 centrado con bandas grises. El hoyo sigue en
+  (360, 330). Los objetos aparecen entre y=90 y alto−140 (lejos del marcador y del dock).
+- **Arrastre leído en cada cuadro:** el juego revisa en cada cuadro dónde está el dedo y si se levantó,
+  así soltar un objeto encima del dock también lo lanza.
+
+### Menú estilo dock (interfaz en HTML encima del juego)
+
+Está en HTML/CSS (`src/ui/`) porque el vidrio con desenfoque (`backdrop-filter`) no existe dentro del canvas.
+La raíz `#ui` se alinea con el canvas y escala con su ancho (`--e` = ancho / 720); los botones miden al menos
+44 px. Respeta la zona segura del celular (`env(safe-area-inset-*)`). Los contenedores dejan pasar los toques
+al juego; solo los botones los atrapan. Mientras el panel de Misiones/Álbum/Colapso está abierto, se esconde.
+
+- **Colores:** naranja `#f07a1c` (chips, costos, "alcanza"), cian `#1a9fd6` (íconos, acentos), texto `#1b252e`,
+  gris `#64717c`, bordes `#c3ccd3`, vidrio = blanco 86 % con desenfoque. Títulos y números en Rajdhani 700,
+  texto en IBM Plex Sans.
+- **Marcador (arriba):** "BLACK HOLE" pequeño con letras espaciadas ("HOLE" cian) a la izquierda; a la derecha
+  una pastilla de vidrio con el chip y la cantidad, y un botón redondo ⚙.
+- **⚙:** panelcito blanco con objetos tragados (y sala / materia oscura), Sonido sí/no y Reiniciar progreso
+  (dos toques). Se cierra al tocar el campo.
+- **Misiones · Álbum · Colapso:** botones redondos de vidrio debajo del ⚙; puntito naranja si hay misión por
+  cobrar o el colapso está listo.
+- **Avisos** ("¡Combo x3!", "Nuevo objeto…"): arriba, debajo del marcador (y ≈ 160), lejos del dock.
+- **Dock (abajo):** barra de vidrio separada de los bordes con Atracción, Fuerza, Tamaño, Aparición y Valor,
+  más "Más", que abre una bandeja con Combo, Gravedad y Dron (8 mejoras no caben en una fila).
+  Cada botón: ícono cian, nombre, costo naranja con chip y nivel ("Nv 3" / "Máx") en la esquina.
+  - Se puede comprar → borde naranja con halo. No alcanza → 55 % de opacidad. Máximo → costo "—".
+  - Un toque compra (animación de apretado a 0.94). Sin chips → burbuja "Te faltan N chips".
+  - Mantener presionado (dedo) o pasar el mouse (PC) → burbuja "Atracción → Radio de atracción: 111 px",
+    que se va sola en 2 s. Mantener presionado no compra.
+  - Los estados se actualizan cuando cambia el progreso (no en cada cuadro).
+- **Íconos:** `public/assets/ui/*.svg` (atraccion, fuerza, tamano, aparicion, valor, combo, gravedad, dron, mas,
+  misiones, album, colapso, ajustes). Se pueden reemplazar por otros SVG con el mismo nombre.
+- **No incluido:** "Probar mis dibujos" (se decidió no hacerlo).
 - **Bus de eventos entre escenas** (`game.events`, lista en `src/core/estilo.ts`): `captura` (tipo),
   `tragado` (InfoTragado: tipo, monedas, especial, tiros, combo, jefe), `aviso` (texto, segundos), `combo`,
   `tiro`, `jefe`, `dron`, `mision`, `album`, `compra`, `desbloqueo`, `colapso`, `reinicio`.
-  El HUD, el sonido y las misiones escuchan eso en vez de meterse en la escena.
+  También `juegoListo` (avisos del comienzo) y `panel` (abierto/cerrado).
+  La interfaz, el sonido y las misiones escuchan eso en vez de meterse en la escena.
 - **Salas en los datos** (`zonas` en `balance.json`; en el código se llaman "zonas"): la bomba y los jefes
   están en `objetos` pero no en ninguna `zonas[].objetos`, así nunca salen como objetos normales.
 - **Reiniciar / colapsar / cambiar de zona** vuelve a armar la escena de juego (`scene.restart`): así el suelo
@@ -187,15 +219,15 @@ referencia/                prototipo y guías originales
 - **Combo y monedas** usan el tiempo del juego (suma de dt), no el reloj: con velocidad x2 todo sigue cuadrando.
 - **Sonido** (`src/core/Sonido.ts`): "tragar" suena al *empezar* a caer (como el prototipo); "moneda" al terminar.
   Volumen general 0.85 y por archivo en `balance.json` → `sonido`. El ambiente arranca con el primer toque
-  (los navegadores no dejan sonar antes). "Sonido: sí/no" arriba a la izquierda; se recuerda en el dispositivo.
+  (los navegadores no dejan sonar antes). "Sonido: sí/no" en el ⚙; se recuerda en el dispositivo.
 - **Guardado** (`src/core/Guardado.ts`): `localStorage["black-hole-save"]`, versión 3: monedas, total, niveles,
   zona, hambre, jefes, misiones, álbum, materia oscura, permanentes, monedas de la vuelta, colapsos y `ultimaVez`.
   Se guarda en cada cambio, al esconder la app y cada 30 s. Al cargar se arreglan datos rotos (niveles > máximo
   → máximo, misiones u objetos que no existen se descartan, etc.). Los guardados viejos (v1, v2) cargan bien
   y sus nombres de objetos se traducen a los del laboratorio.
-  "Reiniciar" arriba a la izquierda pide un segundo toque antes de borrar (como el prototipo).
+  "Reiniciar progreso" (en el ⚙) pide un segundo toque antes de borrar (como el prototipo).
 - **Panel de debug** (`src/escenas/DebugScene.ts`), solo con `npm run dev`: se abre con **F1** o con **3 toques rápidos
-  en la esquina superior derecha**. Trae +1000 / +100 000 chips, subir/bajar cada mejora (gratis), sacar
+  en la esquina superior izquierda** (sobre el título). Trae +1000 / +100 000 chips, subir/bajar cada mejora (gratis), sacar
   dorado / pesado / bomba, hambre llena, +10 materia oscura, sala siguiente ("Zona siguiente"), círculos de choque
   (rojo objetos, amarillo hoyo, celeste atracción), velocidad x2 (dos pasos de física por cuadro) y reiniciar.
   `npm run build` no lo incluye. En desarrollo también quedan `juego` y `progreso` en la consola del navegador.

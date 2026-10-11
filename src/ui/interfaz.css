@@ -250,6 +250,7 @@
 /* ---------------------------------------------------------------- Burbuja de ayuda */
 .burbuja {
   position: absolute;
+  width: max-content;
   max-width: 80%;
   padding: 0.5em 0.85em;
   border-radius: 0.8em;
