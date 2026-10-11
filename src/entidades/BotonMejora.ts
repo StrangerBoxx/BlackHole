@@ -21,13 +21,13 @@ export class BotonMejora extends Phaser.GameObjects.Container {
     this.mejora = mejora;
     this.fondo = scene.add.graphics();
     this.nombre = scene.add
-      .text(0, 0, mejora.nombre, { fontFamily: FUENTE_TEXTO, fontSize: "19px", fontStyle: "800", color: COLOR.texto })
+      .text(0, 0, mejora.nombre, { fontFamily: FUENTE_TEXTO, fontSize: "18px", fontStyle: "800", color: COLOR.texto })
       .setOrigin(0.5);
     this.nivel = scene.add
-      .text(0, 0, "", { fontFamily: FUENTE_TEXTO, fontSize: "15px", fontStyle: "600", color: COLOR.apagado })
+      .text(0, 0, "", { fontFamily: FUENTE_TEXTO, fontSize: "14px", fontStyle: "600", color: COLOR.apagado })
       .setOrigin(0.5);
     this.costo = scene.add
-      .text(0, 0, "", { fontFamily: FUENTE_TITULO, fontSize: "23px", color: COLOR.oro })
+      .text(0, 0, "", { fontFamily: FUENTE_TITULO, fontSize: "21px", color: COLOR.oro })
       .setOrigin(0, 0.5);
     this.moneda = scene.add.image(0, 0, "moneda").setDisplaySize(20, 20);
     this.add([this.fondo, this.nombre, this.nivel, this.moneda, this.costo]);
@@ -52,10 +52,10 @@ export class BotonMejora extends Phaser.GameObjects.Container {
     // El área táctil va centrada en (0,0), como el dibujo
     const zona = this.input!.hitArea as Phaser.Geom.Rectangle;
     zona.setTo(-ancho / 2, -alto / 2, ancho, alto);
-    this.nombre.setY(-alto / 2 + 20);
-    this.nivel.setY(-alto / 2 + 44);
-    this.costo.setY(alto / 2 - 24);
-    this.moneda.setY(alto / 2 - 24);
+    this.nombre.setY(-alto / 2 + 17);
+    this.nivel.setY(-alto / 2 + 37);
+    this.costo.setY(alto / 2 - 18);
+    this.moneda.setY(alto / 2 - 18);
     // Que el nombre quepa en botones angostos
     this.nombre.setScale(Math.min(1, (ancho - 10) / this.nombre.width));
   }

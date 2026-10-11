@@ -10,8 +10,8 @@ export interface TipoObjeto {
   sombraAncho?: number;
 }
 
-export type IdMejora = "pull" | "force" | "size" | "spawn" | "value";
-export const IDS_MEJORA: IdMejora[] = ["pull", "force", "size", "spawn", "value"];
+export type IdMejora = "pull" | "force" | "size" | "spawn" | "value" | "combo";
+export const IDS_MEJORA: IdMejora[] = ["pull", "force", "size", "spawn", "value", "combo"];
 
 export interface Mejora {
   id: IdMejora;
@@ -37,7 +37,8 @@ export type IdEfecto =
   | "velocidadCaptura"
   | "maxObjetos"
   | "intervaloAparicion"
-  | "multiplicadorValor";
+  | "multiplicadorValor"
+  | "ventanaCombo";
 
 export type IdSonido = "ambiente" | "tragar" | "moneda" | "comprar" | "desbloquear";
 export const IDS_SONIDO: IdSonido[] = ["ambiente", "tragar", "moneda", "comprar", "desbloquear"];
@@ -66,7 +67,7 @@ export interface Balance {
     caidaAcercamiento: number;
     caidaGiro: number;
   };
-  combo: { ventanaSegundos: number; mostrarDesde: number };
+  combo: { mostrarDesde: number; multiplicadorPorCombo: number; multiplicadorMaximo: number };
   objetos: TipoObjeto[];
   desbloqueo: { fraccionRadioHoyo: number };
   aparicion: {

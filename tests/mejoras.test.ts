@@ -17,11 +17,12 @@ describe("efectos de las mejoras", () => {
       maxObjetos: 4,
       intervaloAparicion: 1.6,
       multiplicadorValor: 1,
+      ventanaCombo: 2.5,
     });
   });
 
   it("cada mejora cambia sus valores según la tabla", () => {
-    const s = estadisticas(b, { pull: 3, force: 2, size: 7, spawn: 5, value: 4 });
+    const s = estadisticas(b, { ...nivelesIniciales(), pull: 3, force: 2, size: 7, spawn: 5, value: 4, combo: 2 });
     expect(s.radioAtraccion).toBe(55 + 3 * 28);
     expect(s.fuerza).toBe(700 + 2 * 420);
     expect(s.radioHoyo).toBe(28 + 7 * 5);
@@ -29,6 +30,7 @@ describe("efectos de las mejoras", () => {
     expect(s.maxObjetos).toBe(9);
     expect(s.intervaloAparicion).toBeCloseTo(1.6 * Math.pow(0.86, 5));
     expect(s.multiplicadorValor).toBe(2);
+    expect(s.ventanaCombo).toBeCloseTo(3.1);
   });
 
   it("el intervalo de aparición nunca baja de 0.35 s", () => {
@@ -41,7 +43,7 @@ describe("costo de las mejoras", () => {
   const m = (id: string) => b.mejoras.find((x) => x.id === id)!;
 
   it("nivel 0 cuesta la base", () => {
-    expect(b.mejoras.map((x) => costoMejora(x, 0))).toEqual([10, 15, 25, 12, 40]);
+    expect(b.mejoras.slice(0, 5).map((x) => costoMejora(x, 0))).toEqual([10, 15, 25, 12, 40]);
   });
 
   it("round(base * mult^nivel)", () => {
@@ -59,12 +61,12 @@ describe("costo de las mejoras", () => {
     expect(puedeComprar(m("size"), 7, 1e12)).toBe(false);
   });
 
-  it("máximos: 12, 12, 7, 10, 20", () => {
-    expect(b.mejoras.map((x) => x.max)).toEqual([12, 12, 7, 10, 20]);
+  it("máximos de las 5 originales: 12, 12, 7, 10, 20", () => {
+    expect(b.mejoras.slice(0, 5).map((x) => x.max)).toEqual([12, 12, 7, 10, 20]);
   });
 
   it("describe la mejora con sus valores", () => {
-    const s = estadisticas(b, { pull: 1, force: 0, size: 0, spawn: 2, value: 3 });
+    const s = estadisticas(b, { ...nivelesIniciales(), pull: 1, spawn: 2, value: 3 });
     expect(describirMejora("pull", s)).toBe("Radio de atracción: 83 px");
     expect(describirMejora("spawn", s)).toBe("Hasta 6 objetos, uno cada 1.2 s");
     expect(describirMejora("value", s)).toBe("Cada objeto da x1.75 monedas");

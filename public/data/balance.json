@@ -26,7 +26,7 @@
     "caidaGiro": 16
   },
 
-  "combo": { "ventanaSegundos": 2.5, "mostrarDesde": 3 },
+  "combo": { "mostrarDesde": 3, "multiplicadorPorCombo": 0.25, "multiplicadorMaximo": 3 },
 
   "objetos": [
     { "id": "piedra",    "nombre": "Piedra",    "r": 14, "valor": 1 },
@@ -58,7 +58,8 @@
     { "id": "force", "nombre": "Fuerza",    "max": 12, "base": 15, "mult": 1.6 },
     { "id": "size",  "nombre": "Tamaño",    "max": 7,  "base": 25, "mult": 1.9 },
     { "id": "spawn", "nombre": "Aparición", "max": 10, "base": 12, "mult": 1.5 },
-    { "id": "value", "nombre": "Valor",     "max": 20, "base": 40, "mult": 1.7 }
+    { "id": "value", "nombre": "Valor",     "max": 20, "base": 40, "mult": 1.7 },
+    { "id": "combo", "nombre": "Combo",     "max": 10, "base": 60, "mult": 1.8 }
   ],
 
   "efectos": {
@@ -68,7 +69,8 @@
     "velocidadCaptura":   { "mejora": "size",  "base": 420, "porNivel": 110 },
     "maxObjetos":         { "mejora": "spawn", "base": 4,   "porNivel": 1 },
     "intervaloAparicion": { "mejora": "spawn", "base": 1.6, "factorPorNivel": 0.86, "minimo": 0.35 },
-    "multiplicadorValor": { "mejora": "value", "base": 1,   "porNivel": 0.25 }
+    "multiplicadorValor": { "mejora": "value", "base": 1,   "porNivel": 0.25 },
+    "ventanaCombo":       { "mejora": "combo", "base": 2.5, "porNivel": 0.3 }
   },
 
   "sonido": {

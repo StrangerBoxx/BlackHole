@@ -3,10 +3,11 @@ import { getBalance } from "./Balance";
 
 // Reparto de la pantalla (de arriba a abajo): barra del HUD, el pasto (mundo) y la tienda.
 export const ALTO_BARRA_HUD = 84;
-export const ALTO_BOTON_TIENDA = 112;
+export const ALTO_BOTON_TIENDA = 86;
+export const FILAS_TIENDA = 2;
 export const ESPACIO_TIENDA = 8;
-export const ALTO_AYUDA_TIENDA = 34;
-export const ALTO_TIENDA = ESPACIO_TIENDA * 2 + ALTO_BOTON_TIENDA + ALTO_AYUDA_TIENDA;
+export const ALTO_AYUDA_TIENDA = 32;
+export const ALTO_TIENDA = ESPACIO_TIENDA + FILAS_TIENDA * (ALTO_BOTON_TIENDA + ESPACIO_TIENDA) + ALTO_AYUDA_TIENDA;
 
 /** Tamaño base del juego: el mundo de 720x960 más la barra y la tienda. */
 export const ANCHO_BASE = 720;

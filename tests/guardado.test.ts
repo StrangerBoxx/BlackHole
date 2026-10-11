@@ -2,13 +2,14 @@ import { describe, expect, it } from "vitest";
 import { Progreso } from "../src/core/Progreso";
 import type { Balance } from "../src/logica/balance";
 import { deserializar, estadoVacio, serializar } from "../src/logica/guardado";
+import { nivelesIniciales } from "../src/logica/mejoras";
 import balanceJson from "../public/data/balance.json";
 
 const b = balanceJson as Balance;
 
 describe("guardar y cargar", () => {
   it("lo que se guarda se vuelve a cargar igual", () => {
-    const e = { monedas: 1234, total: 56, niveles: { pull: 3, force: 2, size: 1, spawn: 4, value: 5 } };
+    const e = { monedas: 1234, total: 56, niveles: { ...nivelesIniciales(), pull: 3, force: 2, size: 1, spawn: 4, value: 5 } };
     expect(deserializar(serializar(e), b)).toEqual(e);
   });
 
@@ -36,20 +37,20 @@ describe("guardar y cargar", () => {
     expect(deserializar(raro, b)).toEqual({
       monedas: 0,
       total: 0,
-      niveles: { pull: 12, force: 0, size: 2, spawn: 0, value: 0 },
+      niveles: { ...nivelesIniciales(), pull: 12, size: 2 },
     });
   });
 
   it("guardados viejos sin alguna mejora la dejan en 0", () => {
     const viejo = JSON.stringify({ monedas: 10, total: 3, niveles: { pull: 1 } });
-    expect(deserializar(viejo, b).niveles).toEqual({ pull: 1, force: 0, size: 0, spawn: 0, value: 0 });
+    expect(deserializar(viejo, b).niveles).toEqual({ ...nivelesIniciales(), pull: 1 });
   });
 });
 
 describe("progreso: cargar, reiniciar y debug", () => {
   it("cargar reemplaza todo y exportar devuelve una copia", () => {
     const p = new Progreso();
-    p.cargar({ monedas: 7, total: 2, niveles: { pull: 1, force: 0, size: 0, spawn: 0, value: 0 } });
+    p.cargar({ monedas: 7, total: 2, niveles: { ...nivelesIniciales(), pull: 1 } });
     const copia = p.exportar();
     copia.niveles.pull = 9;
     expect(p.niveles.pull).toBe(1);

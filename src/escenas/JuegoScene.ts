@@ -14,7 +14,9 @@ import {
   agregarPunto, elegirObjeto, limitarAlMundo, velocidadLanzamiento, type PuntoRastro,
 } from "../logica/lanzamiento";
 import { estadisticas, type Estadisticas } from "../logica/mejoras";
-import { Combo, formatearNumero, monedasPorObjeto, textoCombo } from "../logica/monedas";
+import {
+  calcularGanancia, Combo, formatearMultiplicador, formatearNumero, multiplicadorCombo, textoCombo,
+} from "../logica/monedas";
 import { objetosDesbloqueados } from "../logica/objetos";
 
 const PROF_LINEA = 25;
@@ -49,7 +51,7 @@ export class JuegoScene extends Phaser.Scene {
     this.agarrado = null;
     this.dedo = null;
     this.tiempo = 0;
-    this.combo = new Combo(getBalance().combo.ventanaSegundos);
+    this.combo = new Combo();
     this.reloj = new RelojAparicion();
     centrarMundo(this);
     this.add.image(0, 0, "suelo").setOrigin(0).setDisplaySize(ancho, alto);
@@ -78,7 +80,7 @@ export class JuegoScene extends Phaser.Scene {
     for (const o of this.objetos) o.destruir();
     this.objetos = [];
     this.agarrado = this.dedo = null;
-    this.combo = new Combo(getBalance().combo.ventanaSegundos);
+    this.combo = new Combo();
     this.reloj = new RelojAparicion();
     this.poblar();
   }
@@ -203,13 +205,15 @@ export class JuegoScene extends Phaser.Scene {
   private tragar(o: Objeto): void {
     o.destruir();
     const b = getBalance();
-    const ganancia = monedasPorObjeto(o.tipo.valor, this.stats.multiplicadorValor);
+    const s = this.stats;
+    const combo = this.combo.registrar(this.tiempo, s.ventanaCombo);
+    const xCombo = multiplicadorCombo(combo, b.combo.multiplicadorPorCombo, b.combo.multiplicadorMaximo);
+    const ganancia = calcularGanancia(o.tipo.valor, [s.multiplicadorValor, xCombo]);
     progreso.registrarTragado(ganancia);
 
-    const combo = this.combo.registrar(this.tiempo);
     this.game.events.emit(EVENTOS_GLOBALES.COMBO, combo);
     const aviso = textoCombo(combo, b.combo.mostrarDesde);
-    if (aviso) this.game.events.emit(EVENTOS_GLOBALES.AVISO, aviso, 1.2);
+    if (aviso) this.game.events.emit(EVENTOS_GLOBALES.AVISO, `${aviso}  monedas x${formatearMultiplicador(xCombo)}`, 1.2);
 
     mostrarPopupMonedas(this, this.hoyo.x, this.hoyo.y - this.hoyo.radioVisible - 10, `+${formatearNumero(ganancia)}`);
     this.game.events.emit(EVENTOS_GLOBALES.TRAGADO, o.tipo, ganancia);

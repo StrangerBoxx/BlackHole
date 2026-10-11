@@ -8,7 +8,7 @@ describe("progreso", () => {
     const p = new Progreso();
     expect(p.monedas).toBe(0);
     expect(p.total).toBe(0);
-    expect(p.niveles).toEqual({ pull: 0, force: 0, size: 0, spawn: 0, value: 0 });
+    expect(Object.values(p.niveles).every((n) => n === 0)).toBe(true);
   });
 
   it("tragar suma monedas y cuenta el objeto", () => {

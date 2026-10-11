@@ -24,6 +24,7 @@ export interface Estadisticas {
   maxObjetos: number;
   intervaloAparicion: number;
   multiplicadorValor: number;
+  ventanaCombo: number;
 }
 
 /** Todos los valores actuales del hoyo según los niveles comprados. */
@@ -40,6 +41,7 @@ export function estadisticas(b: Balance, niveles: Niveles): Estadisticas {
     maxObjetos: v("maxObjetos"),
     intervaloAparicion: v("intervaloAparicion"),
     multiplicadorValor: v("multiplicadorValor"),
+    ventanaCombo: v("ventanaCombo"),
   };
 }
 
@@ -68,5 +70,7 @@ export function describirMejora(id: IdMejora, s: Estadisticas): string {
       return `Hasta ${Math.round(s.maxObjetos)} objetos, uno cada ${s.intervaloAparicion.toFixed(1)} s`;
     case "value":
       return `Cada objeto da x${s.multiplicadorValor.toFixed(2)} monedas`;
+    case "combo":
+      return `El combo dura ${s.ventanaCombo.toFixed(1)} s entre objeto y objeto`;
   }
 }

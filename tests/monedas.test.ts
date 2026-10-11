@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { Combo, formatearNumero, monedasPorObjeto, textoCombo } from "../src/logica/monedas";
+import {
+  calcularGanancia, Combo, formatearNumero, monedasPorObjeto, multiplicadorCombo, textoCombo,
+} from "../src/logica/monedas";
 
 describe("monedas por objeto", () => {
   it("valor × multiplicador", () => {
@@ -16,23 +18,41 @@ describe("monedas por objeto", () => {
 
 describe("combo", () => {
   it("el primero es combo 0", () => {
-    const c = new Combo(2.5);
-    expect(c.registrar(10)).toBe(0);
+    const c = new Combo();
+    expect(c.registrar(10, 2.5)).toBe(0);
   });
 
   it("sube si el siguiente llega antes de 2.5 s", () => {
-    const c = new Combo(2.5);
-    c.registrar(10);
-    expect(c.registrar(11)).toBe(1);
-    expect(c.registrar(13.4)).toBe(2);
+    const c = new Combo();
+    c.registrar(10, 2.5);
+    expect(c.registrar(11, 2.5)).toBe(1);
+    expect(c.registrar(13.4, 2.5)).toBe(2);
     expect(c.seguidos).toBe(3);
   });
 
   it("se corta si pasan 2.5 s o más", () => {
-    const c = new Combo(2.5);
-    c.registrar(10);
-    c.registrar(11);
-    expect(c.registrar(13.5)).toBe(0);
+    const c = new Combo();
+    c.registrar(10, 2.5);
+    c.registrar(11, 2.5);
+    expect(c.registrar(13.5, 2.5)).toBe(0);
+  });
+
+  it("con la mejora Combo la ventana es más larga", () => {
+    const c = new Combo();
+    c.registrar(10, 3.1);
+    expect(c.registrar(13, 3.1)).toBe(1);
+  });
+
+  it("multiplicador: 1 + combo*0.25, tope x3", () => {
+    expect(multiplicadorCombo(0, 0.25, 3)).toBe(1);
+    expect(multiplicadorCombo(2, 0.25, 3)).toBe(1.5);
+    expect(multiplicadorCombo(20, 0.25, 3)).toBe(3);
+  });
+
+  it("ganancia = valor × multiplicadores, redondeado", () => {
+    expect(calcularGanancia(8, [1.5, 2])).toBe(24);
+    expect(calcularGanancia(1, [1.25])).toBe(1);
+    expect(calcularGanancia(5, [])).toBe(5);
   });
 
   it("el aviso aparece desde el 3.º seguido", () => {

@@ -2,7 +2,7 @@ import Phaser from "phaser";
 import { getBalance } from "../core/Balance";
 import { COLOR, EVENTOS_GLOBALES, FUENTE_TITULO, FUENTE_TEXTO, hex } from "../core/estilo";
 import { ALTO_AYUDA_TIENDA as ALTO_AYUDA, ALTO_BARRA_HUD as ALTO_BARRA, ALTO_BOTON_TIENDA as ALTO_BOTON,
-  ALTO_TIENDA, ESPACIO_TIENDA as ESPACIO_BOTONES } from "../core/pantalla";
+  ALTO_TIENDA, ESPACIO_TIENDA as ESPACIO_BOTONES, FILAS_TIENDA } from "../core/pantalla";
 import { progreso } from "../core/Progreso";
 import { getSonido } from "../core/Sonido";
 import { BotonMejora } from "../entidades/BotonMejora";
@@ -162,18 +162,22 @@ export class HudScene extends Phaser.Scene {
     this.icono.setX(width - MARGEN - this.monedas.width - 22);
     this.detalle.setX(width - MARGEN);
 
-    // Tienda abajo: 5 botones en fila y la ayuda debajo
+    // Tienda abajo: botones en 2 filas y la ayuda debajo
     const altoTienda = ALTO_TIENDA;
     const arriba = height - altoTienda;
     this.fondoTienda.setPosition(0, arriba).setSize(width, altoTienda);
     this.fondoTienda.input?.hitArea.setTo(0, 0, width, altoTienda);
-    const n = this.botones.length;
-    const anchoBoton = (width - 2 * MARGEN + ESPACIO_BOTONES) / n - ESPACIO_BOTONES;
+    const columnas = Math.ceil(this.botones.length / FILAS_TIENDA);
+    const anchoBoton = (width - 2 * MARGEN + ESPACIO_BOTONES) / columnas - ESPACIO_BOTONES;
     this.botones.forEach((bt, i) => {
-      bt.setPosition(MARGEN + anchoBoton / 2 + i * (anchoBoton + ESPACIO_BOTONES), arriba + ESPACIO_BOTONES + ALTO_BOTON / 2);
+      const col = i % columnas, fila = Math.floor(i / columnas);
+      bt.setPosition(
+        MARGEN + anchoBoton / 2 + col * (anchoBoton + ESPACIO_BOTONES),
+        arriba + ESPACIO_BOTONES + ALTO_BOTON / 2 + fila * (ALTO_BOTON + ESPACIO_BOTONES),
+      );
       bt.medir(anchoBoton, ALTO_BOTON);
     });
-    this.ayuda.setPosition(width / 2, height - ALTO_AYUDA / 2 - 4);
+    this.ayuda.setPosition(width / 2, height - ALTO_AYUDA / 2 - 2);
     this.ajustarAyuda();
     this.barra.input?.hitArea.setTo(0, 0, width, ALTO_BARRA);
 
