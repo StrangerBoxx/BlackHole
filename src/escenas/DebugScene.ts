@@ -114,7 +114,6 @@ export class DebugScene extends Phaser.Scene {
       ["Sacar dorado", especial("dorado")],
       ["Sacar pesado", especial("pesado")],
       ["Sacar bomba", especial("bomba")],
-      ["Sacar Bing Bong", especial("bingBong")],
       ["Hambre llena", () => progreso.ponerHambre(metaHambre(b.hambre, progreso.jefes))],
       ["+10 materia oscura", () => progreso.agregarMateria(10)],
       [

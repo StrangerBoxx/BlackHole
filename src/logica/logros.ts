@@ -1,6 +1,6 @@
 // Logros: metas que se desbloquean solas jugando (no dan premio; son para presumir).
 import type { Balance } from "./balance";
-import { ALBUM_ESPECIALES, zonaCompleta } from "./album";
+import { zonaCompleta } from "./album";
 import type { EstadoProgreso } from "./guardado";
 
 export type TipoLogro =
@@ -11,15 +11,14 @@ export type TipoLogro =
   | "tiros" // tiros especiales logrados
   | "colapsos" // veces que se colapsó
   | "sala" // sala más avanzada a la que se llegó (1 = Laboratorio, 2 = Almacén, 3 = Reactor)
-  | "albumes" // álbumes de sala completos
-  | "especial"; // objeto especial en el álbum (meta = id del objeto, p. ej. "bing_bong")
+  | "albumes"; // álbumes de sala completos
 
 export interface DefLogro {
   id: string;
   nombre: string;
   descripcion: string;
   tipo: TipoLogro;
-  meta: number | string;
+  meta: number;
 }
 
 /** Récords de por vida que solo sirven para los logros. */
@@ -50,7 +49,7 @@ export function anotarRecord(r: Records, ev: EventoRecord): void {
 
 /** Cuánto se lleva de un logro: valor actual y meta (para la barra). */
 export function avanceLogro(b: Balance, d: DefLogro, e: EstadoProgreso): { valor: number; meta: number } {
-  const meta = typeof d.meta === "number" ? d.meta : 1;
+  const meta = d.meta;
   let valor = 0;
   switch (d.tipo) {
     case "tragados": valor = e.total; break;
@@ -61,7 +60,6 @@ export function avanceLogro(b: Balance, d: DefLogro, e: EstadoProgreso): { valor
     case "colapsos": valor = e.colapsos; break;
     case "sala": valor = e.zona + 1; break;
     case "albumes": valor = b.zonas.filter((z) => zonaCompleta(e.album, z)).length; break;
-    case "especial": valor = (e.album[ALBUM_ESPECIALES] ?? []).includes(String(d.meta)) ? 1 : 0; break;
   }
   return { valor: Math.min(valor, meta), meta };
 }

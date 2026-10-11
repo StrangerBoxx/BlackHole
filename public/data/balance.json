@@ -67,8 +67,7 @@
     { "id": "contenedor_carga", "nombre": "Contenedor de carga", "r": 76, "valor": 400, "sombraAncho": 1.15 },
     { "id": "nucleo",           "nombre": "Núcleo del reactor",  "r": 78, "valor": 400 },
 
-    { "id": "bomba", "nombre": "Carga inestable", "r": 18, "valor": 5 },
-    { "id": "bing_bong", "nombre": "Bing Bong", "r": 28, "valor": 10 }
+    { "id": "bomba", "nombre": "Carga inestable", "r": 18, "valor": 5 }
   ],
 
   "zonas": [
@@ -103,8 +102,7 @@
     { "id": "punteria",      "nombre": "Puntería",         "descripcion": "Logra 25 tiros especiales",     "tipo": "tiros",    "meta": 25 },
     { "id": "big_bang",      "nombre": "Big Bang",         "descripcion": "Colapsa por primera vez",       "tipo": "colapsos", "meta": 1 },
     { "id": "al_reactor",    "nombre": "Al reactor",       "descripcion": "Llega a la sala del Reactor",   "tipo": "sala",     "meta": 3 },
-    { "id": "coleccionista", "nombre": "Coleccionista",    "descripcion": "Completa el álbum de una sala", "tipo": "albumes",  "meta": 1 },
-    { "id": "bing",          "nombre": "¡Bing Bong!",      "descripcion": "Trágate a Bing Bong",           "tipo": "especial", "meta": "bing_bong" }
+    { "id": "coleccionista", "nombre": "Coleccionista",    "descripcion": "Completa el álbum de una sala", "tipo": "albumes",  "meta": 1 }
   ],
 
   "permanentes": [
@@ -148,8 +146,7 @@
   "especiales": {
     "dorado": { "probabilidad": 0.04, "multiplicador": 10, "color": "#ffd34d" },
     "pesado": { "probabilidad": 0.06, "multiplicador": 4, "peso": 5, "radioMinimo": 20, "color": "#8a8f9c" },
-    "bomba":  { "probabilidad": 0.04, "objeto": "bomba", "radioEfecto": 460, "impulso": 700 },
-    "bingBong": { "probabilidad": 0.03, "objeto": "bing_bong", "multiplicador": 15, "color": "#9bd62a" }
+    "bomba":  { "probabilidad": 0.04, "objeto": "bomba", "radioEfecto": 460, "impulso": 700 }
   },
 
   "desbloqueo": { "fraccionRadioHoyo": 0.95 },
@@ -211,7 +208,6 @@
       "mision": { "archivo": "desbloquear", "tono": 1.2, "volumen": 0.8 },
       "album": { "archivo": "moneda", "tono": 0.8, "volumen": 1.2 },
       "colapso": { "archivo": "tragar", "tono": 0.25, "volumen": 2.0 },
-      "bingBong": { "archivo": "desbloquear", "tono": 1.8, "volumen": 1.0 },
       "logro": { "archivo": "desbloquear", "tono": 1.0, "volumen": 1.0 }
     }
   },

@@ -1,5 +1,4 @@
-// Objetos especiales: dorado (vale mucho más), pesado (no se agarra), bomba (empuja todo al hoyo)
-// y Bing Bong (personaje raro que vale mucho).
+// Objetos especiales: dorado (vale mucho más), pesado (no se agarra) y bomba (empuja todo al hoyo).
 import type { Balance, IdEspecial, TipoObjeto } from "./balance";
 import type { Azar } from "./aparicion";
 import type { Cuerpo } from "./fisica";
@@ -8,7 +7,7 @@ type Config = Balance["especiales"];
 
 /**
  * Decide si el próximo objeto que aparece es especial. Una sola tirada, en franjas seguidas:
- * bomba, dorado, pesado (solo en objetos de radio >= radioMinimo) y Bing Bong.
+ * bomba, dorado y pesado (este solo en objetos de radio >= radioMinimo).
  * `extraDorado` suma probabilidad de dorado (mejora permanente "Suerte dorada").
  */
 export function elegirEspecial(tipo: TipoObjeto, cfg: Config, azar: Azar, extraDorado = 0): IdEspecial | null {
@@ -18,7 +17,6 @@ export function elegirEspecial(tipo: TipoObjeto, cfg: Config, azar: Azar, extraD
     ["bomba", cfg.bomba.probabilidad],
     ["dorado", cfg.dorado.probabilidad + extraDorado],
     ["pesado", cfg.pesado.probabilidad],
-    ["bingBong", cfg.bingBong.probabilidad],
   ];
   for (const [id, p] of franjas) {
     if (r >= desde && r < desde + p) return id === "pesado" && tipo.r < cfg.pesado.radioMinimo ? null : id;
@@ -27,10 +25,9 @@ export function elegirEspecial(tipo: TipoObjeto, cfg: Config, azar: Azar, extraD
   return null;
 }
 
-/** Bomba y Bing Bong reemplazan al objeto que iba a salir por el suyo. Devuelve ese id, o null. */
+/** La bomba reemplaza al objeto que iba a salir por el suyo. Devuelve ese id, o null. */
 export function objetoDelEspecial(especial: IdEspecial | null, cfg: Config): string | null {
   if (especial === "bomba") return cfg.bomba.objeto;
-  if (especial === "bingBong") return cfg.bingBong.objeto;
   return null;
 }
 
@@ -38,7 +35,6 @@ export function objetoDelEspecial(especial: IdEspecial | null, cfg: Config): str
 export function multiplicadorEspecial(especial: IdEspecial | null, cfg: Config): number {
   if (especial === "dorado") return cfg.dorado.multiplicador;
   if (especial === "pesado") return cfg.pesado.multiplicador;
-  if (especial === "bingBong") return cfg.bingBong.multiplicador;
   return 1;
 }
 

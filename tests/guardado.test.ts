@@ -78,6 +78,12 @@ describe("guardar y cargar", () => {
     expect(e.album).toEqual({ laboratorio: ["tornillo"] });
   });
 
+  it("guardados con Bing Bong (ya no existe) lo descartan", () => {
+    const e = deserializar(JSON.stringify({ album: { especiales: ["bing_bong"], laboratorio: ["tornillo"] }, logros: ["bing", "primer_bocado"] }), b);
+    expect(e.album).toEqual({ laboratorio: ["tornillo"] });
+    expect(e.logros).toEqual(["primer_bocado"]);
+  });
+
   it("niveles permanentes: solo los que existen y sin pasar el máximo", () => {
     const e = deserializar(JSON.stringify({ permanentes: { valorPerm: 99, inventada: 3, raros: -1 } }), b);
     expect(e.permanentes).toEqual({ valorPerm: 25 });

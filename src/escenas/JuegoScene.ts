@@ -408,10 +408,6 @@ export class JuegoScene extends Phaser.Scene {
     if (o.especial === "dorado") mostrarTextoFlotante(this, this.hoyo.x, arriba - 100, "¡Dorado! x10", b.especiales.dorado.color);
     if (o.especial === "pesado") mostrarTextoFlotante(this, this.hoyo.x, arriba - 100, "¡Pesado! x4", COLOR.apagado);
     if (o.especial === "bomba") this.explotar();
-    if (o.especial === "bingBong") {
-      mostrarTextoFlotante(this, this.hoyo.x, arriba - 100, `¡Bing Bong! x${b.especiales.bingBong.multiplicador}`, b.especiales.bingBong.color);
-      this.cameras.main.shake(200, 0.004);
-    }
 
     if (o.tirosLogrados.length) {
       const nombres = o.tirosLogrados.map((id) => b.tiros[id].nombre).join(" ");
@@ -438,14 +434,6 @@ export class JuegoScene extends Phaser.Scene {
   /** Primera vez que se traga este objeto en la zona: queda en el álbum. */
   private anotarAlbum(o: Objeto): void {
     const b = getBalance();
-    if (o.especial === "bingBong") {
-      if (progreso.anotarEspecialAlbum(b, o.tipo.id)) {
-        const y = this.hoyo.y + this.hoyo.radioVisible * this.hoyo.inclinacion + 40;
-        mostrarTextoFlotante(this, this.hoyo.x, y, `¡Nuevo en el álbum: ${o.tipo.nombre}!`, COLOR.acento);
-        this.game.events.emit(EVENTOS_GLOBALES.ALBUM, o.tipo, false);
-      }
-      return;
-    }
     const zona = zonaDe(b, progreso.zona);
     const r = progreso.anotarAlbum(zona, o.tipo.id);
     if (!r.nuevo) return;

@@ -28,13 +28,10 @@ describe("elegir especial (bomba 4%, dorado 4%, pesado 6%)", () => {
     expect(elegirEspecial(extintor, cfg, () => 0.1, 0.05)).toBe("dorado");
   });
 
-  it("Bing Bong tiene su propia franja (3%) y vale x15", () => {
-    expect(elegirEspecial(extintor, cfg, () => 0.15)).toBe("bingBong");
-    expect(elegirEspecial(tornillo, cfg, () => 0.15)).toBe("bingBong"); // también objetos chicos
-    expect(elegirEspecial(extintor, cfg, () => 0.17)).toBeNull();
-    expect(objetoDelEspecial("bingBong", cfg)).toBe("bing_bong");
+  it("la bomba trae su propio objeto; los demás no", () => {
+    expect(objetoDelEspecial("bomba", cfg)).toBe("bomba");
     expect(objetoDelEspecial("dorado", cfg)).toBeNull();
-    expect(multiplicadorEspecial("bingBong", cfg)).toBe(15);
+    expect(elegirEspecial(extintor, cfg, () => 0.15)).toBeNull();
   });
 
   it("multiplicadores: dorado x10, pesado x4, normal x1", () => {

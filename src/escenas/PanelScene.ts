@@ -3,7 +3,7 @@ import { texturaObjeto } from "../core/assets";
 import { getBalance } from "../core/Balance";
 import { COLOR, EVENTOS_GLOBALES, FUENTE_TEXTO, FUENTE_TITULO, hex } from "../core/estilo";
 import { progreso } from "../core/Progreso";
-import { ALBUM_ESPECIALES, fichasDeZona, fichasEspeciales } from "../logica/album";
+import { fichasDeZona } from "../logica/album";
 import { contextoMisiones } from "../logica/economia";
 import { misionCumplida, premioMision, textoMision } from "../logica/misiones";
 import { formatearNumero } from "../logica/monedas";
@@ -243,25 +243,5 @@ registrarPestana({
         .setOrigin(0.5, 0);
       if (esJefe) panel.texto(x + 10, y + 8, "JEFE", 14, COLOR.peligro);
     });
-
-    // Especiales (salen en cualquier sala; no cuentan para completar)
-    const yEsp = area.y + 96 + 3 * (celdaAlto + 10) + 4;
-    const altoEsp = Math.min(110, area.bottom - yEsp);
-    if (altoEsp > 60) {
-      const ge = panel.poner(panel.add.graphics());
-      ge.fillStyle(hex(COLOR.boton), 1).fillRoundedRect(area.x, yEsp, area.width, altoEsp, 14);
-      ge.lineStyle(2, hex(COLOR.linea), 1).strokeRoundedRect(area.x, yEsp, area.width, altoEsp, 14);
-      panel.texto(area.x + 16, yEsp + 10, "ESPECIALES", 14, COLOR.apagado);
-      fichasEspeciales(b).forEach((id, i) => {
-        const tipo = tipoPorId(b, id);
-        const la = progreso.fichasAlbum(ALBUM_ESPECIALES).includes(id);
-        const cx = area.x + 70 + i * 220;
-        const img = panel.poner(panel.add.image(cx, yEsp + altoEsp / 2 + 10, texturaObjeto(id)));
-        img.setScale((altoEsp - 40) / img.height);
-        if (!la) img.setTintFill(0x000000).setAlpha(0.35);
-        panel.texto(cx + 50, yEsp + altoEsp / 2 - 4, la ? tipo.nombre : "???", 20, la ? COLOR.texto : COLOR.apagado);
-        panel.texto(cx + 50, yEsp + altoEsp / 2 + 20, "Raro: sale en cualquier sala", 14, COLOR.apagado);
-      });
-    }
   },
 });

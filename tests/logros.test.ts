@@ -11,9 +11,9 @@ const b = balanceJson as Balance;
 const logro = (id: string) => b.logros.find((l) => l.id === id)!;
 
 describe("logros", () => {
-  it("hay 12 y todos tienen id distinto", () => {
-    expect(b.logros.length).toBe(12);
-    expect(new Set(b.logros.map((l) => l.id)).size).toBe(12);
+  it("hay 11 y todos tienen id distinto", () => {
+    expect(b.logros.length).toBe(11);
+    expect(new Set(b.logros.map((l) => l.id)).size).toBe(11);
   });
 
   it("récords: mejor combo, jefes, dorados y tiros", () => {
@@ -28,7 +28,6 @@ describe("logros", () => {
     expect(avanceLogro(b, logro("hambriento"), e)).toEqual({ valor: 42, meta: 100 });
     expect(avanceLogro(b, logro("en_racha"), e)).toEqual({ valor: 5, meta: 5 }); // no pasa de la meta
     expect(avanceLogro(b, logro("al_reactor"), e)).toEqual({ valor: 2, meta: 3 });
-    expect(avanceLogro(b, logro("bing"), e)).toEqual({ valor: 0, meta: 1 });
   });
 
   it("logros nuevos: solo los cumplidos que no estaban anotados", () => {
@@ -38,9 +37,9 @@ describe("logros", () => {
     expect(logrosNuevos(b, e)).toEqual([]);
   });
 
-  it("Bing Bong y álbum completo", () => {
-    const e = { ...estadoVacio(), album: { especiales: ["bing_bong"], laboratorio: [...b.zonas[0].objetos, b.zonas[0].jefe] } };
-    expect(logrosNuevos(b, e).map((l) => l.id).sort()).toEqual(["bing", "coleccionista"]);
+  it("álbum completo", () => {
+    const e = { ...estadoVacio(), album: { laboratorio: [...b.zonas[0].objetos, b.zonas[0].jefe] } };
+    expect(logrosNuevos(b, e).map((l) => l.id)).toEqual(["coleccionista"]);
   });
 
   it("Progreso los anota una sola vez", () => {
