@@ -10,9 +10,9 @@ const base = { segundos: 3600, horasMaximas: 2, hayDron: true, intervaloDron: 6,
 
 describe("ganancia offline", () => {
   it("valor promedio con los pesos de aparición", () => {
-    const [piedra, lata] = objetosDeZona(b, b.zonas[0]);
+    const [tornillo, matraz] = objetosDeZona(b, b.zonas[0]);
     // pesos 1 y 1.6: (1*1 + 1.6*2) / 2.6
-    expect(valorPromedio([piedra, lata], 1, 0.6)).toBeCloseTo(4.2 / 2.6);
+    expect(valorPromedio([tornillo, matraz], 1, 0.6)).toBeCloseTo(4.2 / 2.6);
     expect(valorPromedio([], 1, 0.6)).toBe(0);
   });
 

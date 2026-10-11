@@ -68,7 +68,7 @@ export function crearMision(
   return m;
 }
 
-/** Texto para mostrar: "Traga 6 × Cono" */
+/** Texto para mostrar: "Traga 6 × Extintor" */
 export function textoMision(b: Balance, m: Mision): string {
   const p = plantillaDe(b, m);
   if (!p) return "?";

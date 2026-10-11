@@ -6,7 +6,45 @@ import { nivelesIniciales, type Niveles } from "./mejoras";
 import type { Mision } from "./misiones";
 import type { NivelesPermanentes } from "./colapso";
 
-export const VERSION_GUARDADO = 2;
+export const VERSION_GUARDADO = 3;
+
+/**
+ * Guardados de antes del estilo laboratorio (versión < 3) usaban otros nombres.
+ * Se traducen al cargar para no perder álbum ni misiones. Va por zona porque "casco"
+ * era de la Luna (ahora "valvula") y ahora es del Laboratorio.
+ */
+const ZONAS_VIEJAS: Record<string, string> = { parque: "laboratorio", ciudad: "almacen", luna: "reactor" };
+const OBJETOS_VIEJOS: Record<string, string> = {
+  piedra: "tornillo", lata: "matraz", pelota: "casco", cono: "extintor", neumatico: "silla",
+  caja: "caja_herramientas", basurero: "servidor", auto: "robot", tractor: "tanque",
+  botella: "tuerca", pizza: "probeta", hidrante: "botiquin", maceta: "bidon", quitasol: "carrito",
+  contenedor: "barril", taxi: "estante", bus: "montacargas", bomberos: "contenedor_carga",
+  roca_lunar: "fusible", bandera: "bateria", casco: "valvula", satelite: "bobina", rover: "panel",
+  modulo: "generador", antena: "transformador", estacion: "turbina", cohete: "nucleo",
+};
+
+/** Traduce álbum y misiones de un guardado viejo a los nombres nuevos. */
+export function migrarNombres(d: Record<string, unknown>): Record<string, unknown> {
+  if (typeof d.version === "number" && d.version >= 3) return d;
+  const salida = { ...d };
+  if (typeof d.album === "object" && d.album !== null) {
+    const album: Record<string, unknown> = {};
+    for (const [zona, lista] of Object.entries(d.album as Record<string, unknown>)) {
+      album[ZONAS_VIEJAS[zona] ?? zona] = Array.isArray(lista)
+        ? lista.map((id) => (typeof id === "string" ? (OBJETOS_VIEJOS[id] ?? id) : id))
+        : lista;
+    }
+    salida.album = album;
+  }
+  if (Array.isArray(d.misiones)) {
+    salida.misiones = d.misiones.map((m) => {
+      if (typeof m !== "object" || m === null) return m;
+      const x = m as Record<string, unknown>;
+      return typeof x.objeto === "string" ? { ...x, objeto: OBJETOS_VIEJOS[x.objeto] ?? x.objeto } : x;
+    });
+  }
+  return salida;
+}
 
 export interface EstadoProgreso {
   monedas: number;
@@ -63,7 +101,7 @@ export function deserializar(texto: string | null | undefined, b: Balance): Esta
     return vacio;
   }
   if (typeof datos !== "object" || datos === null) return vacio;
-  const d = datos as Record<string, unknown>;
+  const d = migrarNombres(datos as Record<string, unknown>);
   const nivelesGuardados = (typeof d.niveles === "object" && d.niveles !== null ? d.niveles : {}) as Record<string, unknown>;
 
   const niveles = nivelesIniciales();

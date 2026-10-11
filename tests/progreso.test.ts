@@ -62,7 +62,7 @@ describe("comprar mejoras", () => {
     const p = new Progreso();
     p.registrarTragado(1000);
     const r1 = p.comprar(b, "size");
-    expect(r1.comprado && r1.nuevosObjetos.map((t) => t.id)).toEqual(["neumatico"]);
+    expect(r1.comprado && r1.nuevosObjetos.map((t) => t.id)).toEqual(["silla"]);
     const r2 = p.comprar(b, "pull");
     expect(r2.comprado && r2.nuevosObjetos).toEqual([]);
   });

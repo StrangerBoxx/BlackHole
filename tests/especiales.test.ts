@@ -9,23 +9,23 @@ import balanceJson from "../public/data/balance.json";
 
 const b = balanceJson as Balance;
 const cfg = b.especiales;
-const cono = tipoPorId(b, "cono"), piedra = tipoPorId(b, "piedra");
+const extintor = tipoPorId(b, "extintor"), tornillo = tipoPorId(b, "tornillo");
 
 describe("elegir especial (bomba 4%, dorado 4%, pesado 6%)", () => {
   it("los cortes de la tirada", () => {
-    expect(elegirEspecial(cono, cfg, () => 0.01)).toBe("bomba");
-    expect(elegirEspecial(cono, cfg, () => 0.05)).toBe("dorado");
-    expect(elegirEspecial(cono, cfg, () => 0.1)).toBe("pesado");
-    expect(elegirEspecial(cono, cfg, () => 0.5)).toBeNull();
+    expect(elegirEspecial(extintor, cfg, () => 0.01)).toBe("bomba");
+    expect(elegirEspecial(extintor, cfg, () => 0.05)).toBe("dorado");
+    expect(elegirEspecial(extintor, cfg, () => 0.1)).toBe("pesado");
+    expect(elegirEspecial(extintor, cfg, () => 0.5)).toBeNull();
   });
 
   it("los objetos chicos no salen pesados", () => {
-    expect(elegirEspecial(piedra, cfg, () => 0.1)).toBeNull();
+    expect(elegirEspecial(tornillo, cfg, () => 0.1)).toBeNull();
   });
 
   it("la Suerte dorada agranda la franja del dorado", () => {
-    expect(elegirEspecial(cono, cfg, () => 0.1)).toBe("pesado");
-    expect(elegirEspecial(cono, cfg, () => 0.1, 0.05)).toBe("dorado");
+    expect(elegirEspecial(extintor, cfg, () => 0.1)).toBe("pesado");
+    expect(elegirEspecial(extintor, cfg, () => 0.1, 0.05)).toBe("dorado");
   });
 
   it("multiplicadores: dorado x10, pesado x4, normal x1", () => {

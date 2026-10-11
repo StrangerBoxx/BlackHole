@@ -52,7 +52,7 @@ export function rebotarBordes(c: Cuerpo, ancho: number, alto: number, rebote: nu
 
 /**
  * Separa los círculos que se pisan y les da un rebote.
- * La masa es r² × peso (un auto empuja más que una piedra; un pesado, todavía más).
+ * La masa es r² × peso (un robot empuja más que un tornillo; un pesado, todavía más).
  * El objeto arrastrado cuenta como de masa infinita: empuja pero no lo empujan.
  */
 export function resolverChoques(cuerpos: Cuerpo[], rebote: number, alChocar?: (a: Cuerpo, b: Cuerpo) => void): void {

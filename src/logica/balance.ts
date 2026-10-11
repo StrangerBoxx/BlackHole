@@ -7,7 +7,7 @@ export interface TipoObjeto {
   nombre: string;
   r: number;
   valor: number;
-  /** Ancho de la sombra respecto al radio (por defecto 1). El auto es más largo. */
+  /** Ancho de la sombra respecto al radio (por defecto 1). El robot es más largo. */
   sombraAncho?: number;
 }
 

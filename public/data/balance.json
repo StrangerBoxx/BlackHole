@@ -36,52 +36,52 @@
   },
 
   "objetos": [
-    { "id": "piedra",    "nombre": "Piedra",    "r": 14, "valor": 1 },
-    { "id": "lata",      "nombre": "Lata",      "r": 13, "valor": 2 },
-    { "id": "pelota",    "nombre": "Pelota",    "r": 20, "valor": 4 },
-    { "id": "cono",      "nombre": "Cono",      "r": 22, "valor": 8 },
-    { "id": "neumatico", "nombre": "Neumático", "r": 30, "valor": 16 },
-    { "id": "caja",      "nombre": "Caja",      "r": 36, "valor": 30 },
-    { "id": "basurero",  "nombre": "Basurero",  "r": 42, "valor": 55 },
-    { "id": "auto",      "nombre": "Auto",      "r": 56, "valor": 120, "sombraAncho": 1.1 },
+    { "id": "tornillo",          "nombre": "Tornillo",            "r": 14, "valor": 1 },
+    { "id": "matraz",            "nombre": "Matraz",              "r": 13, "valor": 2 },
+    { "id": "casco",             "nombre": "Casco",               "r": 20, "valor": 4 },
+    { "id": "extintor",          "nombre": "Extintor",            "r": 22, "valor": 8 },
+    { "id": "silla",             "nombre": "Silla",               "r": 30, "valor": 16 },
+    { "id": "caja_herramientas", "nombre": "Caja de herramientas", "r": 36, "valor": 30 },
+    { "id": "servidor",          "nombre": "Servidor",            "r": 42, "valor": 55 },
+    { "id": "robot",             "nombre": "Robot de limpieza",   "r": 56, "valor": 120, "sombraAncho": 1.1 },
 
-    { "id": "botella",    "nombre": "Botella",    "r": 13, "valor": 1 },
-    { "id": "pizza",      "nombre": "Pizza",      "r": 15, "valor": 2 },
-    { "id": "hidrante",   "nombre": "Hidrante",   "r": 19, "valor": 4 },
-    { "id": "maceta",     "nombre": "Maceta",     "r": 22, "valor": 8 },
-    { "id": "quitasol",   "nombre": "Quitasol",   "r": 30, "valor": 16 },
-    { "id": "contenedor", "nombre": "Contenedor", "r": 36, "valor": 30 },
-    { "id": "taxi",       "nombre": "Taxi",       "r": 44, "valor": 55, "sombraAncho": 1.1 },
-    { "id": "bus",        "nombre": "Bus",        "r": 56, "valor": 120, "sombraAncho": 1.15 },
+    { "id": "tuerca",      "nombre": "Tuerca",      "r": 13, "valor": 1 },
+    { "id": "probeta",     "nombre": "Probeta",     "r": 15, "valor": 2 },
+    { "id": "botiquin",    "nombre": "Botiquín",    "r": 19, "valor": 4 },
+    { "id": "bidon",       "nombre": "Bidón",       "r": 22, "valor": 8 },
+    { "id": "carrito",     "nombre": "Carrito",     "r": 30, "valor": 16 },
+    { "id": "barril",      "nombre": "Barril",      "r": 36, "valor": 30 },
+    { "id": "estante",     "nombre": "Estante",     "r": 44, "valor": 55, "sombraAncho": 1.1 },
+    { "id": "montacargas", "nombre": "Montacargas", "r": 56, "valor": 120, "sombraAncho": 1.15 },
 
-    { "id": "roca_lunar", "nombre": "Roca lunar", "r": 14, "valor": 1 },
-    { "id": "bandera",    "nombre": "Bandera",    "r": 15, "valor": 2 },
-    { "id": "casco",      "nombre": "Casco",      "r": 19, "valor": 4 },
-    { "id": "satelite",   "nombre": "Satélite",   "r": 22, "valor": 8 },
-    { "id": "rover",      "nombre": "Rover",      "r": 30, "valor": 16 },
-    { "id": "modulo",     "nombre": "Módulo",     "r": 36, "valor": 30 },
-    { "id": "antena",     "nombre": "Antena",     "r": 42, "valor": 55 },
-    { "id": "estacion",   "nombre": "Estación",   "r": 56, "valor": 120 },
+    { "id": "fusible",       "nombre": "Fusible",          "r": 14, "valor": 1 },
+    { "id": "bateria",       "nombre": "Batería",          "r": 15, "valor": 2 },
+    { "id": "valvula",       "nombre": "Válvula",          "r": 19, "valor": 4 },
+    { "id": "bobina",        "nombre": "Bobina de cable",  "r": 22, "valor": 8 },
+    { "id": "panel",         "nombre": "Panel de control", "r": 30, "valor": 16 },
+    { "id": "generador",     "nombre": "Generador",        "r": 36, "valor": 30 },
+    { "id": "transformador", "nombre": "Transformador",    "r": 42, "valor": 55 },
+    { "id": "turbina",       "nombre": "Turbina",          "r": 56, "valor": 120 },
 
-    { "id": "tractor",  "nombre": "Tractor",           "r": 72, "valor": 400, "sombraAncho": 1.1 },
-    { "id": "bomberos", "nombre": "Carro de bomberos", "r": 76, "valor": 400, "sombraAncho": 1.15 },
-    { "id": "cohete",   "nombre": "Cohete",            "r": 78, "valor": 400, "sombraAncho": 1.1 },
+    { "id": "tanque",           "nombre": "Tanque de nitrógeno", "r": 72, "valor": 400, "sombraAncho": 1.1 },
+    { "id": "contenedor_carga", "nombre": "Contenedor de carga", "r": 76, "valor": 400, "sombraAncho": 1.15 },
+    { "id": "nucleo",           "nombre": "Núcleo del reactor",  "r": 78, "valor": 400 },
 
-    { "id": "bomba", "nombre": "Bomba", "r": 18, "valor": 5 }
+    { "id": "bomba", "nombre": "Carga inestable", "r": 18, "valor": 5 }
   ],
 
   "zonas": [
     {
-      "id": "parque", "nombre": "Parque", "suelo": "suelo", "multiplicadorValor": 1, "jefe": "tractor",
-      "objetos": ["piedra", "lata", "pelota", "cono", "neumatico", "caja", "basurero", "auto"]
+      "id": "laboratorio", "nombre": "Laboratorio", "suelo": "suelo", "multiplicadorValor": 1, "jefe": "tanque",
+      "objetos": ["tornillo", "matraz", "casco", "extintor", "silla", "caja_herramientas", "servidor", "robot"]
     },
     {
-      "id": "ciudad", "nombre": "Ciudad", "suelo": "suelo_ciudad", "multiplicadorValor": 12, "jefe": "bomberos",
-      "objetos": ["botella", "pizza", "hidrante", "maceta", "quitasol", "contenedor", "taxi", "bus"]
+      "id": "almacen", "nombre": "Almacén", "suelo": "suelo_almacen", "multiplicadorValor": 12, "jefe": "contenedor_carga",
+      "objetos": ["tuerca", "probeta", "botiquin", "bidon", "carrito", "barril", "estante", "montacargas"]
     },
     {
-      "id": "luna", "nombre": "Luna", "suelo": "suelo_luna", "multiplicadorValor": 150, "jefe": "cohete",
-      "objetos": ["roca_lunar", "bandera", "casco", "satelite", "rover", "modulo", "antena", "estacion"]
+      "id": "reactor", "nombre": "Reactor", "suelo": "suelo_reactor", "multiplicadorValor": 150, "jefe": "nucleo",
+      "objetos": ["fusible", "bateria", "valvula", "bobina", "panel", "generador", "transformador", "turbina"]
     }
   ],
 

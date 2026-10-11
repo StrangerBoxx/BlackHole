@@ -29,7 +29,7 @@ describe("colapso", () => {
     const antes = {
       ...conTamanoMax(),
       monedas: 9999, total: 500, ganadasVuelta: 40000, materiaOscura: 3, colapsos: 1,
-      hambre: 80, jefes: 2, album: { parque: ["piedra"] }, permanentes: { inicio: 2 },
+      hambre: 80, jefes: 2, album: { laboratorio: ["tornillo"] }, permanentes: { inicio: 2 },
     };
     const d = aplicarColapso(b, antes);
     expect(d.zona).toBe(1);
@@ -38,7 +38,7 @@ describe("colapso", () => {
     expect(d.monedas).toBe(300); // Empujón inicial nivel 2 = 150 × 2
     expect(d.niveles).toEqual(nivelesIniciales());
     expect(d.total).toBe(500);
-    expect(d.album).toEqual({ parque: ["piedra"] });
+    expect(d.album).toEqual({ laboratorio: ["tornillo"] });
     expect(d.permanentes).toEqual({ inicio: 2 });
     expect([d.ganadasVuelta, d.hambre, d.jefes, d.misiones.length]).toEqual([0, 0, 0, 0]);
   });

@@ -10,14 +10,25 @@ const b = balanceJson as Balance;
 describe("guardar y cargar", () => {
   it("lo que se guarda se vuelve a cargar igual", () => {
     const e = { monedas: 1234, total: 56, niveles: { ...nivelesIniciales(), pull: 3, force: 2, size: 1, spawn: 4, value: 5 }, zona: 1, hambre: 40, jefes: 2, ultimaVez: 1700000000000,
-      misiones: [{ plantilla: "tragarTipo", objetivo: 6, dificultad: 1, objeto: "cono", progreso: 2 }],
-      album: { parque: ["piedra", "cono"] },
+      misiones: [{ plantilla: "tragarTipo", objetivo: 6, dificultad: 1, objeto: "extintor", progreso: 2 }],
+      album: { laboratorio: ["tornillo", "extintor"] },
       materiaOscura: 12, permanentes: { valorPerm: 3, raros: 1 }, ganadasVuelta: 5000, colapsos: 2 };
     expect(deserializar(serializar(e), b)).toEqual(e);
   });
 
   it("el texto guardado trae versión", () => {
-    expect(JSON.parse(serializar(estadoVacio())).version).toBe(2);
+    expect(JSON.parse(serializar(estadoVacio())).version).toBe(3);
+  });
+
+  it("guardados de antes del laboratorio traducen los nombres viejos", () => {
+    const viejo = JSON.stringify({
+      version: 2,
+      album: { parque: ["piedra", "pelota", "tractor"], luna: ["casco"] },
+      misiones: [{ plantilla: "tragarTipo", objetivo: 3, objeto: "cono", progreso: 1 }],
+    });
+    const e = deserializar(viejo, b);
+    expect(e.album).toEqual({ laboratorio: ["tornillo", "casco", "tanque"], reactor: ["valvula"] });
+    expect(e.misiones[0].objeto).toBe("extintor");
   });
 
   it("sin guardado (primera vez) empieza de cero", () => {
@@ -57,11 +68,11 @@ describe("guardar y cargar", () => {
   it("descarta misiones y fichas de álbum que no existen", () => {
     const raro = JSON.stringify({
       misiones: [{ plantilla: "inventada", objetivo: 3 }, { plantilla: "tragar", objetivo: 15, progreso: 99 }],
-      album: { parque: ["piedra", "piedra", "dinosaurio"], marte: ["x"] },
+      album: { laboratorio: ["tornillo", "tornillo", "dinosaurio"], marte: ["x"] },
     });
     const e = deserializar(raro, b);
     expect(e.misiones).toEqual([{ plantilla: "tragar", objetivo: 15, dificultad: 0, progreso: 15 }]);
-    expect(e.album).toEqual({ parque: ["piedra"] });
+    expect(e.album).toEqual({ laboratorio: ["tornillo"] });
   });
 
   it("niveles permanentes: solo los que existen y sin pasar el máximo", () => {

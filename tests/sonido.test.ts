@@ -10,7 +10,7 @@ describe("tono de tragar (1.3 - tamaño*0.6)", () => {
     expect(tonoTragar(14, s)).toBeCloseTo(1.3 - (14 / 56) * 0.6); // 1.15
   });
 
-  it("auto: el más grave (0.7)", () => {
+  it("robot: el más grave (0.7)", () => {
     expect(tonoTragar(56, s)).toBeCloseTo(0.7);
   });
 

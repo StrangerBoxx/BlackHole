@@ -8,10 +8,10 @@ import { objetosDeZona, tipoPorId } from "../src/logica/objetos";
 import balanceJson from "../public/data/balance.json";
 
 const b = balanceJson as Balance;
-const parque = b.zonas[0];
-const cono = tipoPorId(b, "cono");
+const laboratorio = b.zonas[0];
+const extintor = tipoPorId(b, "extintor");
 const ev = (extra: Partial<EventoMision> = {}): EventoMision => ({
-  tipo: cono, monedas: 8, especial: null, tiros: [], combo: 0, jefe: false, ...extra,
+  tipo: extintor, monedas: 8, especial: null, tiros: [], combo: 0, jefe: false, ...extra,
 });
 const mision = (plantilla: string, objetivo: number, extra: Partial<Mision> = {}): Mision => ({
   plantilla, objetivo, dificultad: 0, progreso: 0, ...extra,
@@ -21,21 +21,21 @@ describe("misiones", () => {
   it("crea misiones distintas de las activas", () => {
     let i = 0;
     const azar = () => [0.0, 0.5, 0.0, 0.5][i++ % 4];
-    const a = crearMision(b, [], objetosDeZona(b, parque), 1, azar);
-    const c = crearMision(b, [a], objetosDeZona(b, parque), 1, azar);
+    const a = crearMision(b, [], objetosDeZona(b, laboratorio), 1, azar);
+    const c = crearMision(b, [a], objetosDeZona(b, laboratorio), 1, azar);
     expect(a.plantilla).not.toBe(c.plantilla);
   });
 
   it("'Traga N × objeto' elige un objeto de la zona", () => {
-    const m = crearMision(b, b.misiones.plantillas.filter((p) => p.id !== "tragarTipo").map((p) => mision(p.id, 1)), [cono], 1, () => 0);
+    const m = crearMision(b, b.misiones.plantillas.filter((p) => p.id !== "tragarTipo").map((p) => mision(p.id, 1)), [extintor], 1, () => 0);
     expect(m.plantilla).toBe("tragarTipo");
-    expect(m.objeto).toBe("cono");
-    expect(textoMision(b, m)).toBe("Traga 3 × Cono");
+    expect(m.objeto).toBe("extintor");
+    expect(textoMision(b, m)).toBe("Traga 3 × Extintor");
   });
 
   it("las metas de monedas crecen con la zona", () => {
     const otras = b.misiones.plantillas.filter((p) => p.id !== "monedas").map((p) => mision(p.id, 1));
-    expect(crearMision(b, otras, [cono], 12, () => 0).objetivo).toBe(300 * 12);
+    expect(crearMision(b, otras, [extintor], 12, () => 0).objetivo).toBe(300 * 12);
   });
 
   it("textos con singular", () => {
@@ -47,7 +47,7 @@ describe("misiones", () => {
   it("cada tipo de misión avanza con lo suyo", () => {
     const ms = [
       mision("tragar", 2),
-      mision("tragarTipo", 2, { objeto: "piedra" }),
+      mision("tragarTipo", 2, { objeto: "tornillo" }),
       mision("combo", 3),
       mision("carambola", 1),
       mision("dorado", 1),
@@ -76,18 +76,18 @@ describe("misiones", () => {
 describe("álbum", () => {
   it("anota objetos nuevos una sola vez", () => {
     const a: Album = {};
-    expect(anotarEnAlbum(a, parque, "cono")).toEqual({ nuevo: true, completo: false });
-    expect(anotarEnAlbum(a, parque, "cono")).toEqual({ nuevo: false, completo: false });
-    expect(anotarEnAlbum(a, parque, "taxi")).toEqual({ nuevo: false, completo: false }); // no es del parque
-    expect(a).toEqual({ parque: ["cono"] });
+    expect(anotarEnAlbum(a, laboratorio, "extintor")).toEqual({ nuevo: true, completo: false });
+    expect(anotarEnAlbum(a, laboratorio, "extintor")).toEqual({ nuevo: false, completo: false });
+    expect(anotarEnAlbum(a, laboratorio, "estante")).toEqual({ nuevo: false, completo: false }); // no es del laboratorio
+    expect(a).toEqual({ laboratorio: ["extintor"] });
   });
 
   it("se completa con los 8 objetos y el jefe, y da x1.1", () => {
     const a: Album = {};
-    for (const id of parque.objetos) anotarEnAlbum(a, parque, id);
-    expect(zonaCompleta(a, parque)).toBe(false);
+    for (const id of laboratorio.objetos) anotarEnAlbum(a, laboratorio, id);
+    expect(zonaCompleta(a, laboratorio)).toBe(false);
     expect(bonusAlbum(b, a)).toBe(1);
-    expect(anotarEnAlbum(a, parque, "tractor")).toEqual({ nuevo: true, completo: true });
+    expect(anotarEnAlbum(a, laboratorio, "tanque")).toEqual({ nuevo: true, completo: true });
     expect(bonusAlbum(b, a)).toBeCloseTo(1.1);
   });
 });

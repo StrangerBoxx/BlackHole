@@ -4,7 +4,7 @@ import type { Balance } from "../src/logica/balance";
 import balanceJson from "../public/data/balance.json";
 
 const b = balanceJson as Balance;
-const tipos = b.objetos.slice(0, 4); // piedra, lata, pelota, cono
+const tipos = b.objetos.slice(0, 4); // tornillo, matraz, casco, extintor
 
 /** Azar predecible para los tests. */
 function azarFijo(semilla = 1) {
@@ -14,26 +14,26 @@ function azarFijo(semilla = 1) {
 
 describe("elegir tipo con peso 1 + i*0.6", () => {
   it("con azar 0 sale el primero y con azar casi 1 el último", () => {
-    expect(elegirTipo(tipos, 1, 0.6, () => 0).id).toBe("piedra");
-    expect(elegirTipo(tipos, 1, 0.6, () => 0.9999).id).toBe("cono");
+    expect(elegirTipo(tipos, 1, 0.6, () => 0).id).toBe("tornillo");
+    expect(elegirTipo(tipos, 1, 0.6, () => 0.9999).id).toBe("extintor");
   });
 
   it("los cortes caen donde dicen los pesos (1, 1.6, 2.2, 2.8 → total 7.6)", () => {
-    expect(elegirTipo(tipos, 1, 0.6, () => 0.99 / 7.6).id).toBe("piedra");
-    expect(elegirTipo(tipos, 1, 0.6, () => 1.01 / 7.6).id).toBe("lata");
-    expect(elegirTipo(tipos, 1, 0.6, () => 2.61 / 7.6).id).toBe("pelota");
-    expect(elegirTipo(tipos, 1, 0.6, () => 4.81 / 7.6).id).toBe("cono");
+    expect(elegirTipo(tipos, 1, 0.6, () => 0.99 / 7.6).id).toBe("tornillo");
+    expect(elegirTipo(tipos, 1, 0.6, () => 1.01 / 7.6).id).toBe("matraz");
+    expect(elegirTipo(tipos, 1, 0.6, () => 2.61 / 7.6).id).toBe("casco");
+    expect(elegirTipo(tipos, 1, 0.6, () => 4.81 / 7.6).id).toBe("extintor");
   });
 
-  it("en muchas tiradas, el cono sale ~2.8 veces más que la piedra", () => {
+  it("en muchas tiradas, el extintor sale ~2.8 veces más que la tornillo", () => {
     const azar = azarFijo(7);
     const cuenta: Record<string, number> = {};
     for (let i = 0; i < 20000; i++) {
       const t = elegirTipo(tipos, 1, 0.6, azar).id;
       cuenta[t] = (cuenta[t] ?? 0) + 1;
     }
-    expect(cuenta.cono / cuenta.piedra).toBeGreaterThan(2.5);
-    expect(cuenta.cono / cuenta.piedra).toBeLessThan(3.1);
+    expect(cuenta.extintor / cuenta.tornillo).toBeGreaterThan(2.5);
+    expect(cuenta.extintor / cuenta.tornillo).toBeLessThan(3.1);
   });
 });
 

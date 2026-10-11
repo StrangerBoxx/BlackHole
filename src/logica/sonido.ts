@@ -3,7 +3,7 @@ import type { Balance } from "./balance";
 
 type ConfigSonido = Balance["sonido"];
 
-/** Tamaño del objeto de 0 a 1 (el auto, r=56, es 1). */
+/** Tamaño del objeto de 0 a 1 (el robot, r=56, es 1). */
 export const tamanoRelativo = (r: number, radioReferencia: number) => Math.min(1, r / radioReferencia);
 
 /** "tragar" más grave con objetos grandes: tonoBase - tamaño * tonoPorTamano (1.3 - tamaño*0.6). */

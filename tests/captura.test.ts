@@ -46,7 +46,7 @@ describe("regla de captura", () => {
   });
 
   it("borde exacto: dist < radioHoyo - r*0.2", () => {
-    // radio 28, piedra r=14 → límite 25.2
+    // radio 28, tornillo r=14 → límite 25.2
     expect(puedeTragar(crearCuerpo(hoyo.x + 25.1, hoyo.y, 14), hoyo, 28, 420, 0.2)).toBe(true);
     expect(puedeTragar(crearCuerpo(hoyo.x + 25.3, hoyo.y, 14), hoyo, 28, 420, 0.2)).toBe(false);
   });

@@ -42,8 +42,8 @@
     let s = semilla;
     return () => (s = (s * 16807) % 2147483647) / 2147483647;
   }
-  /** Auto visto desde arriba (para taxi y otros). */
-  function auto(g, cuerpo, techo, vidrio, largo = R * 1.0, ancho = R * 0.6) {
+  /** Auto visto desde arriba (para estante y otros). */
+  function robot(g, cuerpo, techo, vidrio, largo = R * 1.0, ancho = R * 0.6) {
     rect(g, -largo, -ancho, largo * 2, ancho * 2, 30, cuerpo);
     rect(g, largo * 0.15, -ancho * 0.75, largo * 0.38, ancho * 1.5, 12, vidrio);
     rect(g, -largo * 0.75, -ancho * 0.7, largo * 0.3, ancho * 1.4, 12, vidrio);
@@ -70,7 +70,7 @@
     }),
 
     // ---------- jefes ----------
-    "img/objetos/tractor.png": () => objeto((g) => {
+    "img/objetos/tanque.png": () => objeto((g) => {
       rect(g, -112, -100, 70, 44, 10, "#1c1c1c"); rect(g, -112, 56, 70, 44, 10, "#1c1c1c");
       rect(g, 50, -78, 44, 26, 8, "#1c1c1c"); rect(g, 50, 52, 44, 26, 8, "#1c1c1c");
       rect(g, -100, -60, 205, 120, 22, "#3f9b3a");
@@ -80,7 +80,7 @@
       rect(g, -86, -42, 72, 84, 10, "#9fd0f2");
       rect(g, -70, -24, 40, 48, 8, "#f2c53d");
     }),
-    "img/objetos/bomberos.png": () => objeto((g) => {
+    "img/objetos/contenedor_carga.png": () => objeto((g) => {
       rect(g, -118, -54, 236, 108, 18, "#d63131");
       rect(g, 56, -50, 58, 100, 14, "#b82626");
       rect(g, 74, -40, 30, 80, 8, "#9fd0f2");
@@ -89,7 +89,7 @@
       rect(g, -110, -50, 160, 10, 4, "#ffffff"); rect(g, -110, 40, 160, 10, 4, "#ffffff");
       circulo(g, 64, -38, 9, "#3da5ff"); circulo(g, 64, 38, 9, "#ff4040");
     }),
-    "img/objetos/cohete.png": () => objeto((g) => {
+    "img/objetos/nucleo.png": () => objeto((g) => {
       poligono(g, [[-84, -40], [-118, -84], [-60, -44]], "#d63131");
       poligono(g, [[-84, 40], [-118, 84], [-60, 44]], "#d63131");
       rect(g, -96, -44, 170, 88, 40, "#f2f2f2");
@@ -99,8 +99,8 @@
       poligono(g, [[-96, -26], [-122, 0], [-96, 26]], "#ff9a2e");
     }),
 
-    // ---------- ciudad ----------
-    "img/objetos/botella.png": () => objeto((g) => {
+    // ---------- almacen ----------
+    "img/objetos/tuerca.png": () => objeto((g) => {
       g.rotate(-0.5);
       rect(g, -100, -46, 140, 92, 34, "#2f8f5a");
       rect(g, 30, -24, 60, 48, 12, "#2f8f5a");
@@ -108,7 +108,7 @@
       rect(g, -80, -30, 90, 22, 10, "rgba(255,255,255,0.35)");
       rect(g, -60, -40, 60, 80, 8, "#f1e3c2");
     }),
-    "img/objetos/pizza.png": () => objeto((g) => {
+    "img/objetos/probeta.png": () => objeto((g) => {
       circulo(g, 0, 0, R * 0.92, "#d29a4f");
       circulo(g, 0, 0, R * 0.78, "#c4432f");
       circulo(g, 0, 0, R * 0.72, "#f3cf5a");
@@ -117,7 +117,7 @@
       g.fillStyle = "rgba(0,0,0,0)"; g.globalCompositeOperation = "destination-out";
       poligono(g, [[0, 0], [R, -40], [R, 40]], "#000"); g.globalCompositeOperation = "source-over";
     }),
-    "img/objetos/hidrante.png": () => objeto((g) => {
+    "img/objetos/botiquin.png": () => objeto((g) => {
       rect(g, -112, -26, 224, 52, 18, "#b8231f");
       circulo(g, -108, 0, 22, "#9a1d1a"); circulo(g, 108, 0, 22, "#9a1d1a");
       circulo(g, 0, 0, 82, "#d6302a");
@@ -125,7 +125,7 @@
       circulo(g, 0, 0, 28, "#9a1d1a");
       circulo(g, -10, -12, 10, "#ff8b80");
     }),
-    "img/objetos/maceta.png": () => objeto((g) => {
+    "img/objetos/bidon.png": () => objeto((g) => {
       circulo(g, 0, 0, R, "#b9653a");
       circulo(g, 0, 0, R * 0.86, "#d27a48");
       circulo(g, 0, 0, R * 0.72, "#4a3322");
@@ -137,7 +137,7 @@
       }
       circulo(g, 0, 0, 16, "#ffd65c");
     }),
-    "img/objetos/quitasol.png": () => objeto((g) => {
+    "img/objetos/carrito.png": () => objeto((g) => {
       const n = 8;
       for (let i = 0; i < n; i++) {
         const a0 = (i / n) * Math.PI * 2, a1 = ((i + 1) / n) * Math.PI * 2;
@@ -150,7 +150,7 @@
       }
       circulo(g, 0, 0, 14, "#7a5a3a");
     }),
-    "img/objetos/contenedor.png": () => objeto((g) => {
+    "img/objetos/barril.png": () => objeto((g) => {
       rect(g, -118, -76, 236, 152, 14, "#245a3b");
       rect(g, -110, -68, 106, 136, 10, "#2f6f4a");
       rect(g, 4, -68, 106, 136, 10, "#2f6f4a");
@@ -158,14 +158,14 @@
       rect(g, -24, 68, 48, 14, 6, "#9aa0a8");
       for (let i = 0; i < 3; i++) { rect(g, -96, -50 + i * 40, 80, 8, 4, "#245a3b"); rect(g, 18, -50 + i * 40, 80, 8, 4, "#245a3b"); }
     }),
-    "img/objetos/taxi.png": () => objeto((g) => {
-      auto(g, "#f2c12e", "#d9a91f", "#9fd0f2");
+    "img/objetos/estante.png": () => objeto((g) => {
+      robot(g, "#f2c12e", "#d9a91f", "#9fd0f2");
       rect(g, -36, -20, 40, 40, 6, "#222");
       g.fillStyle = "#f2c12e"; g.font = "bold 16px sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
       g.save(); g.rotate(Math.PI / 2); g.fillText("TAXI", 0, 16); g.restore();
       for (let i = 0; i < 8; i++) rect(g, -110 + i * 28, (i % 2 ? 58 : 50), 14, 8, 2, "#222");
     }),
-    "img/objetos/bus.png": () => objeto((g) => {
+    "img/objetos/montacargas.png": () => objeto((g) => {
       rect(g, -120, -58, 240, 116, 18, "#2f6fd6");
       rect(g, -112, -50, 224, 100, 12, "#e8eef7");
       rect(g, -60, -28, 54, 56, 8, "#b8c4d6");
@@ -175,13 +175,13 @@
       circulo(g, 112, -44, 7, "#ffe08a"); circulo(g, 112, 44, 7, "#ffe08a");
     }),
 
-    // ---------- luna ----------
-    "img/objetos/roca_lunar.png": () => objeto((g) => {
+    // ---------- reactor ----------
+    "img/objetos/fusible.png": () => objeto((g) => {
       poligono(g, [[-R, -10], [-60, -R], [70, -96], [R, 10], [50, R * 0.95], [-80, 90]], "#8d8f96");
       circulo(g, -30, -30, 26, "#73757c"); circulo(g, 40, 30, 18, "#73757c"); circulo(g, -40, 50, 12, "#73757c");
       circulo(g, -36, -36, 10, "#a9abb2");
     }),
-    "img/objetos/bandera.png": () => objeto((g) => {
+    "img/objetos/bateria.png": () => objeto((g) => {
       g.rotate(-0.4);
       rect(g, -112, -6, 224, 12, 6, "#c9c9c9");
       rect(g, -100, -96, 150, 96, 6, "#f4f4f4");
@@ -189,28 +189,28 @@
       circulo(g, -25, -48, 16, "#1b1030");
       circulo(g, -112, 0, 14, "#9aa0a8");
     }),
-    "img/objetos/casco.png": () => objeto((g) => {
+    "img/objetos/valvula.png": () => objeto((g) => {
       circulo(g, 0, 0, R, "#e8e8ec");
       circulo(g, 0, 0, R * 0.9, "#f7f7fa");
       g.save(); g.beginPath(); g.ellipse(14, 0, 82, 70, 0, 0, Math.PI * 2); g.clip();
       circulo(g, 14, 0, 90, "#d9a43a"); circulo(g, -10, -20, 34, "rgba(255,255,255,0.45)"); g.restore();
       rect(g, -118, -14, 30, 28, 8, "#c9c9cf");
     }),
-    "img/objetos/satelite.png": () => objeto((g) => {
+    "img/objetos/bobina.png": () => objeto((g) => {
       rect(g, -120, -34, 80, 68, 6, "#2b4f8f"); rect(g, 40, -34, 80, 68, 6, "#2b4f8f");
       for (let i = 0; i < 3; i++) { rect(g, -116 + i * 26, -30, 4, 60, 0, "#4a7cc7"); rect(g, 44 + i * 26, -30, 4, 60, 0, "#4a7cc7"); }
       rect(g, -46, -46, 92, 92, 10, "#d9a43a");
       rect(g, -34, -34, 68, 68, 6, "#f0c35a");
       circulo(g, 0, 0, 18, "#e8e8ec");
     }),
-    "img/objetos/rover.png": () => objeto((g) => {
+    "img/objetos/panel.png": () => objeto((g) => {
       for (const y of [-72, 72]) for (const x of [-70, 0, 70]) rect(g, x - 20, y - 18, 40, 36, 10, "#2b2b2b");
       rect(g, -96, -58, 192, 116, 14, "#c9ccd2");
       rect(g, -84, -46, 120, 92, 8, "#2b4f8f");
       for (let i = 0; i < 4; i++) rect(g, -80 + i * 30, -46, 3, 92, 0, "#4a7cc7");
       circulo(g, 70, 0, 20, "#e8e8ec"); circulo(g, 74, 0, 8, "#3a3a3a");
     }),
-    "img/objetos/modulo.png": () => objeto((g) => {
+    "img/objetos/generador.png": () => objeto((g) => {
       for (let i = 0; i < 4; i++) {
         const a = Math.PI / 4 + (i * Math.PI) / 2;
         g.strokeStyle = "#b8bcc4"; g.lineWidth = 8;
@@ -222,7 +222,7 @@
       circulo(g, 0, 0, 44, "#c9ccd2");
       circulo(g, 0, 0, 22, "#3a3a3a");
     }),
-    "img/objetos/antena.png": () => objeto((g) => {
+    "img/objetos/transformador.png": () => objeto((g) => {
       circulo(g, 0, 0, R, "#e8e8ec");
       aro(g, 0, 0, R * 0.75, "#c9ccd2", 6);
       aro(g, 0, 0, R * 0.5, "#c9ccd2", 6);
@@ -233,7 +233,7 @@
       }
       circulo(g, 0, 0, 18, "#d63131");
     }),
-    "img/objetos/estacion.png": () => objeto((g) => {
+    "img/objetos/turbina.png": () => objeto((g) => {
       circulo(g, 0, 0, R, "#c9ccd2");
       circulo(g, 0, 0, R * 0.9, "#f2f2f4");
       for (let i = 0; i < 12; i++) {
