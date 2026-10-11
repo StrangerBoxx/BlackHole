@@ -201,7 +201,7 @@
     "objetoImagenPx": 256,
     "objetoCirculoPx": 240,
     "hoyoBorde": 3.4,
-    "hoyoRemolino": 2.7,
+    "hoyoRemolino": 3.8,
     "hoyoNucleo": 2,
     "giroRemolino": 1.5,
     "giroPorVelocidad": 0.006,
