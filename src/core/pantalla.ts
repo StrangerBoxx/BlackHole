@@ -7,7 +7,10 @@ export const ALTO_BOTON_TIENDA = 86;
 export const FILAS_TIENDA = 2;
 export const ESPACIO_TIENDA = 8;
 export const ALTO_AYUDA_TIENDA = 32;
-export const ALTO_TIENDA = ESPACIO_TIENDA + FILAS_TIENDA * (ALTO_BOTON_TIENDA + ESPACIO_TIENDA) + ALTO_AYUDA_TIENDA;
+/** Fila de botones de menú (Misiones, Álbum, Colapso) arriba de la tienda. */
+export const ALTO_MENU_TIENDA = 46;
+export const ALTO_TIENDA =
+  ESPACIO_TIENDA + ALTO_MENU_TIENDA + ESPACIO_TIENDA + FILAS_TIENDA * (ALTO_BOTON_TIENDA + ESPACIO_TIENDA) + ALTO_AYUDA_TIENDA;
 
 /** Tamaño base del juego: el mundo de 720x960 más la barra y la tienda. */
 export const ANCHO_BASE = 720;

@@ -7,6 +7,7 @@ import { progreso } from "./core/Progreso";
 import { CargaScene } from "./escenas/CargaScene";
 import { HudScene } from "./escenas/HudScene";
 import { JuegoScene } from "./escenas/JuegoScene";
+import { PanelScene } from "./escenas/PanelScene";
 
 // Tamaño base: 720 de ancho; alto = barra + mundo 960 + tienda. Phaser lo escala para llenar la pantalla
 // (Scale.EXPAND = como stretch "canvas_items" + aspect "expand" de Godot).
@@ -21,7 +22,7 @@ const juego = new Phaser.Game({
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
   input: { activePointers: 2 },
-  scene: [CargaScene, JuegoScene, HudScene],
+  scene: [CargaScene, JuegoScene, HudScene, PanelScene],
 });
 
 // Solo en desarrollo: acceso desde la consola del navegador para revisar el estado

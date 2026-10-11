@@ -1,9 +1,14 @@
 // Progreso del jugador (equivale al Autoload Progreso.gd): monedas, objetos tragados y niveles.
 // Un solo objeto compartido por todo el juego. No depende de Phaser, así se puede testear.
 // El guardado en el dispositivo lo hace core/Guardado.ts escuchando los cambios.
-import type { Balance, IdMejora, TipoObjeto } from "../logica/balance";
+import { anotarEnAlbum, zonaCompleta } from "../logica/album";
+import type { Azar } from "../logica/aparicion";
+import type { Balance, IdMejora, TipoObjeto, Zona } from "../logica/balance";
 import { estadoVacio, type EstadoProgreso } from "../logica/guardado";
 import { costoMejora, estadisticas, puedeComprar, type Niveles } from "../logica/mejoras";
+import {
+  avanzarMisiones, crearMision, misionCumplida, premioMision, type EventoMision, type Mision,
+} from "../logica/misiones";
 import { objetosDesbloqueados, zonaDe } from "../logica/objetos";
 
 export type { EstadoProgreso };
@@ -36,6 +41,55 @@ export class Progreso {
   get jefes(): number {
     return this.estado.jefes;
   }
+  get misiones(): readonly Readonly<Mision>[] {
+    return this.estado.misiones;
+  }
+  /** Cuántas fichas del álbum hay en una zona. */
+  fichasAlbum(zonaId: string): readonly string[] {
+    return this.estado.album[zonaId] ?? [];
+  }
+  albumCompleto(zona: Zona): boolean {
+    return zonaCompleta(this.estado.album, zona);
+  }
+
+  /** Anota un objeto tragado en el álbum. */
+  anotarAlbum(zona: Zona, objetoId: string): { nuevo: boolean; completo: boolean } {
+    const r = anotarEnAlbum(this.estado.album, zona, objetoId);
+    if (r.nuevo) this.avisar();
+    return r;
+  }
+
+  /** Crea misiones hasta tener las activas que pide el balance. */
+  completarMisiones(b: Balance, objetosZona: TipoObjeto[], escalaMonedas: number, azar: Azar): void {
+    let cambio = false;
+    while (this.estado.misiones.length < b.misiones.activas) {
+      this.estado.misiones.push(crearMision(b, this.estado.misiones, objetosZona, escalaMonedas, azar));
+      cambio = true;
+    }
+    if (cambio) this.avisar();
+  }
+
+  /** Suma progreso a las misiones; devuelve las recién cumplidas. */
+  avanzarMisiones(b: Balance, ev: EventoMision): Mision[] {
+    const recien = avanzarMisiones(b, this.estado.misiones, ev);
+    this.avisar();
+    return recien;
+  }
+
+  /**
+   * Cobra una misión cumplida: suma el premio y la reemplaza por una nueva.
+   * Devuelve el premio (0 si no estaba cumplida).
+   */
+  cobrarMision(b: Balance, indice: number, multiplicador: number, objetosZona: TipoObjeto[], escalaMonedas: number, azar: Azar): number {
+    const m = this.estado.misiones[indice];
+    if (!m || !misionCumplida(m)) return 0;
+    const premio = premioMision(b, m, multiplicador);
+    this.estado.monedas += premio;
+    const resto = this.estado.misiones.filter((_, i) => i !== indice);
+    this.estado.misiones[indice] = crearMision(b, resto, objetosZona, escalaMonedas, azar);
+    this.avisar();
+    return premio;
+  }
 
   /** Suma hambre (ya limitada a la meta por quien llama). */
   ponerHambre(valor: number): void {
@@ -52,12 +106,12 @@ export class Progreso {
 
   /** Copia del estado (para guardar). */
   exportar(): EstadoProgreso {
-    return { ...this.estado, niveles: { ...this.estado.niveles } };
+    return structuredClone(this.estado);
   }
 
   /** Reemplaza todo el estado (al cargar una partida guardada). */
   cargar(e: EstadoProgreso): void {
-    this.estado = { ...e, niveles: { ...e.niveles } };
+    this.estado = structuredClone(e);
     this.avisar();
   }
 

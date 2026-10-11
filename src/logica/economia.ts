@@ -30,3 +30,13 @@ export function calcularOffline(b: Balance, e: EstadoProgreso, ahoraMs: number):
   );
   return { segundos, monedas };
 }
+
+/** Datos para crear y cobrar misiones en la zona actual. */
+export function contextoMisiones(b: Balance, e: EstadoProgreso) {
+  const zona = zonaDe(b, e.zona);
+  return {
+    objetosZona: objetosDesbloqueados(b, zona, estadisticas(b, e.niveles).radioHoyo),
+    escalaMonedas: zona.multiplicadorValor,
+    multiplicador: multiplicadorSiempre(b, e),
+  };
+}

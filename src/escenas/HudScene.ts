@@ -2,10 +2,15 @@ import Phaser from "phaser";
 import { getBalance } from "../core/Balance";
 import { COLOR, EVENTOS_GLOBALES, FUENTE_TITULO, FUENTE_TEXTO, hex } from "../core/estilo";
 import { ALTO_AYUDA_TIENDA as ALTO_AYUDA, ALTO_BARRA_HUD as ALTO_BARRA, ALTO_BOTON_TIENDA as ALTO_BOTON,
-  ALTO_TIENDA, ESPACIO_TIENDA as ESPACIO_BOTONES, FILAS_TIENDA } from "../core/pantalla";
+  ALTO_MENU_TIENDA, ALTO_TIENDA, ESPACIO_TIENDA as ESPACIO_BOTONES, FILAS_TIENDA } from "../core/pantalla";
 import { progreso } from "../core/Progreso";
 import { getSonido } from "../core/Sonido";
 import { BotonMejora } from "../entidades/BotonMejora";
+import { fichasDeZona } from "../logica/album";
+import { misionCumplida } from "../logica/misiones";
+import { zonaDe } from "../logica/objetos";
+import { Boton } from "../ui/Boton";
+import type { Pestana } from "./PanelScene";
 import type { Mejora } from "../logica/balance";
 import { describirMejora, estadisticas, estaAlMaximo } from "../logica/mejoras";
 import { formatearNumero } from "../logica/monedas";
@@ -31,6 +36,8 @@ export class HudScene extends Phaser.Scene {
   private fondoTienda!: Phaser.GameObjects.Rectangle;
   private botones: BotonMejora[] = [];
   private ayuda!: Phaser.GameObjects.Text;
+  /** Botones de menú arriba de la tienda (abren el panel). */
+  private menu: { boton: Boton; pestana: Pestana }[] = [];
 
   constructor() {
     super("Hud");
@@ -128,9 +135,32 @@ export class HudScene extends Phaser.Scene {
     this.botones = getBalance().mejoras.map(
       (m) => new BotonMejora(this, m, () => this.mostrarAyuda(m), () => this.comprar(m)),
     );
+    this.menu = (["misiones", "album"] as Pestana[]).map((pestana) => ({
+      pestana,
+      boton: new Boton(this, 0, 0, { ancho: 100, alto: ALTO_MENU_TIENDA, texto: "", tamano: 19 }, () => this.abrirPanel(pestana)),
+    }));
     this.ayuda = this.add
       .text(0, 0, AYUDA_INICIAL, { fontFamily: FUENTE_TEXTO, fontSize: "17px", fontStyle: "600", color: COLOR.apagado })
       .setOrigin(0.5);
+  }
+
+  private abrirPanel(pestana: Pestana): void {
+    if (!this.scene.isActive("Panel")) this.scene.launch("Panel", { pestana });
+  }
+
+  /** Textos de los botones de menú: misiones por cobrar y fichas del álbum. */
+  private actualizarMenu(): void {
+    const b = getBalance();
+    for (const { boton, pestana } of this.menu) {
+      if (pestana === "misiones") {
+        const listas = progreso.misiones.filter(misionCumplida).length;
+        boton.setTexto(listas ? `Misiones (${listas} por cobrar)` : "Misiones");
+        boton.setColores(listas ? { borde: COLOR.oro, colorTexto: COLOR.oro } : { borde: COLOR.linea, colorTexto: COLOR.texto });
+      } else if (pestana === "album") {
+        const zona = zonaDe(b, progreso.zona);
+        boton.setTexto(`Álbum ${progreso.fichasAlbum(zona.id).length}/${fichasDeZona(zona).length}`);
+      }
+    }
   }
 
   /** Muestra qué hace la mejora en el siguiente nivel. */
@@ -175,13 +205,19 @@ export class HudScene extends Phaser.Scene {
     const arriba = height - altoTienda;
     this.fondoTienda.setPosition(0, arriba).setSize(width, altoTienda);
     this.fondoTienda.input?.hitArea.setTo(0, 0, width, altoTienda);
+    const anchoMenu = (width - 2 * MARGEN + ESPACIO_BOTONES) / this.menu.length - ESPACIO_BOTONES;
+    this.menu.forEach(({ boton }, i) => {
+      boton.setPosition(MARGEN + anchoMenu / 2 + i * (anchoMenu + ESPACIO_BOTONES), arriba + ESPACIO_BOTONES + ALTO_MENU_TIENDA / 2);
+      boton.setTamano(anchoMenu, ALTO_MENU_TIENDA);
+    });
+    const arribaBotones = arriba + ESPACIO_BOTONES + ALTO_MENU_TIENDA;
     const columnas = Math.ceil(this.botones.length / FILAS_TIENDA);
     const anchoBoton = (width - 2 * MARGEN + ESPACIO_BOTONES) / columnas - ESPACIO_BOTONES;
     this.botones.forEach((bt, i) => {
       const col = i % columnas, fila = Math.floor(i / columnas);
       bt.setPosition(
         MARGEN + anchoBoton / 2 + col * (anchoBoton + ESPACIO_BOTONES),
-        arriba + ESPACIO_BOTONES + ALTO_BOTON / 2 + fila * (ALTO_BOTON + ESPACIO_BOTONES),
+        arribaBotones + ESPACIO_BOTONES + ALTO_BOTON / 2 + fila * (ALTO_BOTON + ESPACIO_BOTONES),
       );
       bt.medir(anchoBoton, ALTO_BOTON);
     });
@@ -208,6 +244,7 @@ export class HudScene extends Phaser.Scene {
     );
     this.icono.setX(this.scale.gameSize.width - MARGEN - this.monedas.width - 22);
     this.actualizarBotones();
+    this.actualizarMenu();
   }
 
   /** Aviso abajo al centro durante `segundos` (se desvanece al final). */

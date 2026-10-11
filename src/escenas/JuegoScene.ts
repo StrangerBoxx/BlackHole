@@ -16,13 +16,14 @@ import {
   agregarPunto, elegirObjeto, limitarAlMundo, velocidadLanzamiento, type PuntoRastro,
 } from "../logica/lanzamiento";
 import { estadisticas, type Estadisticas } from "../logica/mejoras";
+import { textoMision } from "../logica/misiones";
 import {
   calcularGanancia, Combo, formatearMultiplicador, formatearNumero, multiplicadorCombo, textoCombo,
 } from "../logica/monedas";
 import { objetosDesbloqueados, tipoPorId, zonaDe } from "../logica/objetos";
 import { elegirEspecial, explotarBomba, multiplicadorEspecial } from "../logica/especiales";
 import { hambreLlena, metaHambre, puedeTragarJefe, sumarHambre } from "../logica/hambre";
-import { multiplicadorSiempre } from "../logica/economia";
+import { contextoMisiones, multiplicadorSiempre } from "../logica/economia";
 import * as Tiros from "../logica/tiros";
 import type { Cuerpo } from "../logica/fisica";
 import type { IdEspecial } from "../logica/balance";
@@ -79,11 +80,19 @@ export class JuegoScene extends Phaser.Scene {
 
     this.poblar();
     this.configurarArrastre();
+    this.prepararMisiones();
     this.scene.launch("Hud");
 
     const reiniciar = () => this.reiniciar();
     this.game.events.on(EVENTOS_GLOBALES.REINICIO, reiniciar);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.game.events.off(EVENTOS_GLOBALES.REINICIO, reiniciar));
+  }
+
+  /** Deja 3 misiones activas (crea las que falten). */
+  private prepararMisiones(): void {
+    const b = getBalance();
+    const ctx = contextoMisiones(b, progreso.exportar());
+    progreso.completarMisiones(b, ctx.objetosZona, ctx.escalaMonedas, Math.random);
   }
 
   /** Los objetos del comienzo aparecen de una vez, sin animación. */
@@ -100,6 +109,7 @@ export class JuegoScene extends Phaser.Scene {
     this.combo = new Combo();
     this.reloj = new RelojAparicion();
     this.poblar();
+    this.prepararMisiones();
   }
 
   /**
@@ -324,6 +334,25 @@ export class JuegoScene extends Phaser.Scene {
     mostrarPopupMonedas(this, this.hoyo.x, this.hoyo.y - this.hoyo.radioVisible - 10, `+${formatearNumero(ganancia)}`);
     const info: InfoTragado = { tipo: o.tipo, monedas: ganancia, especial: o.especial, tiros: o.tirosLogrados, combo, jefe: esJefe };
     this.game.events.emit(EVENTOS_GLOBALES.TRAGADO, info);
+    this.anotarAlbum(o);
+    for (const m of progreso.avanzarMisiones(b, info)) {
+      this.game.events.emit(EVENTOS_GLOBALES.AVISO, `¡Misión cumplida: ${textoMision(b, m)}! Cóbrala en Misiones`, 3);
+      this.game.events.emit(EVENTOS_GLOBALES.MISION, m);
+    }
+  }
+
+  /** Primera vez que se traga este objeto en la zona: queda en el álbum. */
+  private anotarAlbum(o: Objeto): void {
+    const b = getBalance();
+    const zona = zonaDe(b, progreso.zona);
+    const r = progreso.anotarAlbum(zona, o.tipo.id);
+    if (!r.nuevo) return;
+    const y = this.hoyo.y + this.hoyo.radioVisible + 40;
+    mostrarTextoFlotante(this, this.hoyo.x, y, `¡Nuevo en el álbum: ${o.tipo.nombre}!`, COLOR.acento);
+    if (r.completo) {
+      this.game.events.emit(EVENTOS_GLOBALES.AVISO, `¡Álbum de ${zona.nombre} completo! Monedas x${1 + b.album.bonusPorZona} para siempre`, 4);
+    }
+    this.game.events.emit(EVENTOS_GLOBALES.ALBUM, o.tipo, r.completo);
   }
 
   /** La bomba llegó al fondo: empuja todo lo cercano hacia el hoyo y sacude la pantalla. */

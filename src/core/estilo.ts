@@ -41,6 +41,10 @@ export const EVENTOS_GLOBALES = {
   TRAGADO: "tragado",
   /** Mostrar un aviso abajo: (texto: string, segundos: number) */
   AVISO: "aviso",
+  /** Se cumplió una misión: (mision: Mision) */
+  MISION: "mision",
+  /** Objeto nuevo en el álbum: (tipo: TipoObjeto, completo: boolean) */
+  ALBUM: "album",
   /** El dron empujó un objeto. */
   DRON: "dron",
   /** Apareció el jefe de la zona: (tipo: TipoObjeto) */
