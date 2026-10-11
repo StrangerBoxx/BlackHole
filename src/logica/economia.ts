@@ -1,13 +1,14 @@
 // Cuentas que mezclan varias partes del progreso (zona, mejoras...).
+import { bonusAlbum } from "./album";
 import type { Balance } from "./balance";
 import type { EstadoProgreso } from "./guardado";
 import { estadisticas } from "./mejoras";
 import { objetosDesbloqueados, zonaDe } from "./objetos";
 import { gananciaOffline, valorPromedio } from "./offline";
 
-/** Multiplicador que se aplica a TODO lo tragado: zona × mejora Valor. */
+/** Multiplicador que se aplica a TODO lo tragado: zona × mejora Valor × álbum. */
 export function multiplicadorSiempre(b: Balance, e: EstadoProgreso): number {
-  return zonaDe(b, e.zona).multiplicadorValor * estadisticas(b, e.niveles).multiplicadorValor;
+  return zonaDe(b, e.zona).multiplicadorValor * estadisticas(b, e.niveles).multiplicadorValor * bonusAlbum(b, e.album);
 }
 
 /** Monedas ganadas mientras el juego estuvo cerrado (desde e.ultimaVez hasta `ahoraMs`). */

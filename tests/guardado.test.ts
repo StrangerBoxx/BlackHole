@@ -9,7 +9,9 @@ const b = balanceJson as Balance;
 
 describe("guardar y cargar", () => {
   it("lo que se guarda se vuelve a cargar igual", () => {
-    const e = { monedas: 1234, total: 56, niveles: { ...nivelesIniciales(), pull: 3, force: 2, size: 1, spawn: 4, value: 5 }, zona: 1, hambre: 40, jefes: 2, ultimaVez: 1700000000000 };
+    const e = { monedas: 1234, total: 56, niveles: { ...nivelesIniciales(), pull: 3, force: 2, size: 1, spawn: 4, value: 5 }, zona: 1, hambre: 40, jefes: 2, ultimaVez: 1700000000000,
+      misiones: [{ plantilla: "tragarTipo", objetivo: 6, dificultad: 1, objeto: "cono", progreso: 2 }],
+      album: { parque: ["piedra", "cono"] } };
     expect(deserializar(serializar(e), b)).toEqual(e);
   });
 
@@ -42,7 +44,19 @@ describe("guardar y cargar", () => {
       hambre: 0,
       jefes: 0,
       ultimaVez: 0,
+      misiones: [],
+      album: {},
     });
+  });
+
+  it("descarta misiones y fichas de álbum que no existen", () => {
+    const raro = JSON.stringify({
+      misiones: [{ plantilla: "inventada", objetivo: 3 }, { plantilla: "tragar", objetivo: 15, progreso: 99 }],
+      album: { parque: ["piedra", "piedra", "dinosaurio"], marte: ["x"] },
+    });
+    const e = deserializar(raro, b);
+    expect(e.misiones).toEqual([{ plantilla: "tragar", objetivo: 15, dificultad: 0, progreso: 15 }]);
+    expect(e.album).toEqual({ parque: ["piedra"] });
   });
 
   it("guardados viejos sin alguna mejora la dejan en 0", () => {

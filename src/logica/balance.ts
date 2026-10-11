@@ -1,5 +1,6 @@
 // Forma del archivo public/data/balance.json.
 // Aquí solo hay tipos y una revisión básica: los números viven en el JSON.
+import type { PlantillaMision } from "./misiones";
 
 export interface TipoObjeto {
   id: string;
@@ -109,6 +110,8 @@ export interface Balance {
     velocidadMaxima: number;
   };
   offline: { eficiencia: number; horasMaximas: number; minimoSegundos: number };
+  album: { bonusPorZona: number };
+  misiones: { activas: number; premioBase: number; plantillas: PlantillaMision[] };
   hambre: {
     meta: number;
     crecePorJefe: number;
