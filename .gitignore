@@ -15,12 +15,6 @@ android/capacitor-cordova-android-plugins/
 *.keystore
 *.jks
 
-# Proyecto Godot viejo dentro de la carpeta de referencia
-.godot/
-
-# Copia de los assets del prototipo (la buena está en public/assets)
-black-hole/black-hole/assets/
-
 # Sistema / editor
 .DS_Store
 Thumbs.db

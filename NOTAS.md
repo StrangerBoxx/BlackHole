@@ -1,7 +1,8 @@
 # BLACK HOLE — notas del proyecto
 
 Juego incremental 2D vertical. Phaser 3 + TypeScript (Vite), tests con Vitest, móvil con Capacitor.
-Referencia de comportamiento: el prototipo `black-hole/black-hole/index.html` y su `LEEME.txt`.
+Referencia de comportamiento: `referencia/prototipo.html` (el prototipo original), `referencia/LEEME.txt`
+(guía de tamaños de los assets) y `referencia/guia_objeto.png` (plantilla del círculo de choque).
 
 ## Cómo correrlo
 
@@ -42,7 +43,6 @@ Todos los números están en `public/data/balance.json`.
 - **Lógica pura** en `src/logica/` (sin Phaser) → se prueba en `tests/`.
 - **Assets:** `public/assets/` con los mismos nombres de `LEEME.txt`. Se cargan por nombre, y los de objetos
   según los `id` de `balance.json`. Las escalas salen del radio y del tamaño real del PNG.
-- La carpeta `black-hole/black-hole/assets/` no se sube a git (es copia de `public/assets/`).
 - Fuente "Lilita One" desde Google Fonts; sin internet se usa una de respaldo.
 
 ## Estado por pasos
