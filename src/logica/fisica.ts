@@ -36,12 +36,14 @@ export function mover(c: Cuerpo, dt: number, giroPorVelocidad: number): void {
   c.giro = rapidez(c) * giroPorVelocidad;
 }
 
-/** Rebota contra los bordes del mundo perdiendo energía. */
-export function rebotarBordes(c: Cuerpo, ancho: number, alto: number, rebote: number): void {
-  if (c.x < c.r) { c.x = c.r; c.vx = Math.abs(c.vx) * rebote; }
-  if (c.x > ancho - c.r) { c.x = ancho - c.r; c.vx = -Math.abs(c.vx) * rebote; }
-  if (c.y < c.r) { c.y = c.r; c.vy = Math.abs(c.vy) * rebote; }
-  if (c.y > alto - c.r) { c.y = alto - c.r; c.vy = -Math.abs(c.vy) * rebote; }
+/** Rebota contra los bordes del mundo perdiendo energía. Devuelve true si tocó un borde. */
+export function rebotarBordes(c: Cuerpo, ancho: number, alto: number, rebote: number): boolean {
+  let toco = false;
+  if (c.x < c.r) { c.x = c.r; c.vx = Math.abs(c.vx) * rebote; toco = true; }
+  if (c.x > ancho - c.r) { c.x = ancho - c.r; c.vx = -Math.abs(c.vx) * rebote; toco = true; }
+  if (c.y < c.r) { c.y = c.r; c.vy = Math.abs(c.vy) * rebote; toco = true; }
+  if (c.y > alto - c.r) { c.y = alto - c.r; c.vy = -Math.abs(c.vy) * rebote; toco = true; }
+  return toco;
 }
 
 /**
@@ -49,7 +51,7 @@ export function rebotarBordes(c: Cuerpo, ancho: number, alto: number, rebote: nu
  * La masa es r² (un auto empuja más que una piedra).
  * El objeto arrastrado cuenta como de masa infinita: empuja pero no lo empujan.
  */
-export function resolverChoques(cuerpos: Cuerpo[], rebote: number): void {
+export function resolverChoques(cuerpos: Cuerpo[], rebote: number, alChocar?: (a: Cuerpo, b: Cuerpo) => void): void {
   for (let i = 0; i < cuerpos.length; i++) {
     for (let j = i + 1; j < cuerpos.length; j++) {
       const a = cuerpos[i], b = cuerpos[j];
@@ -57,6 +59,7 @@ export function resolverChoques(cuerpos: Cuerpo[], rebote: number): void {
       const dx = b.x - a.x, dy = b.y - a.y;
       const d = Math.hypot(dx, dy), min = a.r + b.r;
       if (d >= min || d === 0) continue;
+      alChocar?.(a, b);
       const nx = dx / d, ny = dy / d, solape = min - d;
       // Inverso de la masa: cuánto "cede" cada uno. El arrastrado cede 0.
       const ia = a.arrastrado ? 0 : 1 / (a.r * a.r);
@@ -85,6 +88,9 @@ export interface OpcionesFisica {
   antesDeMover?: (c: Cuerpo, dt: number) => void;
   /** Revisión después de mover (aquí entra la captura del hoyo). */
   despuesDeMover?: (c: Cuerpo) => void;
+  /** Avisos para los tiros especiales. */
+  alTocarBorde?: (c: Cuerpo) => void;
+  alChocar?: (a: Cuerpo, b: Cuerpo) => void;
 }
 
 /** Un paso completo de física para los objetos sueltos (ni arrastrados ni cayendo). */
@@ -94,8 +100,8 @@ export function pasoFisica(cuerpos: Cuerpo[], dt: number, op: OpcionesFisica): v
     op.antesDeMover?.(c, dt);
     aplicarRoce(c, op.rozamiento, dt);
     mover(c, dt, op.giroPorVelocidad);
-    rebotarBordes(c, op.ancho, op.alto, op.rebote);
+    if (rebotarBordes(c, op.ancho, op.alto, op.rebote)) op.alTocarBorde?.(c);
     op.despuesDeMover?.(c);
   }
-  resolverChoques(cuerpos, op.rebote);
+  resolverChoques(cuerpos, op.rebote, op.alChocar);
 }

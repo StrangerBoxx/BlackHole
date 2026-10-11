@@ -43,6 +43,13 @@ export type IdEfecto =
 export type IdSonido = "ambiente" | "tragar" | "moneda" | "comprar" | "desbloquear";
 export const IDS_SONIDO: IdSonido[] = ["ambiente", "tragar", "moneda", "comprar", "desbloquear"];
 
+export interface SonidoEvento {
+  archivo: IdSonido;
+  tono: number;
+  /** Se multiplica por el volumen del archivo. */
+  volumen: number;
+}
+
 export interface Balance {
   mundo: {
     ancho: number;
@@ -68,6 +75,12 @@ export interface Balance {
     caidaGiro: number;
   };
   combo: { mostrarDesde: number; multiplicadorPorCombo: number; multiplicadorMaximo: number };
+  tiros: {
+    rapidezMinima: number;
+    carambola: { nombre: string; bonus: number };
+    lejos: { nombre: string; bonus: number; distancia: number };
+    directo: { nombre: string; bonus: number; segundos: number };
+  };
   objetos: TipoObjeto[];
   desbloqueo: { fraccionRadioHoyo: number };
   aparicion: {
@@ -94,6 +107,8 @@ export interface Balance {
       radioReferencia: number;
     };
     moneda: { semitonosMaximo: number };
+    /** Sonidos de eventos nuevos que reusan un archivo con otro tono: { archivo, tono, volumen } */
+    eventos: Record<string, SonidoEvento>;
   };
   visual: {
     objetoImagenPx: number;

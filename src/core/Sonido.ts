@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import type { IdSonido, TipoObjeto } from "../logica/balance";
+import type { IdTiro } from "../logica/tiros";
 import { tonoMoneda, tonoTragar, volumenTragar } from "../logica/sonido";
 import { getBalance } from "./Balance";
 import { EVENTOS_GLOBALES } from "./estilo";
@@ -28,6 +29,9 @@ export class Sonido {
     ev.on(EVENTOS_GLOBALES.COMBO, (combo: number) => this.tocar("moneda", tonoMoneda(combo, s), s.volumen.moneda));
     ev.on(EVENTOS_GLOBALES.COMPRA, () => this.tocar("comprar", 1, s.volumen.comprar));
     ev.on(EVENTOS_GLOBALES.DESBLOQUEO, () => this.tocar("desbloquear", 1, s.volumen.desbloquear));
+    ev.on(EVENTOS_GLOBALES.TIRO, (ids: IdTiro[]) => {
+      if (ids.length) this.tocarEvento("tiro");
+    });
 
     if (game.sound.locked) game.sound.once(Phaser.Sound.Events.UNLOCKED, () => this.empezarAmbiente());
     else this.empezarAmbiente();
@@ -37,6 +41,12 @@ export class Sonido {
     if (this.ambiente || !this.game.cache.audio.exists("ambiente")) return;
     this.ambiente = this.game.sound.add("ambiente", { loop: true, volume: getBalance().sonido.volumen.ambiente });
     this.ambiente.play();
+  }
+
+  /** Sonido de un evento definido en balance.json → sonido.eventos (reusa un archivo con otro tono). */
+  tocarEvento(nombre: string, tonoExtra = 1): void {
+    const e = getBalance().sonido.eventos[nombre];
+    if (e) this.tocar(e.archivo, e.tono * tonoExtra, e.volumen * getBalance().sonido.volumen[e.archivo]);
   }
 
   /** `rate` cambia el tono (y la velocidad), como pitch_scale en Godot. */

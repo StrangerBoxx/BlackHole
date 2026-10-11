@@ -28,6 +28,13 @@
 
   "combo": { "mostrarDesde": 3, "multiplicadorPorCombo": 0.25, "multiplicadorMaximo": 3 },
 
+  "tiros": {
+    "rapidezMinima": 200,
+    "carambola": { "nombre": "¡Carambola!",   "bonus": 0.5 },
+    "lejos":     { "nombre": "¡Desde lejos!", "bonus": 0.5, "distancia": 380 },
+    "directo":   { "nombre": "¡Directo!",     "bonus": 0.25, "segundos": 0.9 }
+  },
+
   "objetos": [
     { "id": "piedra",    "nombre": "Piedra",    "r": 14, "valor": 1 },
     { "id": "lata",      "nombre": "Lata",      "r": 13, "valor": 2 },
@@ -83,7 +90,10 @@
       "desbloquear": 0.21
     },
     "tragar": { "tonoBase": 1.3, "tonoPorTamano": 0.6, "volumenBase": 0.6, "volumenPorTamano": 0.8, "radioReferencia": 56 },
-    "moneda": { "semitonosMaximo": 12 }
+    "moneda": { "semitonosMaximo": 12 },
+    "eventos": {
+      "tiro": { "archivo": "comprar", "tono": 1.5, "volumen": 0.8 }
+    }
   },
 
   "visual": {

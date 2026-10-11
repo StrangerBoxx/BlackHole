@@ -3,6 +3,7 @@ import { getBalance } from "../core/Balance";
 import { texturaObjeto } from "../core/assets";
 import type { TipoObjeto } from "../logica/balance";
 import { crearCuerpo, type Cuerpo } from "../logica/fisica";
+import { tiroQuieto, type EstadoTiro, type IdTiro } from "../logica/tiros";
 
 const PROF_SOMBRA = 10;
 const PROF_OBJETO = 20;
@@ -19,6 +20,10 @@ export class Objeto {
   escalaAnim: number;
   /** Segundos que lleva cayendo al hoyo. */
   tiempoCaida = 0;
+  /** Cómo fue lanzado (para los tiros especiales). */
+  tiro: EstadoTiro = tiroQuieto();
+  /** Tiros especiales logrados al entrar al hoyo. */
+  tirosLogrados: IdTiro[] = [];
   private readonly imagen: Phaser.GameObjects.Image;
   private readonly sombra: Phaser.GameObjects.Ellipse;
   /** Escala para que el círculo de choque del PNG (240 de 256 px) mida 2r en pantalla. */

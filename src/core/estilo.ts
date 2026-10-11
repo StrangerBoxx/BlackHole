@@ -9,6 +9,7 @@ export const COLOR = {
   acento: "#b98cff",
   oro: "#ffc65c",
   peligro: "#ff8a7a",
+  tiro: "#d7b8ff",
   contornoOro: "#28190a",
 } as const;
 
@@ -26,6 +27,8 @@ export const EVENTOS_GLOBALES = {
   TRAGADO: "tragado",
   /** Mostrar un aviso abajo: (texto: string, segundos: number) */
   AVISO: "aviso",
+  /** Tiros especiales logrados: (ids: IdTiro[]) */
+  TIRO: "tiro",
   /** Combo nuevo: (combo: number) */
   COMBO: "combo",
   /** Se compró una mejora sin desbloquear nada: (id: IdMejora, nivel: number) */

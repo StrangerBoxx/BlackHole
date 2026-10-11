@@ -4,6 +4,22 @@ import { COLOR, FUENTE_TITULO } from "../core/estilo";
 
 const PROF_POPUP = 40;
 
+/** Texto que sube y se desvanece (tiros especiales, avisos sobre el hoyo). */
+export function mostrarTextoFlotante(scene: Phaser.Scene, x: number, y: number, texto: string, color: string): void {
+  const v = getBalance().visual;
+  const t = scene.add
+    .text(x, y, texto, { fontFamily: FUENTE_TITULO, fontSize: "30px", color, stroke: COLOR.contornoOro, strokeThickness: 5 })
+    .setOrigin(0.5)
+    .setDepth(PROF_POPUP);
+  scene.tweens.add({
+    targets: t,
+    y: y - v.popupSubida * v.popupSegundos * 1.3,
+    alpha: 0,
+    duration: v.popupSegundos * 1300,
+    onComplete: () => t.destroy(),
+  });
+}
+
 /** El "+N" con una moneda que sube y se desvanece sobre el hoyo. */
 export function mostrarPopupMonedas(scene: Phaser.Scene, x: number, y: number, texto: string): void {
   const v = getBalance().visual;

@@ -1,12 +1,12 @@
 import Phaser from "phaser";
 import { getBalance } from "../core/Balance";
 import { debug } from "../core/Debug";
-import { EVENTOS_GLOBALES } from "../core/estilo";
+import { COLOR, EVENTOS_GLOBALES } from "../core/estilo";
 import { centrarMundo } from "../core/pantalla";
 import { progreso } from "../core/Progreso";
 import { Hoyo } from "../entidades/Hoyo";
 import { Objeto } from "../entidades/Objeto";
-import { mostrarPopupMonedas } from "../entidades/Popup";
+import { mostrarPopupMonedas, mostrarTextoFlotante } from "../entidades/Popup";
 import { buscarLugar, elegirTipo, RelojAparicion } from "../logica/aparicion";
 import { aplicarAtraccion, avanzarCaida, puedeTragar } from "../logica/captura";
 import { pasoFisica } from "../logica/fisica";
@@ -18,6 +18,8 @@ import {
   calcularGanancia, Combo, formatearMultiplicador, formatearNumero, multiplicadorCombo, textoCombo,
 } from "../logica/monedas";
 import { objetosDesbloqueados } from "../logica/objetos";
+import * as Tiros from "../logica/tiros";
+import type { Cuerpo } from "../logica/fisica";
 
 const PROF_LINEA = 25;
 const PROF_DEBUG = 50;
@@ -106,6 +108,7 @@ export class JuegoScene extends Phaser.Scene {
       const o = this.objetos[i];
       o.cuerpo.arrastrado = true;
       o.cuerpo.vx = o.cuerpo.vy = 0;
+      o.tiro = Tiros.tiroQuieto();
       this.agarrado = o;
       this.dedo = p;
       this.rastro = [{ x: o.cuerpo.x, y: o.cuerpo.y, t: performance.now() }];
@@ -124,6 +127,8 @@ export class JuegoScene extends Phaser.Scene {
       o.cuerpo.vx = v.vx;
       o.cuerpo.vy = v.vy;
       o.cuerpo.arrastrado = false;
+      const distancia = Math.hypot(o.cuerpo.x - this.hoyo.x, o.cuerpo.y - this.hoyo.y);
+      o.tiro = Tiros.iniciarTiro(distancia, Math.hypot(v.vx, v.vy), b.tiros.rapidezMinima);
       this.agarrado = this.dedo = null;
       return;
     }
@@ -161,8 +166,9 @@ export class JuegoScene extends Phaser.Scene {
         const r = avanzarCaida(o.cuerpo, centro, o.tiempoCaida, dt, b.captura);
         o.escalaAnim = r.escala;
         if (r.terminado) this.tragar(o);
-      } else if (o.escalaAnim < 1) {
-        o.escalaAnim = Math.min(1, o.escalaAnim + dt * b.aparicion.velocidadCrecer);
+      } else {
+        if (o.escalaAnim < 1) o.escalaAnim = Math.min(1, o.escalaAnim + dt * b.aparicion.velocidadCrecer);
+        if (o.tiro.lanzado) o.tiro.tiempo += dt;
       }
     }
     this.objetos = this.objetos.filter((o) => o.escalaAnim > 0 || !o.cuerpo.cayendo);
@@ -178,14 +184,21 @@ export class JuegoScene extends Phaser.Scene {
       despuesDeMover: (c) => {
         if (puedeTragar(c, centro, s.radioHoyo, s.velocidadCaptura, b.captura.margenRadioObjeto)) {
           c.cayendo = true;
-          const o = this.objetos.find((x) => x.cuerpo === c)!;
+          const o = this.objetoDe(c);
           o.tiempoCaida = 0;
+          o.tirosLogrados = Tiros.evaluarTiro(o.tiro, b.tiros);
           this.game.events.emit(EVENTOS_GLOBALES.CAPTURA, o.tipo);
         }
       },
+      alTocarBorde: (c) => Tiros.alTocarBorde(this.objetoDe(c).tiro),
+      alChocar: (a, c) => Tiros.alChocar(this.objetoDe(a).tiro, this.objetoDe(c).tiro),
     });
 
     this.hoyo.actualizar(dt, s.radioHoyo, s.radioAtraccion);
+  }
+
+  private objetoDe(c: Cuerpo): Objeto {
+    return this.objetos.find((o) => o.cuerpo === c)!;
   }
 
   /** Debug: círculos de choque (rojo), radio del hoyo (amarillo) y radio de atracción (celeste). */
@@ -208,8 +221,16 @@ export class JuegoScene extends Phaser.Scene {
     const s = this.stats;
     const combo = this.combo.registrar(this.tiempo, s.ventanaCombo);
     const xCombo = multiplicadorCombo(combo, b.combo.multiplicadorPorCombo, b.combo.multiplicadorMaximo);
-    const ganancia = calcularGanancia(o.tipo.valor, [s.multiplicadorValor, xCombo]);
+    const xTiro = Tiros.multiplicadorTiro(o.tirosLogrados, b.tiros);
+    const ganancia = calcularGanancia(o.tipo.valor, [s.multiplicadorValor, xCombo, xTiro]);
     progreso.registrarTragado(ganancia);
+
+    if (o.tirosLogrados.length) {
+      const nombres = o.tirosLogrados.map((id) => b.tiros[id].nombre).join(" ");
+      const y = this.hoyo.y - this.hoyo.radioVisible - 60;
+      mostrarTextoFlotante(this, this.hoyo.x, y, `${nombres} x${formatearMultiplicador(xTiro)}`, COLOR.tiro);
+      this.game.events.emit(EVENTOS_GLOBALES.TIRO, o.tirosLogrados);
+    }
 
     this.game.events.emit(EVENTOS_GLOBALES.COMBO, combo);
     const aviso = textoCombo(combo, b.combo.mostrarDesde);
