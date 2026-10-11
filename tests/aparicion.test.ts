@@ -69,6 +69,17 @@ describe("buscar lugar", () => {
         expect(Math.hypot(otros[i].x - otros[j].x, otros[i].y - otros[j].y)).toBeGreaterThanOrEqual(52);
   });
 
+  it("respeta la franja permitida (lejos del marcador y del dock)", () => {
+    const azar = azarFijo(9);
+    const area = { ancho: 720, alto: 1400, yMin: 90, yMax: 1400 - 140 };
+    for (let i = 0; i < 200; i++) {
+      const p = buscarLugar(20, [], 55, b, azar, area);
+      if (!p) continue;
+      expect(p.y).toBeGreaterThanOrEqual(90);
+      expect(p.y).toBeLessThanOrEqual(1260);
+    }
+  });
+
   it("si no hay lugar devuelve null", () => {
     const lleno = [{ x: 360, y: 480, r: 2000 }]; // un objeto gigante ocupa todo el pasto
     expect(buscarLugar(14, lleno, 55, b, azarFijo(2))).toBeNull();

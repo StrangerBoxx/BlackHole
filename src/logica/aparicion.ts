@@ -19,8 +19,17 @@ export function elegirTipo(tipos: TipoObjeto[], pesoBase: number, pesoPorIndice:
   return tipos[tipos.length - 1];
 }
 
+/** Zona donde pueden aparecer objetos (por defecto todo el mundo del balance). */
+export interface AreaAparicion {
+  ancho: number;
+  alto: number;
+  /** Límites de y para el centro del objeto (lejos del marcador y del dock). */
+  yMin?: number;
+  yMax?: number;
+}
+
 /**
- * Busca un lugar libre para un objeto de radio `r`: dentro del mundo, lejos del hoyo
+ * Busca un lugar libre para un objeto de radio `r`: dentro del área, lejos del hoyo
  * y sin pisar a otros. Prueba `intentos` veces; si no encuentra, devuelve null.
  */
 export function buscarLugar(
@@ -29,13 +38,18 @@ export function buscarLugar(
   radioAtraccion: number,
   b: Balance,
   azar: Azar,
+  area: AreaAparicion = b.mundo,
 ): { x: number; y: number } | null {
-  const { ancho, alto, hoyo } = b.mundo;
+  const { hoyo } = b.mundo;
+  const { ancho, alto } = area;
   const a = b.aparicion;
   const lejosDelHoyo = Math.min(radioAtraccion, a.distanciaHoyoMaxima) + r + a.margenHoyo;
+  const yMin = Math.max(r + a.margenBorde, area.yMin ?? 0);
+  const yMax = Math.min(alto - r - a.margenBorde, area.yMax ?? alto);
+  if (yMax <= yMin) return null;
   for (let i = 0; i < a.intentos; i++) {
     const x = r + a.margenBorde + azar() * (ancho - 2 * r - 2 * a.margenBorde);
-    const y = r + a.margenBorde + azar() * (alto - 2 * r - 2 * a.margenBorde);
+    const y = yMin + azar() * (yMax - yMin);
     if (distanciaInclinada(x - hoyo.x, y - hoyo.y, b.visual.inclinacion ?? 1) < lejosDelHoyo) continue;
     if (otros.some((o) => Math.hypot(o.x - x, o.y - y) < o.r + r + a.separacion)) continue;
     return { x, y };

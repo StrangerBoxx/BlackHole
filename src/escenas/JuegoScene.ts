@@ -2,7 +2,8 @@ import Phaser from "phaser";
 import { getBalance } from "../core/Balance";
 import { debug } from "../core/Debug";
 import { COLOR, EVENTOS_GLOBALES, type InfoTragado } from "../core/estilo";
-import { centrarMundo } from "../core/pantalla";
+import { altoMundo, APARICION_ABAJO, APARICION_ARRIBA } from "../core/pantalla";
+import { crearSuelo } from "../efectos/Suelo";
 import { progreso } from "../core/Progreso";
 import { crearCapaLuz } from "../efectos/Luz";
 import { CLAVE_DISTORSION, registrarDistorsion, type DistorsionFX } from "../efectos/DistorsionFX";
@@ -57,6 +58,8 @@ export class JuegoScene extends Phaser.Scene {
   private colapsando = false;
   /** Shader del piso (null si no hay WebGL). */
   private distorsion: DistorsionFX | null = null;
+  private suelo: Phaser.GameObjects.Image | null = null;
+  private luz: Phaser.GameObjects.Image | null = null;
   /** Segundos de juego (avanza con el dt del juego, no con el reloj). */
   private tiempo = 0;
 
@@ -69,7 +72,6 @@ export class JuegoScene extends Phaser.Scene {
   }
 
   create(): void {
-    const { ancho, alto } = getBalance().mundo;
     this.objetos = [];
     this.agarrado = null;
     this.dedo = null;
@@ -78,14 +80,10 @@ export class JuegoScene extends Phaser.Scene {
     this.tiempo = 0;
     this.combo = new Combo();
     this.reloj = new RelojAparicion();
-    centrarMundo(this);
-    const suelo = this.add.image(0, 0, zonaDe(getBalance(), progreso.zona).suelo).setOrigin(0).setDisplaySize(ancho, alto);
-    this.distorsion = null;
-    if (registrarDistorsion(this.game)) {
-      suelo.setPostPipeline(CLAVE_DISTORSION);
-      this.distorsion = suelo.getPostPipeline(CLAVE_DISTORSION) as DistorsionFX;
-    }
-    crearCapaLuz(this, PROF_LUZ);
+    this.armarSuelo();
+    const alCambiarTamano = () => this.armarSuelo();
+    this.scale.on(Phaser.Scale.Events.RESIZE, alCambiarTamano);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.scale.off(Phaser.Scale.Events.RESIZE, alCambiarTamano));
 
     const s = this.stats;
     this.hoyo = new Hoyo(this, s.radioHoyo, s.radioAtraccion);
@@ -108,6 +106,20 @@ export class JuegoScene extends Phaser.Scene {
       this.game.events.off(EVENTOS_GLOBALES.REINICIO, reiniciar);
       this.game.events.off(EVENTOS_GLOBALES.COLAPSO, colapsar);
     });
+  }
+
+  /** Suelo (repetido hacia abajo si la pantalla es alta), shader del piso y capa de luz, del alto actual. */
+  private armarSuelo(): void {
+    const ancho = getBalance().mundo.ancho, alto = altoMundo();
+    this.suelo?.destroy();
+    this.luz?.destroy();
+    this.suelo = crearSuelo(this, zonaDe(getBalance(), progreso.zona).suelo, ancho, alto).setDepth(0);
+    this.distorsion = null;
+    if (registrarDistorsion(this.game)) {
+      this.suelo.setPostPipeline(CLAVE_DISTORSION);
+      this.distorsion = this.suelo.getPostPipeline(CLAVE_DISTORSION) as DistorsionFX;
+    }
+    this.luz = crearCapaLuz(this, PROF_LUZ, ancho, alto);
   }
 
   /** Deja 3 misiones activas (crea las que falten). */
@@ -156,8 +168,14 @@ export class JuegoScene extends Phaser.Scene {
     const especial = forzar ?? elegirEspecial(tipo, b.especiales, Math.random, extraDorado);
     const propio = objetoDelEspecial(especial, b.especiales);
     if (propio) tipo = tipoPorId(b, propio);
-    const lugar = buscarLugar(tipo.r, this.objetos.map((o) => o.cuerpo), s.radioAtraccion, b, Math.random);
+    const lugar = buscarLugar(tipo.r, this.objetos.map((o) => o.cuerpo), s.radioAtraccion, b, Math.random, this.areaAparicion());
     if (lugar) this.objetos.push(new Objeto(this, tipo, lugar.x, lugar.y, deAPoco, especial));
+  }
+
+  /** Los objetos nuevos salen lejos del marcador y del dock. */
+  private areaAparicion() {
+    const alto = altoMundo();
+    return { ancho: getBalance().mundo.ancho, alto, yMin: APARICION_ARRIBA, yMax: alto - APARICION_ABAJO };
   }
 
   private configurarArrastre(): void {
@@ -195,7 +213,7 @@ export class JuegoScene extends Phaser.Scene {
       return;
     }
     const mundo = this.cameras.main.getWorldPoint(p.x, p.y);
-    const pos = limitarAlMundo(mundo.x, mundo.y, o.cuerpo.r, b.mundo.ancho, b.mundo.alto);
+    const pos = limitarAlMundo(mundo.x, mundo.y, o.cuerpo.r, b.mundo.ancho, altoMundo());
     if (pos.x === o.cuerpo.x && pos.y === o.cuerpo.y) return; // el dedo está quieto
     o.cuerpo.x = pos.x;
     o.cuerpo.y = pos.y;
@@ -276,7 +294,7 @@ export class JuegoScene extends Phaser.Scene {
 
     pasoFisica(this.objetos.map((o) => o.cuerpo), dt, {
       ancho: b.mundo.ancho,
-      alto: b.mundo.alto,
+      alto: altoMundo(),
       rozamiento: b.mundo.rozamiento,
       rebote: b.mundo.rebote,
       giroPorVelocidad: b.visual.giroPorVelocidad,
@@ -335,7 +353,7 @@ export class JuegoScene extends Phaser.Scene {
     this.esperaJefe = 0.5;
     const b = getBalance();
     const tipo = tipoPorId(b, zonaDe(b, progreso.zona).jefe);
-    const lugar = buscarLugar(tipo.r, this.objetos.map((o) => o.cuerpo), this.stats.radioAtraccion, b, Math.random);
+    const lugar = buscarLugar(tipo.r, this.objetos.map((o) => o.cuerpo), this.stats.radioAtraccion, b, Math.random, this.areaAparicion());
     if (!lugar) return;
     this.jefe = new Objeto(this, tipo, lugar.x, lugar.y, true);
     this.objetos.push(this.jefe);

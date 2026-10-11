@@ -1,8 +1,14 @@
 import Phaser from "phaser";
 import { getBalance } from "../core/Balance";
 import { COLOR, EVENTOS_GLOBALES, FUENTE_TITULO, FUENTE_TEXTO, hex } from "../core/estilo";
-import { ALTO_AYUDA_TIENDA as ALTO_AYUDA, ALTO_BARRA_HUD as ALTO_BARRA, ALTO_BOTON_TIENDA as ALTO_BOTON,
-  ALTO_MENU_TIENDA, ALTO_TIENDA, ESPACIO_TIENDA as ESPACIO_BOTONES, FILAS_TIENDA } from "../core/pantalla";
+// Medidas de esta interfaz (se reemplaza por el dock en HTML)
+const ALTO_BARRA = 84;
+const ALTO_BOTON = 86;
+const FILAS_TIENDA = 2;
+const ESPACIO_BOTONES = 8;
+const ALTO_AYUDA = 32;
+const ALTO_MENU_TIENDA = 46;
+const ALTO_TIENDA = ESPACIO_BOTONES + ALTO_MENU_TIENDA + ESPACIO_BOTONES + FILAS_TIENDA * (ALTO_BOTON + ESPACIO_BOTONES) + ALTO_AYUDA;
 import { progreso } from "../core/Progreso";
 import { getSonido } from "../core/Sonido";
 import { BotonMejora } from "../entidades/BotonMejora";

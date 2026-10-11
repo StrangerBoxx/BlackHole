@@ -7,11 +7,11 @@ const TEX_LUZ = "capa_luz";
  * Capa de luz encima del mundo: luz cálida desde la izquierda, fría desde la derecha
  * y viñeta suave en las orillas. Se dibuja una vez con canvas (colores en balance.json → visual.luz).
  */
-export function crearCapaLuz(scene: Phaser.Scene, profundidad: number): Phaser.GameObjects.Image {
-  const { ancho, alto } = getBalance().mundo;
+export function crearCapaLuz(scene: Phaser.Scene, profundidad: number, ancho: number, alto: number): Phaser.GameObjects.Image {
   const l = getBalance().visual.luz;
-  if (!scene.textures.exists(TEX_LUZ)) {
-    const tex = scene.textures.createCanvas(TEX_LUZ, ancho, alto)!;
+  const clave = `${TEX_LUZ}@${alto}`;
+  if (!scene.textures.exists(clave)) {
+    const tex = scene.textures.createCanvas(clave, ancho, alto)!;
     const ctx = tex.getContext();
     const rgba = (hex: string, a: number) => {
       const c = Phaser.Display.Color.HexStringToColor(hex);
@@ -33,5 +33,5 @@ export function crearCapaLuz(scene: Phaser.Scene, profundidad: number): Phaser.G
     ctx.fillRect(0, 0, ancho, alto);
     tex.refresh();
   }
-  return scene.add.image(0, 0, TEX_LUZ).setOrigin(0).setDepth(profundidad);
+  return scene.add.image(0, 0, clave).setOrigin(0).setDepth(profundidad);
 }

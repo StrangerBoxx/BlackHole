@@ -1,33 +1,44 @@
 import Phaser from "phaser";
-import { getBalance } from "./Balance";
 
-// Reparto de la pantalla (de arriba a abajo): barra del HUD, el pasto (mundo) y la tienda.
-export const ALTO_BARRA_HUD = 84;
-export const ALTO_BOTON_TIENDA = 86;
-export const FILAS_TIENDA = 2;
-export const ESPACIO_TIENDA = 8;
-export const ALTO_AYUDA_TIENDA = 32;
-/** Fila de botones de menú (Misiones, Álbum, Colapso) arriba de la tienda. */
-export const ALTO_MENU_TIENDA = 46;
-export const ALTO_TIENDA =
-  ESPACIO_TIENDA + ALTO_MENU_TIENDA + ESPACIO_TIENDA + FILAS_TIENDA * (ALTO_BOTON_TIENDA + ESPACIO_TIENDA) + ALTO_AYUDA_TIENDA;
+// El juego ocupa toda la pantalla: 720 de ancho fijo y el alto se ajusta a la forma del celular
+// (entre 960 y 1600). La interfaz (marcador y dock) va encima, en HTML (src/ui/).
 
-/** Tamaño base del juego: el mundo de 720x960 más la barra y la tienda. */
 export const ANCHO_BASE = 720;
-export const ALTO_BASE = ALTO_BARRA_HUD + 960 + ALTO_TIENDA;
+export const ALTO_MINIMO = 960;
+export const ALTO_MAXIMO = 1600;
+
+/** Los objetos aparecen lejos del marcador (arriba) y del dock (abajo): entre y=90 y alto−140. */
+export const APARICION_ARRIBA = 90;
+export const APARICION_ABAJO = 140;
+
+/** Alto del juego para una ventana de este tamaño (mismo ancho 720, misma forma, con límites). */
+export function altoParaVentana(anchoVentana: number, altoVentana: number): number {
+  if (anchoVentana <= 0 || altoVentana <= 0) return ALTO_MINIMO;
+  const alto = Math.round((ANCHO_BASE * altoVentana) / anchoVentana);
+  return Math.max(ALTO_MINIMO, Math.min(ALTO_MAXIMO, alto));
+}
+
+let altoActual = ALTO_MINIMO;
+
+/** Alto actual del mundo (= alto del juego). */
+export const altoMundo = () => altoActual;
+
+/** Alto con el que arranca el juego. */
+export function altoInicial(): number {
+  altoActual = altoParaVentana(window.innerWidth, window.innerHeight);
+  return altoActual;
+}
 
 /**
- * Con Scale.EXPAND la pantalla puede ser más alta o más ancha que el tamaño base.
- * Movemos la cámara para que el mundo quede centrado en el espacio libre entre la barra y la tienda.
+ * Cuando cambia el tamaño de la ventana (o se gira el celular), el juego cambia de alto.
+ * Las escenas escuchan Phaser.Scale.Events.RESIZE para rearmar el suelo.
  */
-export function centrarMundo(scene: Phaser.Scene): void {
-  const { ancho, alto } = getBalance().mundo;
+export function seguirTamanoVentana(game: Phaser.Game): void {
   const ajustar = () => {
-    const { width, height } = scene.scale.gameSize;
-    const libre = height - ALTO_BARRA_HUD - ALTO_TIENDA;
-    scene.cameras.main.setScroll(-(width - ancho) / 2, -(ALTO_BARRA_HUD + (libre - alto) / 2));
+    const alto = altoParaVentana(window.innerWidth, window.innerHeight);
+    if (alto === altoActual) return;
+    altoActual = alto;
+    game.scale.setGameSize(ANCHO_BASE, alto);
   };
-  ajustar();
-  scene.scale.on(Phaser.Scale.Events.RESIZE, ajustar);
-  scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => scene.scale.off(Phaser.Scale.Events.RESIZE, ajustar));
+  window.addEventListener("resize", ajustar);
 }
