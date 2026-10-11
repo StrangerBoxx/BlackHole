@@ -1,5 +1,5 @@
 // Interfaz en HTML encima del juego (el vidrio con desenfoque solo se puede hacer así):
-// marcador arriba, ⚙ con opciones, botones de Misiones · Álbum · Colapso y avisos.
+// marcador arriba, menú desplegable (Misiones · Álbum · Colapso), tuerca de Configuración y avisos.
 // El dock de mejoras vive en dock.ts. Todo se alinea con el canvas y escala con su ancho.
 import Phaser from "phaser";
 import "./interfaz.css";
@@ -8,6 +8,7 @@ import { EVENTOS_GLOBALES } from "../core/estilo";
 import { ANCHO_BASE } from "../core/pantalla";
 import { progreso } from "../core/Progreso";
 import { getSonido } from "../core/Sonido";
+import { fichasDeZona } from "../logica/album";
 import { puedeColapsar } from "../logica/colapso";
 import { misionCumplida } from "../logica/misiones";
 import { formatearNumero } from "../logica/monedas";
@@ -50,36 +51,45 @@ export function iniciarInterfaz(game: Phaser.Game): Interfaz {
   pastilla.append(Object.assign(el("img"), { src: "assets/img/moneda.png", alt: "" }));
   const chips = el("span", "chips", "0");
   pastilla.append(chips);
-  const botonAjustes = el("button", "redondo vidrio", `<img src="${icono("ajustes")}" alt="">`);
-  botonAjustes.setAttribute("aria-label", "Opciones");
-  derecha.append(pastilla, botonAjustes);
+  const botonMenu = el("button", "redondo vidrio", `<img src="${icono("menu")}" alt=""><span class="punto"></span>`);
+  botonMenu.setAttribute("aria-label", "Menú");
+  botonMenu.title = "Menú";
+  const botonAjustes = el("button", "redondo vidrio", `<img src="${icono("configuracion")}" alt="">`);
+  botonAjustes.setAttribute("aria-label", "Configuración");
+  botonAjustes.title = "Configuración";
+  derecha.append(pastilla, botonMenu, botonAjustes);
   marcador.append(derecha);
 
-  // ---------- Misiones · Álbum · Colapso (debajo del ⚙)
-  const menuLado = el("div", "menu-lado");
+  // ---------- Menú desplegable: Misiones · Álbum · Colapso
+  const desplegable = el("div", "desplegable");
+  desplegable.hidden = true;
   const abrirPanel = (pestana: string) => {
-    cerrarOpciones();
+    cerrarTodo();
     if (!game.scene.isActive("Panel")) game.scene.start("Panel", { pestana });
   };
-  const botonMenu = (pestana: string, titulo: string) => {
-    const b = el("button", "redondo vidrio", `<img src="${icono(pestana)}" alt=""><span class="punto"></span>`);
-    b.setAttribute("aria-label", titulo);
-    b.title = titulo;
+  const itemMenu = (pestana: string, titulo: string) => {
+    const b = el("button", "item", `<img src="${icono(pestana)}" alt=""><span class="etiqueta">${titulo}</span><span class="meta"></span>`);
     b.addEventListener("click", () => abrirPanel(pestana));
-    menuLado.append(b);
-    return b;
+    desplegable.append(b);
+    return b.querySelector(".meta") as HTMLElement;
   };
-  const bMisiones = botonMenu("misiones", "Misiones");
-  const bAlbum = botonMenu("album", "Álbum");
-  const bColapso = botonMenu("colapso", "Colapso");
+  const metaMisiones = itemMenu("misiones", "Misiones");
+  const metaAlbum = itemMenu("album", "Álbum");
+  const metaColapso = itemMenu("colapso", "Colapso");
+  botonMenu.addEventListener("click", () => {
+    const abrir = desplegable.hidden;
+    cerrarTodo();
+    desplegable.hidden = !abrir;
+  });
 
-  // ---------- Opciones (⚙)
+  // ---------- Configuración (tuerca)
   const opciones = el("div", "opciones");
   opciones.hidden = true;
+  const tituloConfig = el("div", "titulo-panel", "Configuración");
   const dato = el("div", "dato");
   const bSonido = el("button");
   const bReiniciar = el("button", "peligro");
-  opciones.append(dato, bSonido, bReiniciar);
+  opciones.append(tituloConfig, dato, bSonido, bReiniciar);
   const textoSonido = () => `Sonido: ${getSonido()?.activo === false ? "no" : "sí"}`;
   bSonido.addEventListener("click", () => {
     getSonido()?.alternar();
@@ -98,7 +108,7 @@ export function iniciarInterfaz(game: Phaser.Game): Interfaz {
       return;
     }
     desarmar();
-    cerrarOpciones();
+    cerrarTodo();
     progreso.reiniciar();
     game.events.emit(EVENTOS_GLOBALES.REINICIO);
     aviso("Progreso reiniciado", 2);
@@ -107,17 +117,22 @@ export function iniciarInterfaz(game: Phaser.Game): Interfaz {
     opciones.hidden = true;
     desarmar();
   }
+  /** Cierra el menú desplegable y la configuración (solo uno puede estar abierto). */
+  function cerrarTodo() {
+    cerrarOpciones();
+    desplegable.hidden = true;
+  }
   botonAjustes.addEventListener("click", () => {
     if (!opciones.hidden) return cerrarOpciones();
+    cerrarTodo();
     bSonido.textContent = textoSonido();
-    desarmar();
     opciones.hidden = false;
   });
-  // Se cierra al tocar el campo de juego (o cualquier cosa fuera del panelcito)
+  // Se cierran al tocar el campo de juego (o cualquier cosa fuera de ellos)
   document.addEventListener("pointerdown", (e) => {
-    if (opciones.hidden) return;
     const t = e.target as Node;
-    if (!opciones.contains(t) && !botonAjustes.contains(t)) cerrarOpciones();
+    if (!opciones.hidden && !opciones.contains(t) && !botonAjustes.contains(t)) cerrarOpciones();
+    if (!desplegable.hidden && !desplegable.contains(t) && !botonMenu.contains(t)) desplegable.hidden = true;
   });
 
   // ---------- Avisos
@@ -134,7 +149,7 @@ export function iniciarInterfaz(game: Phaser.Game): Interfaz {
   }
   game.events.on(EVENTOS_GLOBALES.AVISO, aviso);
 
-  raiz.append(marcador, menuLado, opciones, avisos);
+  raiz.append(marcador, desplegable, opciones, avisos);
   unica = { raiz, game, aviso };
 
   // ---------- Dock de mejoras (abajo)
@@ -148,9 +163,13 @@ export function iniciarInterfaz(game: Phaser.Game): Interfaz {
     const zona = zonaDe(b, progreso.zona);
     const tragados = progreso.total === 1 ? "1 objeto tragado" : `${formatearNumero(progreso.total)} objetos tragados`;
     dato.innerHTML = `<b>${tragados}</b><br>${zona.nombre}${progreso.materiaOscura > 0 ? ` · ${formatearNumero(progreso.materiaOscura)} materia oscura` : ""}`;
-    bMisiones.classList.toggle("aviso", progreso.misiones.some(misionCumplida));
-    bColapso.classList.toggle("aviso", puedeColapsar(b, e));
-    bAlbum.classList.remove("aviso");
+    const porCobrar = progreso.misiones.filter(misionCumplida).length;
+    const colapsoListo = puedeColapsar(b, e);
+    metaMisiones.textContent = porCobrar ? `${porCobrar} por cobrar` : "";
+    metaAlbum.textContent = `${progreso.fichasAlbum(zona.id).length}/${fichasDeZona(zona).length}`;
+    metaColapso.textContent = colapsoListo ? "¡Listo!" : "";
+    // Puntito naranja en el botón del menú si hay algo esperando
+    botonMenu.classList.toggle("pendiente", porCobrar > 0 || colapsoListo);
   };
   progreso.alCambiar(actualizar);
   actualizar();
@@ -172,7 +191,7 @@ export function iniciarInterfaz(game: Phaser.Game): Interfaz {
   // Mientras el panel (Misiones/Álbum/Colapso) está abierto, la interfaz se esconde
   game.events.on(EVENTOS_GLOBALES.PANEL, (abierto: boolean) => {
     raiz.classList.toggle("oculto", abierto);
-    if (abierto) cerrarOpciones();
+    if (abierto) cerrarTodo();
   });
 
   // ---------- Alinear con el canvas y escalar
@@ -182,7 +201,7 @@ export function iniciarInterfaz(game: Phaser.Game): Interfaz {
     const escala = r.width / ANCHO_BASE;
     raiz.style.setProperty("--e", String(escala));
     const bajoMarcador = marcador.getBoundingClientRect().bottom - r.top + 8;
-    menuLado.style.top = `${bajoMarcador}px`;
+    desplegable.style.top = `${bajoMarcador}px`;
     opciones.style.top = `${bajoMarcador}px`;
     avisos.style.top = `${Math.max(bajoMarcador, Y_AVISOS * escala)}px`;
     raiz.dispatchEvent(new Event("acomodar"));

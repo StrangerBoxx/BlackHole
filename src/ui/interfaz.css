@@ -103,20 +103,13 @@
   border: 2px solid #fff;
   display: none;
 }
-.redondo.aviso .punto { display: block; }
+.redondo.pendiente .punto { display: block; }
 
-/* Columna de Misiones · Álbum · Colapso debajo del ⚙ */
-.menu-lado {
-  position: absolute;
-  right: 0.7em;
-  display: flex;
-  flex-direction: column;
-  gap: 0.45em;
-}
-
-/* Panelcito de opciones (⚙) */
+/* Menú desplegable (Misiones · Álbum · Colapso) y panel de Configuración (tuerca) */
+.desplegable,
 .opciones {
   position: absolute;
+  z-index: 2; /* delante de los avisos */
   right: 0.7em;
   min-width: 13em;
   padding: 0.8em 0.9em;
@@ -129,7 +122,37 @@
   flex-direction: column;
   gap: 0.35em;
 }
+.desplegable[hidden],
 .opciones[hidden] { display: none; }
+.titulo-panel {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 1.1em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--texto);
+}
+.desplegable .item {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  width: 100%;
+  min-height: 44px;
+  padding: 0.5em 0.4em;
+  background: none;
+  border: none;
+  border-radius: 0.6em;
+  font-weight: 600;
+  text-align: left;
+}
+.desplegable .item:active { background: #eef2f5; }
+.desplegable .item img { width: 1.4em; height: 1.4em; }
+.desplegable .etiqueta { flex: 1; }
+.desplegable .meta {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  color: var(--naranja);
+}
 .opciones .dato { color: var(--gris); font-size: 0.85em; padding-bottom: 0.3em; border-bottom: 1px solid #e3e8eb; }
 .opciones .dato b { font-family: "Rajdhani", sans-serif; color: var(--texto); font-size: 1.15em; }
 .opciones button {

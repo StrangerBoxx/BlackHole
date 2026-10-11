@@ -188,11 +188,13 @@ al juego; solo los botones los atrapan. Mientras el panel de Misiones/Álbum/Col
   gris `#64717c`, bordes `#c3ccd3`, vidrio = blanco 86 % con desenfoque. Títulos y números en Rajdhani 700,
   texto en IBM Plex Sans.
 - **Marcador (arriba):** "BLACK HOLE" pequeño con letras espaciadas ("HOLE" cian) a la izquierda; a la derecha
-  una pastilla de vidrio con el chip y la cantidad, y un botón redondo ⚙.
-- **⚙:** panelcito blanco con objetos tragados (y sala / materia oscura), Sonido sí/no y Reiniciar progreso
-  (dos toques). Se cierra al tocar el campo.
-- **Misiones · Álbum · Colapso:** botones redondos de vidrio debajo del ⚙; puntito naranja si hay misión por
-  cobrar o el colapso está listo.
+  una pastilla de vidrio con el chip y la cantidad, un botón de **menú** (tres líneas) y la **tuerca** de
+  Configuración.
+- **Menú (desplegable):** Misiones (con "N por cobrar"), Álbum (x/9) y Colapso ("¡Listo!"). Tocar una opción
+  abre su panel. El botón del menú lleva un puntito naranja si hay misión por cobrar o el colapso está listo.
+- **Configuración (tuerca):** panelcito blanco con objetos tragados (y sala / materia oscura), Sonido sí/no y
+  Reiniciar progreso (dos toques).
+- Solo uno de los dos (menú o configuración) está abierto a la vez; ambos se cierran al tocar el campo.
 - **Avisos** ("¡Combo x3!", "Nuevo objeto…"): arriba, debajo del marcador (y ≈ 160), lejos del dock.
 - **Dock (abajo):** barra de vidrio separada de los bordes con Atracción, Fuerza, Tamaño, Aparición y Valor,
   más "Más", que abre una bandeja con Combo, Gravedad y Dron (8 mejoras no caben en una fila).
@@ -203,7 +205,7 @@ al juego; solo los botones los atrapan. Mientras el panel de Misiones/Álbum/Col
     que se va sola en 2 s. Mantener presionado no compra.
   - Los estados se actualizan cuando cambia el progreso (no en cada cuadro).
 - **Íconos:** `public/assets/ui/*.svg` (atraccion, fuerza, tamano, aparicion, valor, combo, gravedad, dron, mas,
-  misiones, album, colapso, ajustes). Se pueden reemplazar por otros SVG con el mismo nombre.
+  misiones, album, colapso, menu, configuracion). Se pueden reemplazar por otros SVG con el mismo nombre.
 - **No incluido:** "Probar mis dibujos" (se decidió no hacerlo).
 - **Bus de eventos entre escenas** (`game.events`, lista en `src/core/estilo.ts`): `captura` (tipo),
   `tragado` (InfoTragado: tipo, monedas, especial, tiros, combo, jefe), `aviso` (texto, segundos), `combo`,
@@ -219,13 +221,13 @@ al juego; solo los botones los atrapan. Mientras el panel de Misiones/Álbum/Col
 - **Combo y monedas** usan el tiempo del juego (suma de dt), no el reloj: con velocidad x2 todo sigue cuadrando.
 - **Sonido** (`src/core/Sonido.ts`): "tragar" suena al *empezar* a caer (como el prototipo); "moneda" al terminar.
   Volumen general 0.85 y por archivo en `balance.json` → `sonido`. El ambiente arranca con el primer toque
-  (los navegadores no dejan sonar antes). "Sonido: sí/no" en el ⚙; se recuerda en el dispositivo.
+  (los navegadores no dejan sonar antes). "Sonido: sí/no" en Configuración (tuerca); se recuerda en el dispositivo.
 - **Guardado** (`src/core/Guardado.ts`): `localStorage["black-hole-save"]`, versión 3: monedas, total, niveles,
   zona, hambre, jefes, misiones, álbum, materia oscura, permanentes, monedas de la vuelta, colapsos y `ultimaVez`.
   Se guarda en cada cambio, al esconder la app y cada 30 s. Al cargar se arreglan datos rotos (niveles > máximo
   → máximo, misiones u objetos que no existen se descartan, etc.). Los guardados viejos (v1, v2) cargan bien
   y sus nombres de objetos se traducen a los del laboratorio.
-  "Reiniciar progreso" (en el ⚙) pide un segundo toque antes de borrar (como el prototipo).
+  "Reiniciar progreso" (en Configuración) pide un segundo toque antes de borrar (como el prototipo).
 - **Panel de debug** (`src/escenas/DebugScene.ts`), solo con `npm run dev`: se abre con **F1** o con **3 toques rápidos
   en la esquina superior izquierda** (sobre el título). Trae +1000 / +100 000 chips, subir/bajar cada mejora (gratis), sacar
   dorado / pesado / bomba, hambre llena, +10 materia oscura, sala siguiente ("Zona siguiente"), círculos de choque
