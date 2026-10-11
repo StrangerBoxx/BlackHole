@@ -42,11 +42,15 @@ export class CargaScene extends Phaser.Scene {
       // Esperar la fuente para que los textos no salgan con la letra por defecto
       try {
         await Promise.race([
-          document.fonts.load('30px "Lilita One"'),
+          Promise.all([
+            document.fonts.load('30px "Lilita One"'),
+            document.fonts.load('600 17px "Nunito"'),
+            document.fonts.load('800 17px "Nunito"'),
+          ]),
           new Promise((r) => setTimeout(r, 1500)),
         ]);
       } catch {
-        /* sin internet: se usa la fuente de respaldo */
+        /* si la fuente falla, se usa la de respaldo */
       }
       iniciarSonido(this.game);
       this.scene.start("Juego");

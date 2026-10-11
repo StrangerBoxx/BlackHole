@@ -1,3 +1,6 @@
+import "@fontsource/lilita-one/latin-400.css";
+import "@fontsource/nunito/latin-600.css";
+import "@fontsource/nunito/latin-800.css";
 import Phaser from "phaser";
 import { ALTO_BASE, ANCHO_BASE } from "./core/pantalla";
 import { progreso } from "./core/Progreso";

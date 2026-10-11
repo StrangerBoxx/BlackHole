@@ -68,7 +68,7 @@ Todos los números están en `public/data/balance.json`.
 - **Lógica pura** en `src/logica/` (sin Phaser) → se prueba en `tests/`.
 - **Assets:** `public/assets/` con los mismos nombres de `LEEME.txt`. Se cargan por nombre, y los de objetos
   según los `id` de `balance.json`. Las escalas salen del radio y del tamaño real del PNG.
-- Fuente "Lilita One" desde Google Fonts; sin internet se usa una de respaldo.
+- Fuentes "Lilita One" y "Nunito" incluidas en el juego (paquetes `@fontsource`): funcionan sin internet.
 
 ## Estado por pasos
 

@@ -12,6 +12,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@fontsource/lilita-one": "5.3.0",
+    "@fontsource/nunito": "5.3.0",
     "phaser": "3.90.0"
   },
   "devDependencies": {
