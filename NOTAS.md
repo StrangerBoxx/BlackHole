@@ -59,6 +59,10 @@ Las imágenes no llevan sombra: la pone el juego. Todo el arte actual es **provi
 `node herramientas/generar-arte.mjs` (crea solo los PNG que faltan; `--todas` rehace todo y **pisa tus dibujos**;
 necesita Google Chrome) y `node herramientas/generar-ambiente.mjs` (rehace `ambiente.wav`).
 
+**Ambiente** (`ambiente.wav`): envolvente y **sin ruido blanco**. Lleva un drone grave del agujero negro que respira
+cada 15 s, un colchón armónico en La menor con novena (cada nota sube y baja a su ritmo), campanitas de cristal
+suaves y un zumbido eléctrico muy bajo. Todo es tono puro; los 30 s empalman sin corte.
+
 ## Cómo correrlo
 
 ```
