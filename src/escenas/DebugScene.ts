@@ -3,12 +3,14 @@ import { getBalance } from "../core/Balance";
 import { debug } from "../core/Debug";
 import { COLOR, EVENTOS_GLOBALES, FUENTE_TEXTO, FUENTE_TITULO, hex } from "../core/estilo";
 import { progreso } from "../core/Progreso";
-import type { IdMejora } from "../logica/balance";
+import type { IdEspecial, IdMejora } from "../logica/balance";
+import { metaHambre } from "../logica/hambre";
+import type { JuegoScene } from "./JuegoScene";
 
 const ESQUINA = 90; // px de la esquina superior derecha donde cuentan los 3 toques
 const TOQUES = 3;
 const VENTANA_TOQUES_MS = 1000;
-const ANCHO_PANEL = 440;
+const ANCHO_PANEL = 560;
 
 interface Fila {
   texto: Phaser.GameObjects.Text;
@@ -89,18 +91,43 @@ export class DebugScene extends Phaser.Scene {
     boton(izq + anchoUtil / 2 + 4, y, anchoUtil / 2 - 4, "+100 000", () => progreso.agregarMonedas(100000));
     y += 56;
 
-    for (const m of b.mejoras) {
+    // Mejoras en 2 columnas: nombre nivel [−][+]
+    const anchoCol = (anchoUtil - 12) / 2;
+    b.mejoras.forEach((m, i) => {
+      const x = izq + (i % 2) * (anchoCol + 12);
+      const yy = y + Math.floor(i / 2) * 50;
       const etiqueta = this.add
-        .text(izq, y + 22, "", { fontFamily: FUENTE_TEXTO, fontSize: "19px", fontStyle: "600", color: COLOR.texto })
+        .text(x, yy + 22, "", { fontFamily: FUENTE_TEXTO, fontSize: "17px", fontStyle: "600", color: COLOR.texto })
         .setOrigin(0, 0.5);
       items.push(etiqueta);
       const id: IdMejora = m.id;
-      this.filas.push({ texto: etiqueta, actualizar: () => etiqueta.setText(`${m.nombre}: ${progreso.niveles[id]} / ${m.max}`) });
-      boton(izq + anchoUtil - 108, y, 50, "−", () => progreso.cambiarNivel(b, id, -1));
-      boton(izq + anchoUtil - 50, y, 50, "+", () => progreso.cambiarNivel(b, id, +1));
-      y += 52;
-    }
-    y += 6;
+      this.filas.push({ texto: etiqueta, actualizar: () => etiqueta.setText(`${m.nombre} ${progreso.niveles[id]}/${m.max}`) });
+      boton(x + anchoCol - 92, yy, 44, "−", () => progreso.cambiarNivel(b, id, -1));
+      boton(x + anchoCol - 44, yy, 44, "+", () => progreso.cambiarNivel(b, id, +1));
+    });
+    y += Math.ceil(b.mejoras.length / 2) * 50 + 8;
+
+    // Cosas nuevas: especiales, hambre, zonas, materia oscura
+    const juego = () => this.scene.get("Juego") as JuegoScene;
+    const especial = (id: IdEspecial) => () => juego().aparecerObjeto(true, id);
+    const pares: [string, () => void][] = [
+      ["Sacar dorado", especial("dorado")],
+      ["Sacar pesado", especial("pesado")],
+      ["Sacar bomba", especial("bomba")],
+      ["Hambre llena", () => progreso.ponerHambre(metaHambre(b.hambre, progreso.jefes))],
+      ["+10 materia oscura", () => progreso.agregarMateria(10)],
+      [
+        "Zona siguiente",
+        () => {
+          progreso.irAZona(b, (progreso.zona + 1) % b.zonas.length);
+          this.game.events.emit(EVENTOS_GLOBALES.REINICIO);
+        },
+      ],
+    ];
+    pares.forEach(([texto, accion], i) => {
+      boton(izq + (i % 2) * (anchoCol + 12), y + Math.floor(i / 2) * 52, anchoCol, texto, accion);
+    });
+    y += Math.ceil(pares.length / 2) * 52 + 6;
 
     const circulos = boton(izq, y, anchoUtil, "", () => (debug.mostrarCirculos = !debug.mostrarCirculos));
     this.filas.push({ texto: circulos, actualizar: () => circulos.setText(`Círculos de choque: ${debug.mostrarCirculos ? "sí" : "no"}`) });

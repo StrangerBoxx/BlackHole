@@ -24,6 +24,7 @@ import { objetosDesbloqueados, tipoPorId, zonaDe } from "../logica/objetos";
 import { elegirEspecial, explotarBomba, multiplicadorEspecial } from "../logica/especiales";
 import { hambreLlena, metaHambre, puedeTragarJefe, sumarHambre } from "../logica/hambre";
 import { contextoMisiones, multiplicadorSiempre } from "../logica/economia";
+import { estadisticasPermanentes } from "../logica/colapso";
 import * as Tiros from "../logica/tiros";
 import type { Cuerpo } from "../logica/fisica";
 import type { IdEspecial } from "../logica/balance";
@@ -48,6 +49,8 @@ export class JuegoScene extends Phaser.Scene {
   private esperaJefe = 0;
   private dron!: Dron;
   private relojDron = 0;
+  /** Durante la animación del colapso no se juega. */
+  private colapsando = false;
   /** Segundos de juego (avanza con el dt del juego, no con el reloj). */
   private tiempo = 0;
 
@@ -65,6 +68,7 @@ export class JuegoScene extends Phaser.Scene {
     this.agarrado = null;
     this.dedo = null;
     this.jefe = null;
+    this.colapsando = false;
     this.tiempo = 0;
     this.combo = new Combo();
     this.reloj = new RelojAparicion();
@@ -83,9 +87,15 @@ export class JuegoScene extends Phaser.Scene {
     this.prepararMisiones();
     this.scene.launch("Hud");
 
-    const reiniciar = () => this.reiniciar();
+    // Reiniciar o cambiar de zona: se vuelve a armar la escena (con el suelo de la zona actual)
+    const reiniciar = () => this.scene.restart();
+    const colapsar = (r: { materia: number; zona: number }) => this.animarColapso(r);
     this.game.events.on(EVENTOS_GLOBALES.REINICIO, reiniciar);
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.game.events.off(EVENTOS_GLOBALES.REINICIO, reiniciar));
+    this.game.events.on(EVENTOS_GLOBALES.COLAPSO, colapsar);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.game.events.off(EVENTOS_GLOBALES.REINICIO, reiniciar);
+      this.game.events.off(EVENTOS_GLOBALES.COLAPSO, colapsar);
+    });
   }
 
   /** Deja 3 misiones activas (crea las que falten). */
@@ -100,16 +110,24 @@ export class JuegoScene extends Phaser.Scene {
     for (let i = 0; i < getBalance().aparicion.iniciales; i++) this.aparecerObjeto(false);
   }
 
-  /** Progreso borrado: se limpia el pasto y se empieza de nuevo. */
-  private reiniciar(): void {
-    for (const o of this.objetos) o.destruir();
-    this.objetos = [];
+  /**
+   * Colapso: todo cae en espiral, el hoyo crece hasta tapar la pantalla
+   * y la escena vuelve a empezar en la zona nueva.
+   */
+  private animarColapso(r: { materia: number; zona: number }): void {
+    if (this.colapsando) return;
+    this.colapsando = true;
+    if (this.agarrado) this.agarrado.cuerpo.arrastrado = false;
     this.agarrado = this.dedo = null;
-    this.jefe = null;
-    this.combo = new Combo();
-    this.reloj = new RelojAparicion();
-    this.poblar();
-    this.prepararMisiones();
+    for (const o of this.objetos) {
+      o.cuerpo.cayendo = true;
+      o.tiempoCaida = 0;
+    }
+    const zona = zonaDe(getBalance(), r.zona);
+    this.registry.set("avisoInicial", `¡Bienvenido a ${zona.nombre}! +${formatearNumero(r.materia)} materia oscura`);
+    this.cameras.main.shake(1800, 0.006);
+    this.time.delayedCall(1300, () => this.cameras.main.fade(500, 20, 8, 40));
+    this.time.delayedCall(1850, () => this.scene.restart());
   }
 
   /**
@@ -122,7 +140,8 @@ export class JuegoScene extends Phaser.Scene {
     const tipos = objetosDesbloqueados(b, zonaDe(b, progreso.zona), s.radioHoyo);
     if (tipos.length === 0) return;
     let tipo = elegirTipo(tipos, b.aparicion.pesoBase, b.aparicion.pesoPorIndice, Math.random);
-    const especial = forzar ?? elegirEspecial(tipo, b.especiales, Math.random);
+    const extraDorado = estadisticasPermanentes(b, progreso.permanentes).doradoExtra;
+    const especial = forzar ?? elegirEspecial(tipo, b.especiales, Math.random, extraDorado);
     if (especial === "bomba") tipo = tipoPorId(b, b.especiales.bomba.objeto);
     const lugar = buscarLugar(tipo.r, this.objetos.map((o) => o.cuerpo), s.radioAtraccion, b, Math.random);
     if (lugar) this.objetos.push(new Objeto(this, tipo, lugar.x, lugar.y, deAPoco, especial));
@@ -172,12 +191,31 @@ export class JuegoScene extends Phaser.Scene {
 
   update(_time: number, deltaMs: number): void {
     const dt = Math.min(deltaMs / 1000, getBalance().mundo.dtMaximo);
+    if (this.colapsando) {
+      this.pasoColapso(dt);
+      return;
+    }
     this.seguirDedo();
     // Velocidad x2 (debug): dos pasos por cuadro en vez de uno más largo, así nada atraviesa paredes
     for (let i = 0; i < debug.velocidad; i++) this.paso(dt);
     for (const o of this.objetos) o.sincronizar();
     this.dibujarLinea();
     this.dibujarCirculos();
+  }
+
+  /** Durante el colapso: todo cae (sin dar monedas) y el hoyo crece. */
+  private pasoColapso(dt: number): void {
+    const b = getBalance();
+    for (const o of this.objetos) {
+      o.tiempoCaida += dt;
+      const r = avanzarCaida(o.cuerpo, this.hoyo, o.tiempoCaida, dt, b.captura);
+      o.escalaAnim = r.escala;
+      if (r.terminado) o.destruir();
+    }
+    this.objetos = this.objetos.filter((o) => o.escalaAnim > 0);
+    this.hoyo.actualizar(dt, 700, 900, 1);
+    for (const o of this.objetos) o.sincronizar();
+    this.linea.clear();
   }
 
   /** Un paso de simulación de `dt` segundos. */
@@ -297,7 +335,8 @@ export class JuegoScene extends Phaser.Scene {
     o.destruir();
     const b = getBalance();
     const s = this.stats;
-    const combo = this.combo.registrar(this.tiempo, s.ventanaCombo);
+    const permanentes = estadisticasPermanentes(b, progreso.permanentes);
+    const combo = this.combo.registrar(this.tiempo, s.ventanaCombo + permanentes.comboExtra);
     const xCombo = multiplicadorCombo(combo, b.combo.multiplicadorPorCombo, b.combo.multiplicadorMaximo);
     const xTiro = Tiros.multiplicadorTiro(o.tirosLogrados, b.tiros);
     const xEspecial = multiplicadorEspecial(o.especial, b.especiales);

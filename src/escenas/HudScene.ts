@@ -8,6 +8,7 @@ import { getSonido } from "../core/Sonido";
 import { BotonMejora } from "../entidades/BotonMejora";
 import { fichasDeZona } from "../logica/album";
 import { misionCumplida } from "../logica/misiones";
+import { puedeColapsar } from "../logica/colapso";
 import { zonaDe } from "../logica/objetos";
 import { Boton } from "../ui/Boton";
 import type { Pestana } from "./PanelScene";
@@ -86,7 +87,11 @@ export class HudScene extends Phaser.Scene {
     });
 
     const offline = this.registry.get("offline") as { segundos: number; monedas: number } | undefined;
-    if (offline && offline.monedas > 0) {
+    const avisoInicial = this.registry.get("avisoInicial") as string | undefined;
+    if (avisoInicial) {
+      this.registry.remove("avisoInicial");
+      this.mostrarAviso(avisoInicial, 4);
+    } else if (offline && offline.monedas > 0) {
       this.registry.remove("offline");
       this.mostrarAviso(
         `Mientras no estabas (${formatearDuracion(offline.segundos)}), tu dron juntó +${formatearNumero(offline.monedas)}`,
@@ -135,7 +140,7 @@ export class HudScene extends Phaser.Scene {
     this.botones = getBalance().mejoras.map(
       (m) => new BotonMejora(this, m, () => this.mostrarAyuda(m), () => this.comprar(m)),
     );
-    this.menu = (["misiones", "album"] as Pestana[]).map((pestana) => ({
+    this.menu = (["misiones", "album", "colapso"] as Pestana[]).map((pestana) => ({
       pestana,
       boton: new Boton(this, 0, 0, { ancho: 100, alto: ALTO_MENU_TIENDA, texto: "", tamano: 19 }, () => this.abrirPanel(pestana)),
     }));
@@ -159,6 +164,10 @@ export class HudScene extends Phaser.Scene {
       } else if (pestana === "album") {
         const zona = zonaDe(b, progreso.zona);
         boton.setTexto(`Álbum ${progreso.fichasAlbum(zona.id).length}/${fichasDeZona(zona).length}`);
+      } else if (pestana === "colapso") {
+        const listo = puedeColapsar(b, progreso.exportar());
+        boton.setTexto(listo ? "¡Colapso listo!" : "Colapso");
+        boton.setColores(listo ? { borde: COLOR.acento, colorTexto: COLOR.acento } : { borde: COLOR.linea, colorTexto: COLOR.texto });
       }
     }
   }
@@ -235,12 +244,13 @@ export class HudScene extends Phaser.Scene {
 
   private actualizarMonedas(): void {
     this.monedas.setText(formatearNumero(progreso.monedas));
+    const zona = zonaDe(getBalance(), progreso.zona);
     this.detalle.setText(
-      progreso.total === 0
-        ? "Lanza objetos al hoyo"
-        : progreso.total === 1
-          ? "1 objeto tragado"
-          : `${formatearNumero(progreso.total)} objetos tragados`,
+      progreso.materiaOscura > 0 || progreso.colapsos > 0
+        ? `${zona.nombre} · ${formatearNumero(progreso.materiaOscura)} materia oscura`
+        : progreso.total === 0
+          ? "Lanza objetos al hoyo"
+          : `${zona.nombre} · ${formatearNumero(progreso.total)} ${progreso.total === 1 ? "tragado" : "tragados"}`,
     );
     this.icono.setX(this.scale.gameSize.width - MARGEN - this.monedas.width - 22);
     this.actualizarBotones();

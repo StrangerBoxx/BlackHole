@@ -8,6 +8,7 @@ import { CargaScene } from "./escenas/CargaScene";
 import { HudScene } from "./escenas/HudScene";
 import { JuegoScene } from "./escenas/JuegoScene";
 import { PanelScene } from "./escenas/PanelScene";
+import "./escenas/PestanaColapso";
 
 // Tamaño base: 720 de ancho; alto = barra + mundo 960 + tienda. Phaser lo escala para llenar la pantalla
 // (Scale.EXPAND = como stretch "canvas_items" + aspect "expand" de Godot).

@@ -57,6 +57,8 @@ export const EVENTOS_GLOBALES = {
   COMPRA: "compra",
   /** Se compró una mejora que desbloqueó objetos: (objetos: TipoObjeto[]) */
   DESBLOQUEO: "desbloqueo",
+  /** Se colapsó: ({ materia, zona }) */
+  COLAPSO: "colapso",
   /** Se borró el progreso: el pasto vuelve a empezar. */
   REINICIO: "reinicio",
 } as const;

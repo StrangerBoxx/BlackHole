@@ -41,6 +41,7 @@ export class Sonido {
     ev.on(EVENTOS_GLOBALES.DRON, () => this.tocarEvento("dron"));
     ev.on(EVENTOS_GLOBALES.MISION, () => this.tocarEvento("mision"));
     ev.on(EVENTOS_GLOBALES.ALBUM, () => this.tocarEvento("album"));
+    ev.on(EVENTOS_GLOBALES.COLAPSO, () => this.tocarEvento("colapso"));
 
     if (game.sound.locked) game.sound.once(Phaser.Sound.Events.UNLOCKED, () => this.empezarAmbiente());
     else this.empezarAmbiente();
