@@ -6,6 +6,8 @@ export interface TipoObjeto {
   nombre: string;
   r: number;
   valor: number;
+  /** Ancho de la sombra respecto al radio (por defecto 1). El auto es más largo. */
+  sombraAncho?: number;
 }
 
 export type IdMejora = "pull" | "force" | "size" | "spawn" | "value";
@@ -104,6 +106,7 @@ export interface Balance {
     monedaPopup: number;
     popupSegundos: number;
     popupSubida: number;
+    sombra: { dx: number; dy: number; alto: number; color: string; opacidad: number };
   };
 }
 

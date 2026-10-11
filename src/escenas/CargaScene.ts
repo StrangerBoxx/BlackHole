@@ -1,12 +1,7 @@
 import Phaser from "phaser";
+import { IMAGENES, texturaObjeto } from "../core/assets";
 import { setBalance } from "../core/Balance";
 import { IDS_SONIDO, revisarBalance, type Balance } from "../logica/balance";
-
-// Imágenes fijas del juego (assets/img/<nombre>.png)
-export const IMAGENES = ["suelo", "hoyo_borde", "hoyo_remolino", "hoyo_nucleo", "moneda"] as const;
-
-/** Clave de textura de un objeto: "obj_piedra", "obj_auto"... */
-export const texturaObjeto = (id: string) => `obj_${id}`;
 
 /**
  * Lee el balance y después carga cada imagen y sonido por su nombre.

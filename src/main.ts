@@ -4,7 +4,7 @@ import { JuegoScene } from "./escenas/JuegoScene";
 
 // El tamaño base es 720x960. Phaser lo escala para llenar la pantalla
 // (Scale.EXPAND = como stretch "canvas_items" + aspect "expand" de Godot).
-new Phaser.Game({
+const juego = new Phaser.Game({
   type: Phaser.AUTO, // WebGL y, si no hay, Canvas
   parent: "juego",
   backgroundColor: "#1d1712",
@@ -17,3 +17,6 @@ new Phaser.Game({
   input: { activePointers: 2 },
   scene: [CargaScene, JuegoScene],
 });
+
+// Solo en desarrollo: acceso desde la consola del navegador para revisar el estado
+if (import.meta.env.DEV) (window as unknown as { juego: Phaser.Game }).juego = juego;

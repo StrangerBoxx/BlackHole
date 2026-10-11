@@ -36,7 +36,7 @@
     { "id": "neumatico", "nombre": "Neumático", "r": 30, "valor": 16 },
     { "id": "caja",      "nombre": "Caja",      "r": 36, "valor": 30 },
     { "id": "basurero",  "nombre": "Basurero",  "r": 42, "valor": 55 },
-    { "id": "auto",      "nombre": "Auto",      "r": 56, "valor": 120 }
+    { "id": "auto",      "nombre": "Auto",      "r": 56, "valor": 120, "sombraAncho": 1.1 }
   ],
 
   "desbloqueo": { "fraccionRadioHoyo": 0.95 },
@@ -95,6 +95,7 @@
     "suavizadoHoyo": 4,
     "monedaPopup": 32,
     "popupSegundos": 1.2,
-    "popupSubida": 60
+    "popupSubida": 60,
+    "sombra": { "dx": 5, "dy": 7, "alto": 0.85, "color": "#14230a", "opacidad": 0.3 }
   }
 }

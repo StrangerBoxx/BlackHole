@@ -18,6 +18,7 @@ npm run build      # versión final en dist/
 - Arrastras un objeto y al soltarlo sale con la velocidad del dedo de los últimos 90 ms (tope 2400 px/s).
   Se agarra el objeto más cercano si el dedo está a menos de `r + 22` px.
 - Roce: `v *= max(0, 1 - 1.6*dt)`. Rebote 0.6 en bordes y entre objetos (masa = r²; el agarrado no se mueve por choques).
+- Paso de tiempo máximo 1/30 s por cuadro (si el celular se traba, el juego va más lento en vez de atravesar paredes).
 - Atracción dentro del radio: `fuerza * (1 - dist/radio) + fuerza * 0.15`.
 - Captura: `dist < radio_hoyo - r*0.2` y velocidad < velocidad de captura. Caída en espiral de 0.6 s.
 - Monedas por objeto: `round(valor * multiplicador)`. Combo si el siguiente cae antes de 2.5 s;
@@ -35,6 +36,8 @@ Todos los números están en `public/data/balance.json`.
   Compatibilidad → `Phaser.AUTO` · "emular toque con mouse" → Phaser ya trata mouse y dedo igual.
 - **Phaser 3.90.0** fijo (ya existe Phaser 4, pero se pidió 3).
 - **Física propia** en `src/logica/fisica.ts` (no Arcade/Matter): copia exacta del prototipo y se puede testear.
+- **Corrección al prototipo:** al separar dos objetos que se pisan, el prototipo empujaba más al *grande*.
+  Aquí se reparte con el inverso de la masa (el chico se mueve más). Entre objetos iguales da lo mismo.
 - **Pantalla:** con EXPAND la cámara centra el mundo de 720x960; en pantallas más altas sobra espacio arriba/abajo.
 - **Lógica pura** en `src/logica/` (sin Phaser) → se prueba en `tests/`.
 - **Assets:** `public/assets/` con los mismos nombres de `LEEME.txt`. Se cargan por nombre, y los de objetos
@@ -45,7 +48,7 @@ Todos los números están en `public/data/balance.json`.
 ## Estado por pasos
 
 - [x] 0. Base del proyecto
-- [ ] 1. Objeto arrastrable y lanzable
+- [x] 1. Objeto arrastrable y lanzable (temporal: aparece uno de cada tipo abajo)
 - [ ] 2. Hoyo que atrae y traga
 - [ ] 3. Monedas y combo
 - [ ] 4. Tienda de mejoras
