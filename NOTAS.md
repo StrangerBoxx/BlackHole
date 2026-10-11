@@ -39,12 +39,17 @@ Todos los números están en `public/data/balance.json`.
 - **Física propia** en `src/logica/fisica.ts` (no Arcade/Matter): copia exacta del prototipo y se puede testear.
 - **Corrección al prototipo:** al separar dos objetos que se pisan, el prototipo empujaba más al *grande*.
   Aquí se reparte con el inverso de la masa (el chico se mueve más). Entre objetos iguales da lo mismo.
-- **Pantalla:** con EXPAND la cámara centra el mundo de 720x960; en pantallas más altas sobra espacio arriba/abajo.
+- **Pantalla:** con EXPAND, si la pantalla es más alta o más ancha, sobra espacio color tierra alrededor del pasto.
 - **Eventos:** la escena de juego avisa `captura` (empieza a caer) y `tragado` (terminó de caer).
   El HUD, las monedas y el sonido escuchan esos eventos en vez de meterse en la escena.
-- **HUD encima del juego:** el prototipo tenía el marcador y la tienda fuera del campo; aquí van en `HudScene`,
-  pegados a los bordes de la *pantalla* (en celulares altos usan el espacio que sobra; en 720x960 tapan un poco el pasto).
-- **Bus de eventos entre escenas** (`game.events`): `aviso` (texto, segundos) y `combo` (número).
+- **Pantalla = barra (84) + pasto (960) + tienda (162)** → tamaño base 720x1206, como el prototipo
+  (marcador arriba, campo al medio, mejoras abajo). El pasto se centra en el espacio libre entre barra y tienda,
+  así nunca queda tapado. Medidas en `src/core/pantalla.ts`.
+- **Arrastre leído en cada cuadro:** la barra y la tienda atrapan los toques (para no agarrar objetos al comprar),
+  así que el juego revisa en cada cuadro dónde está el dedo y si se levantó. Soltar encima de la tienda funciona.
+- **Tienda:** tocar un botón muestra qué hace el siguiente nivel abajo y compra si alcanza. Borde dorado = alcanza.
+- **Bus de eventos entre escenas** (`game.events`): `aviso` (texto, segundos), `combo` (número),
+  `compra` (id, nivel) y `desbloqueo` (objetos nuevos).
 - **Combo y monedas** usan el tiempo del juego (suma de dt), no el reloj: con velocidad x2 todo sigue cuadrando.
 - **Halo, polvo y línea punteada** se dibujan por código (como en el prototipo); sus colores están en `balance.json` → `visual`.
 - **Lógica pura** en `src/logica/` (sin Phaser) → se prueba en `tests/`.
@@ -58,7 +63,7 @@ Todos los números están en `public/data/balance.json`.
 - [x] 1. Objeto arrastrable y lanzable (temporal: aparece uno de cada tipo abajo)
 - [x] 2. Hoyo que atrae y traga (temporal: lo tragado reaparece abajo; niveles fijos en 0)
 - [x] 3. Monedas y combo
-- [ ] 4. Tienda de mejoras
+- [x] 4. Tienda de mejoras
 - [ ] 5. Aparición y desbloqueos
 - [ ] 6. Sonidos
 - [ ] 7. Guardado

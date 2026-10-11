@@ -23,4 +23,8 @@ export const EVENTOS_GLOBALES = {
   AVISO: "aviso",
   /** Combo nuevo: (combo: number) */
   COMBO: "combo",
+  /** Se compró una mejora sin desbloquear nada: (id: IdMejora, nivel: number) */
+  COMPRA: "compra",
+  /** Se compró una mejora que desbloqueó objetos: (objetos: TipoObjeto[]) */
+  DESBLOQUEO: "desbloqueo",
 } as const;

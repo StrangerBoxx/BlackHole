@@ -1,16 +1,18 @@
 import Phaser from "phaser";
+import { ALTO_BASE, ANCHO_BASE } from "./core/pantalla";
+import { progreso } from "./core/Progreso";
 import { CargaScene } from "./escenas/CargaScene";
 import { HudScene } from "./escenas/HudScene";
 import { JuegoScene } from "./escenas/JuegoScene";
 
-// El tamaño base es 720x960. Phaser lo escala para llenar la pantalla
+// Tamaño base: 720 de ancho; alto = barra + mundo 960 + tienda. Phaser lo escala para llenar la pantalla
 // (Scale.EXPAND = como stretch "canvas_items" + aspect "expand" de Godot).
 const juego = new Phaser.Game({
   type: Phaser.AUTO, // WebGL y, si no hay, Canvas
   parent: "juego",
   backgroundColor: "#1d1712",
-  width: 720,
-  height: 960,
+  width: ANCHO_BASE,
+  height: ALTO_BASE,
   scale: {
     mode: Phaser.Scale.EXPAND,
     autoCenter: Phaser.Scale.CENTER_BOTH,
@@ -20,4 +22,4 @@ const juego = new Phaser.Game({
 });
 
 // Solo en desarrollo: acceso desde la consola del navegador para revisar el estado
-if (import.meta.env.DEV) (window as unknown as { juego: Phaser.Game }).juego = juego;
+if (import.meta.env.DEV) Object.assign(window, { juego, progreso });

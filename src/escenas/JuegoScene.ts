@@ -29,6 +29,8 @@ export const EVENTOS_JUEGO = {
 export class JuegoScene extends Phaser.Scene {
   private objetos: Objeto[] = [];
   private agarrado: Objeto | null = null;
+  /** El dedo (o mouse) que tiene el objeto. */
+  private dedo: Phaser.Input.Pointer | null = null;
   private rastro: PuntoRastro[] = [];
   private hoyo!: Hoyo;
   private linea!: Phaser.GameObjects.Graphics;
@@ -48,6 +50,7 @@ export class JuegoScene extends Phaser.Scene {
     const { ancho, alto } = getBalance().mundo;
     this.objetos = [];
     this.agarrado = null;
+    this.dedo = null;
     this.tiempo = 0;
     this.combo = new Combo(getBalance().combo.ventanaSegundos);
     centrarMundo(this);
@@ -89,30 +92,32 @@ export class JuegoScene extends Phaser.Scene {
       o.cuerpo.arrastrado = true;
       o.cuerpo.vx = o.cuerpo.vy = 0;
       this.agarrado = o;
+      this.dedo = p;
       this.rastro = [{ x: o.cuerpo.x, y: o.cuerpo.y, t: performance.now() }];
     });
+    // Mover y soltar se revisan en cada cuadro (seguirDedo): así funciona aunque el dedo
+    // pase o se levante encima de la barra o la tienda, que se quedan con esos eventos.
+  }
 
-    this.input.on(Phaser.Input.Events.POINTER_MOVE, (p: Phaser.Input.Pointer) => {
-      const o = this.agarrado;
-      if (!o || !p.isDown) return;
-      const pos = limitarAlMundo(p.worldX, p.worldY, o.cuerpo.r, b.mundo.ancho, b.mundo.alto);
-      o.cuerpo.x = pos.x;
-      o.cuerpo.y = pos.y;
-      agregarPunto(this.rastro, { ...pos, t: performance.now() }, b.lanzamiento.puntosRastro);
-    });
-
-    const soltar = () => {
-      const o = this.agarrado;
-      if (!o) return;
+  /** Mueve el objeto agarrado al dedo; si el dedo se levantó, lo lanza. */
+  private seguirDedo(): void {
+    const o = this.agarrado, p = this.dedo;
+    if (!o || !p) return;
+    const b = getBalance();
+    if (!p.isDown) {
       const v = velocidadLanzamiento(this.rastro, performance.now(), b.lanzamiento);
       o.cuerpo.vx = v.vx;
       o.cuerpo.vy = v.vy;
       o.cuerpo.arrastrado = false;
-      this.agarrado = null;
-    };
-    this.input.on(Phaser.Input.Events.POINTER_UP, soltar);
-    this.input.on(Phaser.Input.Events.POINTER_UP_OUTSIDE, soltar);
-    this.input.on(Phaser.Input.Events.GAME_OUT, soltar);
+      this.agarrado = this.dedo = null;
+      return;
+    }
+    const mundo = this.cameras.main.getWorldPoint(p.x, p.y);
+    const pos = limitarAlMundo(mundo.x, mundo.y, o.cuerpo.r, b.mundo.ancho, b.mundo.alto);
+    if (pos.x === o.cuerpo.x && pos.y === o.cuerpo.y) return; // el dedo está quieto
+    o.cuerpo.x = pos.x;
+    o.cuerpo.y = pos.y;
+    agregarPunto(this.rastro, { ...pos, t: performance.now() }, b.lanzamiento.puntosRastro);
   }
 
   update(_time: number, deltaMs: number): void {
@@ -121,6 +126,7 @@ export class JuegoScene extends Phaser.Scene {
     this.tiempo += dt;
     const s = this.stats;
     const centro = this.hoyo;
+    this.seguirDedo();
 
     // Objetos nuevos crecen; los que caen siguen su espiral
     for (const o of this.objetos) {
