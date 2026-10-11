@@ -15,6 +15,7 @@ import { formatearNumero } from "../logica/monedas";
 import { formatearDuracion } from "../logica/offline";
 import { zonaDe } from "../logica/objetos";
 import { crearDock } from "./dock";
+import { crearInicio } from "./inicio";
 
 /** Altura (en px del juego) donde van los avisos: debajo del marcador, lejos del dock. */
 const Y_AVISOS = 160;
@@ -37,6 +38,53 @@ export interface Interfaz {
 }
 
 let unica: Interfaz | null = null;
+
+/**
+ * Contenido de Configuración (lo usan la tuerca del juego y la pantalla de inicio):
+ * Sonido sí/no, Reiniciar progreso (dos toques) y, dentro del juego, Menú principal.
+ */
+export function crearConfiguracion(
+  ui: Interfaz,
+  op: { alReiniciar?: () => void; alMenuPrincipal?: () => void } = {},
+): HTMLElement {
+  const caja = el("div", "config");
+  const bSonido = el("button");
+  const textoSonido = () => `Sonido: ${getSonido()?.activo === false ? "no" : "sí"}`;
+  bSonido.textContent = textoSonido();
+  bSonido.addEventListener("click", () => {
+    getSonido()?.alternar();
+    bSonido.textContent = textoSonido();
+  });
+  caja.append(bSonido);
+
+  if (op.alMenuPrincipal) {
+    const bMenu = el("button", undefined, "Menú principal");
+    bMenu.addEventListener("click", op.alMenuPrincipal);
+    caja.append(bMenu);
+  }
+
+  const bReiniciar = el("button", "peligro", "Reiniciar progreso");
+  let armado = 0;
+  const desarmar = () => {
+    clearTimeout(armado);
+    armado = 0;
+    bReiniciar.textContent = "Reiniciar progreso";
+  };
+  bReiniciar.addEventListener("click", () => {
+    if (!armado) {
+      bReiniciar.textContent = "¿Borrar todo? Toca otra vez";
+      armado = window.setTimeout(desarmar, 3000);
+      return;
+    }
+    desarmar();
+    progreso.reiniciar();
+    ui.game.events.emit(EVENTOS_GLOBALES.REINICIO);
+    ui.aviso("Progreso reiniciado", 2);
+    op.alReiniciar?.();
+  });
+  caja.append(bReiniciar);
+  return caja;
+}
 
 export function iniciarInterfaz(game: Phaser.Game): Interfaz {
   if (unica) return unica;
@@ -87,35 +135,10 @@ export function iniciarInterfaz(game: Phaser.Game): Interfaz {
   opciones.hidden = true;
   const tituloConfig = el("div", "titulo-panel", "Configuración");
   const dato = el("div", "dato");
-  const bSonido = el("button");
-  const bReiniciar = el("button", "peligro");
-  opciones.append(tituloConfig, dato, bSonido, bReiniciar);
-  const textoSonido = () => `Sonido: ${getSonido()?.activo === false ? "no" : "sí"}`;
-  bSonido.addEventListener("click", () => {
-    getSonido()?.alternar();
-    bSonido.textContent = textoSonido();
-  });
-  let armado = 0;
-  const desarmar = () => {
-    clearTimeout(armado);
-    armado = 0;
-    bReiniciar.textContent = "Reiniciar progreso";
-  };
-  bReiniciar.addEventListener("click", () => {
-    if (!armado) {
-      bReiniciar.textContent = "¿Borrar todo? Toca otra vez";
-      armado = window.setTimeout(desarmar, 3000);
-      return;
-    }
-    desarmar();
-    cerrarTodo();
-    progreso.reiniciar();
-    game.events.emit(EVENTOS_GLOBALES.REINICIO);
-    aviso("Progreso reiniciado", 2);
-  });
+  const contenidoConfig = el("div", "contenido-config");
+  opciones.append(tituloConfig, dato, contenidoConfig);
   function cerrarOpciones() {
     opciones.hidden = true;
-    desarmar();
   }
   /** Cierra el menú desplegable y la configuración (solo uno puede estar abierto). */
   function cerrarTodo() {
@@ -125,7 +148,9 @@ export function iniciarInterfaz(game: Phaser.Game): Interfaz {
   botonAjustes.addEventListener("click", () => {
     if (!opciones.hidden) return cerrarOpciones();
     cerrarTodo();
-    bSonido.textContent = textoSonido();
+    contenidoConfig.replaceChildren(
+      crearConfiguracion(unica!, { alReiniciar: cerrarTodo, alMenuPrincipal: () => irAInicio() }),
+    );
     opciones.hidden = false;
   });
   // Se cierran al tocar el campo de juego (o cualquier cosa fuera de ellos)
@@ -151,6 +176,27 @@ export function iniciarInterfaz(game: Phaser.Game): Interfaz {
 
   raiz.append(marcador, desplegable, opciones, avisos);
   unica = { raiz, game, aviso };
+
+  // ---------- Inicio ↔ juego
+  function ponerModo(modo: "inicio" | "juego") {
+    raiz.classList.toggle("modo-inicio", modo === "inicio");
+    raiz.classList.toggle("modo-juego", modo === "juego");
+    cerrarTodo();
+    raiz.dispatchEvent(new Event("modo"));
+  }
+  function irAJuego() {
+    ponerModo("juego");
+    game.scene.stop("Inicio");
+    game.scene.start("Juego");
+  }
+  function irAInicio() {
+    ponerModo("inicio");
+    if (game.scene.isActive("Panel")) game.scene.stop("Panel");
+    game.scene.stop("Juego");
+    game.scene.start("Inicio");
+  }
+  crearInicio(unica, irAJuego);
+  ponerModo("inicio");
 
   // ---------- Dock de mejoras (abajo)
   crearDock(unica);

@@ -94,11 +94,12 @@ npm run android:abrir # abre el proyecto en Android Studio
 public/data/balance.json   todos los números
 public/assets/             imágenes y sonidos (nombres fijos, ver "Assets")
 src/main.ts                configuración de Phaser
-src/escenas/               CargaScene (lee balance y assets) · JuegoScene (piso, hoyo, objetos)
-                           PanelScene (Misiones/Álbum)
+src/escenas/               CargaScene (lee balance y assets) · InicioScene (fondo del menú de inicio)
+                           JuegoScene (piso, hoyo, objetos) · PanelScene (Misiones/Álbum)
                            PestanaColapso (pestaña Colapso) · DebugScene (solo desarrollo)
 src/entidades/             Hoyo · Objeto · Dron · Popup ("+N" y textos flotantes)
-src/ui/                    interfaz (marcador, ⚙, avisos) · dock (mejoras) · burbuja (ayuda) · interfaz.css
+src/ui/                    interfaz (marcador, menú, configuración, avisos, modos) · inicio (pantalla de inicio)
+                           · dock (mejoras) · burbuja (ayuda) · interfaz.css
                            · Boton (botón de los paneles de Phaser)
 public/assets/ui/          íconos SVG de la interfaz (reemplazables)
 src/efectos/               DistorsionFX (shader del piso) · Luz (capa de luz y viñeta)
@@ -177,6 +178,27 @@ referencia/                prototipo y guías originales
 - **Arrastre leído en cada cuadro:** el juego revisa en cada cuadro dónde está el dedo y si se levantó,
   así soltar un objeto encima del dock también lo lanza.
 
+### Pantalla de inicio
+
+Al abrir el juego aparece el inicio: `InicioScene` dibuja de fondo el piso de baldosas blancas del laboratorio,
+el agujero negro grande (40 % del alto, con distorsión, halo y chispas) y objetos del laboratorio que caen en
+espiral. Encima, en HTML (`src/ui/inicio.ts`): el título BLACK / HOLE, el lema y tres botones:
+
+- **Jugar** (naranja; dice "Continuar" si ya hay partida) → pasa a la escena de juego.
+- **Logros** (con x/12) → hoja con los 12 logros, su trofeo, descripción y barra de avance.
+- **Configuración** → Sonido sí/no y Reiniciar progreso (lo mismo que la tuerca del juego).
+
+Dentro del juego, Configuración (tuerca) trae además **Menú principal** para volver al inicio.
+La interfaz tiene dos modos (`modo-inicio` / `modo-juego` en `#ui`): en el inicio se esconden marcador y dock.
+
+### Logros
+
+12 metas en `balance.json` → `logros` (`src/logica/logros.ts`), por tipo: objetos tragados, mejor combo, jefes,
+dorados, tiros especiales, colapsos, sala alcanzada, álbumes completos y Bing Bong. Se desbloquean solos (se
+revisan cada vez que cambia el progreso) con aviso "🏆 ¡Logro!" y sonido. No dan premio. Para los que no salen
+del progreso normal se guardan récords de por vida (`records`: mejor combo, jefes, dorados, tiros); récords y
+logros se conservan al colapsar.
+
 ### Menú estilo dock (interfaz en HTML encima del juego)
 
 Está en HTML/CSS (`src/ui/`) porque el vidrio con desenfoque (`backdrop-filter`) no existe dentro del canvas.
@@ -205,7 +227,7 @@ al juego; solo los botones los atrapan. Mientras el panel de Misiones/Álbum/Col
     que se va sola en 2 s. Mantener presionado no compra.
   - Los estados se actualizan cuando cambia el progreso (no en cada cuadro).
 - **Íconos:** `public/assets/ui/*.svg` (atraccion, fuerza, tamano, aparicion, valor, combo, gravedad, dron, mas,
-  misiones, album, colapso, menu, configuracion). Se pueden reemplazar por otros SVG con el mismo nombre.
+  misiones, album, colapso, menu, configuracion, logros, jugar). Se pueden reemplazar por otros SVG con el mismo nombre.
 - **No incluido:** "Probar mis dibujos" (se decidió no hacerlo).
 - **Bus de eventos entre escenas** (`game.events`, lista en `src/core/estilo.ts`): `captura` (tipo),
   `tragado` (InfoTragado: tipo, monedas, especial, tiros, combo, jefe), `aviso` (texto, segundos), `combo`,

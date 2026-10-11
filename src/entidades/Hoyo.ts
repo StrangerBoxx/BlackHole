@@ -68,10 +68,11 @@ export class Hoyo {
   private tiempo = 0;
   private ultimoHalo = { r: -1, p: -1 };
 
-  constructor(scene: Phaser.Scene, radio: number, atraccion: number) {
+  /** `centro`: dónde va (por defecto el del balance; la pantalla de inicio lo pone en otro lugar). */
+  constructor(scene: Phaser.Scene, radio: number, atraccion: number, centro?: { x: number; y: number }) {
     const b = getBalance();
-    this.x = b.mundo.hoyo.x;
-    this.y = b.mundo.hoyo.y;
+    this.x = centro?.x ?? b.mundo.hoyo.x;
+    this.y = centro?.y ?? b.mundo.hoyo.y;
     this.inclinacion = b.visual.inclinacion;
     this.radioVisible = radio;
     this.atraccionVisible = atraccion;

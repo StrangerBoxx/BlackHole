@@ -167,6 +167,156 @@
 .opciones button:active { background: #eef2f5; }
 .opciones button.peligro { color: #d9433b; }
 
+/* Botones de Configuración (tuerca y pantalla de inicio) */
+.config { display: flex; flex-direction: column; gap: 0.2em; }
+.config button {
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0.55em 0.2em;
+  min-height: 44px;
+  font-weight: 600;
+  border-radius: 0.5em;
+}
+.config button:active { background: #eef2f5; }
+.config button.peligro { color: #d9433b; }
+
+/* ---------------------------------------------------------------- Modos: inicio / juego */
+#ui.modo-inicio .marcador,
+#ui.modo-inicio .dock,
+#ui.modo-inicio .bandeja,
+#ui.modo-inicio .desplegable,
+#ui.modo-inicio .opciones,
+#ui.modo-inicio .burbuja { display: none !important; }
+#ui.modo-juego .inicio { display: none; }
+
+/* ---------------------------------------------------------------- Pantalla de inicio */
+.inicio {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: max(9vh, env(safe-area-inset-top)) 1.2em max(5vh, env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+.logo {
+  margin: 0;
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 3.4em;
+  line-height: 0.92;
+  letter-spacing: 0.16em;
+  text-align: center;
+  color: var(--texto);
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.9), 0 6px 22px rgba(255, 255, 255, 0.8);
+  padding-left: 0.16em; /* compensa el espaciado de la última letra */
+}
+.logo span { display: block; color: var(--cian); }
+.lema {
+  margin: 0.5em 0 0;
+  font-weight: 600;
+  font-size: 0.9em;
+  letter-spacing: 0.04em;
+  color: var(--gris);
+  background: rgba(255, 255, 255, 0.75);
+  padding: 0.2em 0.8em;
+  border-radius: 999px;
+}
+.botones-inicio {
+  margin-top: auto;
+  width: min(20em, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.7em;
+  pointer-events: auto;
+}
+.boton-inicio {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55em;
+  min-height: 52px;
+  padding: 0.7em 1em;
+  border-radius: 1em;
+  font-family: "Rajdhani", sans-serif !important;
+  font-weight: 700;
+  font-size: 1.25em !important;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  pointer-events: auto;
+  transition: transform 0.08s;
+}
+.boton-inicio:active { transform: scale(0.96); }
+.boton-inicio img { width: 1.25em; height: 1.25em; }
+.boton-inicio .meta { color: var(--naranja); margin-left: 0.2em; }
+.boton-inicio.principal {
+  background: var(--naranja);
+  color: #fff !important;
+  border: 1px solid #d4640f;
+  box-shadow: 0 0 0 4px rgba(240, 122, 28, 0.2), 0 10px 26px rgba(240, 122, 28, 0.45);
+  font-size: 1.5em !important;
+}
+
+/* Hoja (Logros / Configuración) */
+.fondo-hoja {
+  position: absolute;
+  inset: 0;
+  background: rgba(27, 37, 46, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: max(1.2em, env(safe-area-inset-top)) 1em max(1.2em, env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  pointer-events: auto;
+}
+.fondo-hoja[hidden] { display: none; }
+.hoja {
+  width: min(24em, 100%);
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7em;
+  padding: 1em;
+  box-sizing: border-box;
+  border-radius: 1.2em;
+  background: #fff;
+  border: 1px solid var(--borde);
+  box-shadow: 0 16px 40px rgba(27, 37, 46, 0.25);
+}
+.cuerpo-hoja { overflow-y: auto; display: flex; flex-direction: column; gap: 0.5em; }
+.hoja .volver { font-size: 1.05em !important; }
+.logro {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  padding: 0.55em 0.6em;
+  border-radius: 0.8em;
+  border: 1px solid #e3e8eb;
+  background: #f7f9fa;
+}
+.logro .trofeo {
+  flex: none;
+  width: 2.2em;
+  height: 2.2em;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #e3e8eb;
+  color: #9aa6b0;
+}
+.logro .trofeo svg { width: 60%; height: 60%; }
+.logro.hecho { border-color: rgba(240, 122, 28, 0.45); background: #fff8f2; }
+.logro.hecho .trofeo { background: var(--naranja); color: #fff; }
+.texto-logro { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.15em; }
+.texto-logro b { font-family: "Rajdhani", sans-serif; font-size: 1.05em; }
+.texto-logro > span { font-size: 0.78em; color: var(--gris); }
+.barra { display: block; height: 0.35em; border-radius: 999px; background: #e3e8eb; overflow: hidden; margin-top: 0.15em; }
+.barra span { display: block; height: 100%; background: var(--cian); border-radius: 999px; }
+.logro.hecho .barra span { background: var(--naranja); }
+.cuenta { font-family: "Rajdhani", sans-serif; font-weight: 700; color: var(--gris); font-size: 0.95em; }
+.logro.hecho .cuenta { color: var(--naranja); font-size: 1.2em; }
+
 /* ---------------------------------------------------------------- Avisos (arriba, bajo el marcador) */
 .avisos {
   position: absolute;

@@ -57,7 +57,7 @@ export class CargaScene extends Phaser.Scene {
       }
       iniciarSonido(this.game);
       iniciarInterfaz(this.game);
-      this.scene.start("Juego");
+      this.scene.start("Inicio");
     });
     this.load.start();
   }
