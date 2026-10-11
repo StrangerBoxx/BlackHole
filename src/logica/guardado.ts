@@ -3,21 +3,23 @@
 import { IDS_MEJORA, type Balance } from "./balance";
 import { nivelesIniciales, type Niveles } from "./mejoras";
 
-export const VERSION_GUARDADO = 1;
+export const VERSION_GUARDADO = 2;
 
 export interface EstadoProgreso {
   monedas: number;
   /** Objetos tragados en total. */
   total: number;
   niveles: Niveles;
+  /** Índice de la zona actual en balance.zonas. */
+  zona: number;
 }
 
 export function estadoVacio(): EstadoProgreso {
-  return { monedas: 0, total: 0, niveles: nivelesIniciales() };
+  return { monedas: 0, total: 0, niveles: nivelesIniciales(), zona: 0 };
 }
 
 export function serializar(e: EstadoProgreso): string {
-  return JSON.stringify({ version: VERSION_GUARDADO, monedas: e.monedas, total: e.total, niveles: e.niveles });
+  return JSON.stringify({ version: VERSION_GUARDADO, ...e });
 }
 
 /** Número entero >= 0, o el valor por defecto si no sirve. */
@@ -48,5 +50,10 @@ export function deserializar(texto: string | null | undefined, b: Balance): Esta
     const max = b.mejoras.find((m) => m.id === id)?.max ?? 0;
     niveles[id] = Math.min(max, entero(nivelesGuardados[id]));
   }
-  return { monedas: entero(d.monedas), total: entero(d.total), niveles };
+  return {
+    monedas: entero(d.monedas),
+    total: entero(d.total),
+    niveles,
+    zona: Math.min(b.zonas.length - 1, entero(d.zona)),
+  };
 }

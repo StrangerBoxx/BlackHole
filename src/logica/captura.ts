@@ -15,7 +15,7 @@ export function fuerzaAtraccion(dist: number, radio: number, fuerza: number, fra
   return fuerza * (1 - dist / radio) + fuerza * fraccionMinima;
 }
 
-/** Empuja la velocidad del objeto hacia el centro del hoyo. */
+/** Empuja la velocidad del objeto hacia el centro del hoyo (a los pesados les cuesta más). */
 export function aplicarAtraccion(
   c: Cuerpo,
   hoyo: Punto,
@@ -28,8 +28,8 @@ export function aplicarAtraccion(
   const dist = Math.hypot(dx, dy);
   const f = fuerzaAtraccion(dist, radio, fuerza, fraccionMinima);
   if (f === 0) return;
-  c.vx += (dx / dist) * f * dt;
-  c.vy += (dy / dist) * f * dt;
+  c.vx += ((dx / dist) * f * dt) / c.peso;
+  c.vy += ((dy / dist) * f * dt) / c.peso;
 }
 
 /**

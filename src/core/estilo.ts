@@ -1,3 +1,6 @@
+import type { IdEspecial, TipoObjeto } from "../logica/balance";
+import type { IdTiro } from "../logica/tiros";
+
 // Colores y fuentes de la interfaz (los mismos del prototipo).
 
 export const COLOR = {
@@ -16,6 +19,17 @@ export const COLOR = {
 export const FUENTE_TITULO = '"Lilita One", "Arial Rounded MT Bold", sans-serif';
 export const FUENTE_TEXTO = '"Nunito", system-ui, sans-serif';
 
+/** Lo que se avisa cuando el hoyo termina de tragarse algo (evento "tragado"). */
+export interface InfoTragado {
+  tipo: TipoObjeto;
+  monedas: number;
+  especial: IdEspecial | null;
+  tiros: IdTiro[];
+  combo: number;
+  /** Era el jefe de la zona. */
+  jefe: boolean;
+}
+
 /** "#rrggbb" → número para Phaser (0xrrggbb). */
 export const hex = (c: string) => parseInt(c.slice(1), 16);
 
@@ -23,7 +37,7 @@ export const hex = (c: string) => parseInt(c.slice(1), 16);
 export const EVENTOS_GLOBALES = {
   /** Un objeto empieza a caer al hoyo: (tipo: TipoObjeto) */
   CAPTURA: "captura",
-  /** Un objeto terminó de caer: (tipo: TipoObjeto, monedas: number) */
+  /** Un objeto terminó de caer: (info: InfoTragado) */
   TRAGADO: "tragado",
   /** Mostrar un aviso abajo: (texto: string, segundos: number) */
   AVISO: "aviso",

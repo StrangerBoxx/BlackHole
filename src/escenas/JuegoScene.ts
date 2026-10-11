@@ -1,7 +1,7 @@
 import Phaser from "phaser";
 import { getBalance } from "../core/Balance";
 import { debug } from "../core/Debug";
-import { COLOR, EVENTOS_GLOBALES } from "../core/estilo";
+import { COLOR, EVENTOS_GLOBALES, type InfoTragado } from "../core/estilo";
 import { centrarMundo } from "../core/pantalla";
 import { progreso } from "../core/Progreso";
 import { Hoyo } from "../entidades/Hoyo";
@@ -17,9 +17,11 @@ import { estadisticas, type Estadisticas } from "../logica/mejoras";
 import {
   calcularGanancia, Combo, formatearMultiplicador, formatearNumero, multiplicadorCombo, textoCombo,
 } from "../logica/monedas";
-import { objetosDesbloqueados } from "../logica/objetos";
+import { objetosDesbloqueados, tipoPorId, zonaDe } from "../logica/objetos";
+import { elegirEspecial, explotarBomba, multiplicadorEspecial } from "../logica/especiales";
 import * as Tiros from "../logica/tiros";
 import type { Cuerpo } from "../logica/fisica";
+import type { IdEspecial } from "../logica/balance";
 
 const PROF_LINEA = 25;
 const PROF_DEBUG = 50;
@@ -56,7 +58,7 @@ export class JuegoScene extends Phaser.Scene {
     this.combo = new Combo();
     this.reloj = new RelojAparicion();
     centrarMundo(this);
-    this.add.image(0, 0, "suelo").setOrigin(0).setDisplaySize(ancho, alto);
+    this.add.image(0, 0, zonaDe(getBalance(), progreso.zona).suelo).setOrigin(0).setDisplaySize(ancho, alto);
 
     const s = this.stats;
     this.hoyo = new Hoyo(this, s.radioHoyo, s.radioAtraccion);
@@ -87,15 +89,20 @@ export class JuegoScene extends Phaser.Scene {
     this.poblar();
   }
 
-  /** Saca un objeto desbloqueado (al azar con peso) en un lugar libre. Si no hay lugar, no sale. */
-  private aparecerObjeto(deAPoco: boolean): void {
+  /**
+   * Saca un objeto desbloqueado (al azar con peso) en un lugar libre. Si no hay lugar, no sale.
+   * `forzar` lo hace especial sí o sí (panel de debug).
+   */
+  aparecerObjeto(deAPoco: boolean, forzar?: IdEspecial): void {
     const b = getBalance();
     const s = this.stats;
-    const tipos = objetosDesbloqueados(b, s.radioHoyo);
+    const tipos = objetosDesbloqueados(b, zonaDe(b, progreso.zona), s.radioHoyo);
     if (tipos.length === 0) return;
-    const tipo = elegirTipo(tipos, b.aparicion.pesoBase, b.aparicion.pesoPorIndice, Math.random);
+    let tipo = elegirTipo(tipos, b.aparicion.pesoBase, b.aparicion.pesoPorIndice, Math.random);
+    const especial = forzar ?? elegirEspecial(tipo, b.especiales, Math.random);
+    if (especial === "bomba") tipo = tipoPorId(b, b.especiales.bomba.objeto);
     const lugar = buscarLugar(tipo.r, this.objetos.map((o) => o.cuerpo), s.radioAtraccion, b, Math.random);
-    if (lugar) this.objetos.push(new Objeto(this, tipo, lugar.x, lugar.y, deAPoco));
+    if (lugar) this.objetos.push(new Objeto(this, tipo, lugar.x, lugar.y, deAPoco, especial));
   }
 
   private configurarArrastre(): void {
@@ -222,8 +229,14 @@ export class JuegoScene extends Phaser.Scene {
     const combo = this.combo.registrar(this.tiempo, s.ventanaCombo);
     const xCombo = multiplicadorCombo(combo, b.combo.multiplicadorPorCombo, b.combo.multiplicadorMaximo);
     const xTiro = Tiros.multiplicadorTiro(o.tirosLogrados, b.tiros);
-    const ganancia = calcularGanancia(o.tipo.valor, [s.multiplicadorValor, xCombo, xTiro]);
+    const xEspecial = multiplicadorEspecial(o.especial, b.especiales);
+    const ganancia = calcularGanancia(o.tipo.valor, [s.multiplicadorValor, xCombo, xTiro, xEspecial]);
     progreso.registrarTragado(ganancia);
+
+    const arriba = this.hoyo.y - this.hoyo.radioVisible;
+    if (o.especial === "dorado") mostrarTextoFlotante(this, this.hoyo.x, arriba - 100, "¡Dorado! x10", b.especiales.dorado.color);
+    if (o.especial === "pesado") mostrarTextoFlotante(this, this.hoyo.x, arriba - 100, "¡Pesado! x4", COLOR.texto);
+    if (o.especial === "bomba") this.explotar();
 
     if (o.tirosLogrados.length) {
       const nombres = o.tirosLogrados.map((id) => b.tiros[id].nombre).join(" ");
@@ -237,7 +250,17 @@ export class JuegoScene extends Phaser.Scene {
     if (aviso) this.game.events.emit(EVENTOS_GLOBALES.AVISO, `${aviso}  monedas x${formatearMultiplicador(xCombo)}`, 1.2);
 
     mostrarPopupMonedas(this, this.hoyo.x, this.hoyo.y - this.hoyo.radioVisible - 10, `+${formatearNumero(ganancia)}`);
-    this.game.events.emit(EVENTOS_GLOBALES.TRAGADO, o.tipo, ganancia);
+    const info: InfoTragado = { tipo: o.tipo, monedas: ganancia, especial: o.especial, tiros: o.tirosLogrados, combo, jefe: false };
+    this.game.events.emit(EVENTOS_GLOBALES.TRAGADO, info);
+  }
+
+  /** La bomba llegó al fondo: empuja todo lo cercano hacia el hoyo y sacude la pantalla. */
+  private explotar(): void {
+    const e = getBalance().especiales.bomba;
+    explotarBomba(this.objetos.map((x) => x.cuerpo), this.hoyo, e.radioEfecto, e.impulso);
+    this.cameras.main.shake(260, 0.008);
+    this.cameras.main.flash(180, 255, 200, 120);
+    mostrarTextoFlotante(this, this.hoyo.x, this.hoyo.y - this.hoyo.radioVisible - 100, "¡BOOM!", COLOR.peligro);
   }
 
   /** Línea punteada del objeto agarrado al hoyo (ayuda a apuntar). */

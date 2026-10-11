@@ -32,6 +32,7 @@ export class CargaScene extends Phaser.Scene {
     iniciarGuardado(progreso, balance);
 
     for (const k of IMAGENES) this.load.image(k, `assets/img/${k}.png`);
+    for (const z of balance.zonas) this.load.image(z.suelo, `assets/img/${z.suelo}.png`);
     for (const o of balance.objetos) this.load.image(texturaObjeto(o.id), `assets/img/objetos/${o.id}.png`);
     for (const s of IDS_SONIDO) this.load.audio(s, `assets/sonidos/${s}.wav`);
 

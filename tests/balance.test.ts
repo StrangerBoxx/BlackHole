@@ -9,8 +9,8 @@ describe("balance.json", () => {
     expect(revisarBalance(balance)).toEqual([]);
   });
 
-  it("trae los 8 objetos en orden", () => {
-    expect(balance.objetos.map((o) => o.id)).toEqual([
+  it("el parque trae los 8 objetos originales en orden", () => {
+    expect(balance.zonas[0].objetos).toEqual([
       "piedra", "lata", "pelota", "cono", "neumatico", "caja", "basurero", "auto",
     ]);
   });

@@ -3,7 +3,7 @@ import type { IdSonido, TipoObjeto } from "../logica/balance";
 import type { IdTiro } from "../logica/tiros";
 import { tonoMoneda, tonoTragar, volumenTragar } from "../logica/sonido";
 import { getBalance } from "./Balance";
-import { EVENTOS_GLOBALES } from "./estilo";
+import { EVENTOS_GLOBALES, type InfoTragado } from "./estilo";
 
 const CLAVE_SONIDO = "black-hole-sonido";
 
@@ -31,6 +31,10 @@ export class Sonido {
     ev.on(EVENTOS_GLOBALES.DESBLOQUEO, () => this.tocar("desbloquear", 1, s.volumen.desbloquear));
     ev.on(EVENTOS_GLOBALES.TIRO, (ids: IdTiro[]) => {
       if (ids.length) this.tocarEvento("tiro");
+    });
+    ev.on(EVENTOS_GLOBALES.TRAGADO, (info: InfoTragado) => {
+      if (info.especial === "bomba") this.tocarEvento("bomba");
+      if (info.especial === "dorado") this.tocarEvento("dorado");
     });
 
     if (game.sound.locked) game.sound.once(Phaser.Sound.Events.UNLOCKED, () => this.empezarAmbiente());

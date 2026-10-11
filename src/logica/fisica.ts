@@ -13,10 +13,14 @@ export interface Cuerpo {
   arrastrado: boolean;
   /** Va cayendo al hoyo: ya no choca. */
   cayendo: boolean;
+  /** Multiplica la masa (objetos pesados = 5). Cuesta más moverlos. */
+  peso: number;
+  /** Si es false, el dedo no lo puede tomar (objetos pesados). */
+  agarrable: boolean;
 }
 
 export function crearCuerpo(x: number, y: number, r: number, angulo = 0): Cuerpo {
-  return { x, y, vx: 0, vy: 0, r, angulo, giro: 0, arrastrado: false, cayendo: false };
+  return { x, y, vx: 0, vy: 0, r, angulo, giro: 0, arrastrado: false, cayendo: false, peso: 1, agarrable: true };
 }
 
 export const rapidez = (c: { vx: number; vy: number }) => Math.hypot(c.vx, c.vy);
@@ -48,7 +52,7 @@ export function rebotarBordes(c: Cuerpo, ancho: number, alto: number, rebote: nu
 
 /**
  * Separa los círculos que se pisan y les da un rebote.
- * La masa es r² (un auto empuja más que una piedra).
+ * La masa es r² × peso (un auto empuja más que una piedra; un pesado, todavía más).
  * El objeto arrastrado cuenta como de masa infinita: empuja pero no lo empujan.
  */
 export function resolverChoques(cuerpos: Cuerpo[], rebote: number, alChocar?: (a: Cuerpo, b: Cuerpo) => void): void {
@@ -62,8 +66,8 @@ export function resolverChoques(cuerpos: Cuerpo[], rebote: number, alChocar?: (a
       alChocar?.(a, b);
       const nx = dx / d, ny = dy / d, solape = min - d;
       // Inverso de la masa: cuánto "cede" cada uno. El arrastrado cede 0.
-      const ia = a.arrastrado ? 0 : 1 / (a.r * a.r);
-      const ib = b.arrastrado ? 0 : 1 / (b.r * b.r);
+      const ia = a.arrastrado ? 0 : 1 / (a.r * a.r * a.peso);
+      const ib = b.arrastrado ? 0 : 1 / (b.r * b.r * b.peso);
       const tot = ia + ib;
       if (tot === 0) continue;
       a.x -= nx * solape * (ia / tot); a.y -= ny * solape * (ia / tot);

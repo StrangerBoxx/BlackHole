@@ -9,12 +9,12 @@ const b = balanceJson as Balance;
 
 describe("guardar y cargar", () => {
   it("lo que se guarda se vuelve a cargar igual", () => {
-    const e = { monedas: 1234, total: 56, niveles: { ...nivelesIniciales(), pull: 3, force: 2, size: 1, spawn: 4, value: 5 } };
+    const e = { monedas: 1234, total: 56, niveles: { ...nivelesIniciales(), pull: 3, force: 2, size: 1, spawn: 4, value: 5 }, zona: 1 };
     expect(deserializar(serializar(e), b)).toEqual(e);
   });
 
   it("el texto guardado trae versión", () => {
-    expect(JSON.parse(serializar(estadoVacio())).version).toBe(1);
+    expect(JSON.parse(serializar(estadoVacio())).version).toBe(2);
   });
 
   it("sin guardado (primera vez) empieza de cero", () => {
@@ -38,6 +38,7 @@ describe("guardar y cargar", () => {
       monedas: 0,
       total: 0,
       niveles: { ...nivelesIniciales(), pull: 12, size: 2 },
+      zona: 0,
     });
   });
 
@@ -50,7 +51,7 @@ describe("guardar y cargar", () => {
 describe("progreso: cargar, reiniciar y debug", () => {
   it("cargar reemplaza todo y exportar devuelve una copia", () => {
     const p = new Progreso();
-    p.cargar({ monedas: 7, total: 2, niveles: { ...nivelesIniciales(), pull: 1 } });
+    p.cargar({ ...estadoVacio(), monedas: 7, total: 2, niveles: { ...nivelesIniciales(), pull: 1 } });
     const copia = p.exportar();
     copia.niveles.pull = 9;
     expect(p.niveles.pull).toBe(1);

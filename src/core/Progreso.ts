@@ -4,7 +4,7 @@
 import type { Balance, IdMejora, TipoObjeto } from "../logica/balance";
 import { estadoVacio, type EstadoProgreso } from "../logica/guardado";
 import { costoMejora, estadisticas, puedeComprar, type Niveles } from "../logica/mejoras";
-import { objetosDesbloqueados } from "../logica/objetos";
+import { objetosDesbloqueados, zonaDe } from "../logica/objetos";
 
 export type { EstadoProgreso };
 
@@ -26,6 +26,9 @@ export class Progreso {
   }
   get niveles(): Readonly<Niveles> {
     return this.estado.niveles;
+  }
+  get zona(): number {
+    return this.estado.zona;
   }
 
   /** Copia del estado (para guardar). */
@@ -74,11 +77,12 @@ export class Progreso {
     const nivel = this.estado.niveles[id];
     if (!puedeComprar(m, nivel, this.estado.monedas)) return { comprado: false };
 
-    const antes = objetosDesbloqueados(b, estadisticas(b, this.estado.niveles).radioHoyo);
+    const zona = zonaDe(b, this.estado.zona);
+    const antes = objetosDesbloqueados(b, zona, estadisticas(b, this.estado.niveles).radioHoyo);
     const costo = costoMejora(m, nivel);
     this.estado.monedas -= costo;
     this.estado.niveles[id] = nivel + 1;
-    const despues = objetosDesbloqueados(b, estadisticas(b, this.estado.niveles).radioHoyo);
+    const despues = objetosDesbloqueados(b, zona, estadisticas(b, this.estado.niveles).radioHoyo);
     this.avisar();
     return {
       comprado: true,

@@ -10,6 +10,21 @@ export interface TipoObjeto {
   sombraAncho?: number;
 }
 
+export interface Zona {
+  id: string;
+  nombre: string;
+  /** Nombre de la imagen del suelo en assets/img/ (sin .png). */
+  suelo: string;
+  /** Todo lo que se traga en esta zona vale esto veces más. */
+  multiplicadorValor: number;
+  /** Ids de los 8 objetos de la zona, de chico a grande. */
+  objetos: string[];
+  /** Id del jefe de la zona. */
+  jefe: string;
+}
+
+export type IdEspecial = "dorado" | "pesado" | "bomba";
+
 export type IdMejora = "pull" | "force" | "size" | "spawn" | "value" | "combo";
 export const IDS_MEJORA: IdMejora[] = ["pull", "force", "size", "spawn", "value", "combo"];
 
@@ -82,6 +97,12 @@ export interface Balance {
     directo: { nombre: string; bonus: number; segundos: number };
   };
   objetos: TipoObjeto[];
+  zonas: Zona[];
+  especiales: {
+    dorado: { probabilidad: number; multiplicador: number; color: string };
+    pesado: { probabilidad: number; multiplicador: number; peso: number; radioMinimo: number; color: string };
+    bomba: { probabilidad: number; objeto: string; radioEfecto: number; impulso: number };
+  };
   desbloqueo: { fraccionRadioHoyo: number };
   aparicion: {
     iniciales: number;
@@ -156,6 +177,13 @@ export function revisarBalance(b: Balance): string[] {
       if (ef.porNivel === undefined && ef.factorPorNivel === undefined) errores.push(`efectos.${nombre} sin porNivel ni factorPorNivel`);
     }
   } else errores.push("falta efectos");
+  if (!Array.isArray(b?.zonas) || b.zonas.length === 0) errores.push("zonas vacío");
+  else
+    for (const z of b.zonas) {
+      for (const id of [...z.objetos, z.jefe]) {
+        if (!b.objetos?.some((o) => o.id === id)) errores.push(`zona ${z.id}: no existe el objeto ${id}`);
+      }
+    }
   for (const id of IDS_SONIDO) {
     if (typeof b?.sonido?.volumen?.[id] !== "number") errores.push(`sonido.volumen.${id}`);
   }

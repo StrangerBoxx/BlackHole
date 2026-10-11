@@ -6,7 +6,7 @@ import balanceJson from "../public/data/balance.json";
 
 const b = balanceJson as Balance;
 const conTamano = (size: number) =>
-  objetosDesbloqueados(b, estadisticas(b, { ...nivelesIniciales(), size }).radioHoyo).map((t) => t.id);
+  objetosDesbloqueados(b, b.zonas[0], estadisticas(b, { ...nivelesIniciales(), size }).radioHoyo).map((t) => t.id);
 
 describe("desbloqueo de objetos (r <= radioHoyo * 0.95)", () => {
   it("al empezar: piedra, lata, pelota y cono", () => {
@@ -23,6 +23,13 @@ describe("desbloqueo de objetos (r <= radioHoyo * 0.95)", () => {
   });
 
   it("el límite es inclusivo", () => {
-    expect(objetosDesbloqueados(b, 36 / 0.95).map((t) => t.id)).toContain("caja");
+    expect(objetosDesbloqueados(b, b.zonas[0], 36 / 0.95).map((t) => t.id)).toContain("caja");
+  });
+
+  it("cada zona tiene sus propios objetos (la bomba y los jefes no salen como normales)", () => {
+    const todos = b.zonas.flatMap((z) => objetosDesbloqueados(b, z, 1000).map((t) => t.id));
+    expect(todos).not.toContain("bomba");
+    expect(todos).not.toContain("tractor");
+    expect(objetosDesbloqueados(b, b.zonas[1], 28).map((t) => t.id)).toEqual(["botella", "pizza", "hidrante", "maceta"]);
   });
 });

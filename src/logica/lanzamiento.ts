@@ -44,17 +44,17 @@ export function velocidadLanzamiento(
 
 /**
  * Índice del objeto más cercano al dedo, si el dedo está a menos de `r + margen`.
- * Ignora los que van cayendo al hoyo. Devuelve -1 si no hay ninguno.
+ * Ignora los que van cayendo al hoyo y los que no se pueden agarrar. Devuelve -1 si no hay ninguno.
  */
 export function elegirObjeto(
-  cuerpos: { x: number; y: number; r: number; cayendo: boolean }[],
+  cuerpos: { x: number; y: number; r: number; cayendo: boolean; agarrable?: boolean }[],
   x: number,
   y: number,
   margen: number,
 ): number {
   let mejor = -1, mejorD = Infinity;
   cuerpos.forEach((c, i) => {
-    if (c.cayendo) return;
+    if (c.cayendo || c.agarrable === false) return;
     const d = Math.hypot(x - c.x, y - c.y);
     if (d < c.r + margen && d < mejorD) { mejor = i; mejorD = d; }
   });

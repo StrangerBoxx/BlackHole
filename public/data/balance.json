@@ -43,8 +43,53 @@
     { "id": "neumatico", "nombre": "Neumático", "r": 30, "valor": 16 },
     { "id": "caja",      "nombre": "Caja",      "r": 36, "valor": 30 },
     { "id": "basurero",  "nombre": "Basurero",  "r": 42, "valor": 55 },
-    { "id": "auto",      "nombre": "Auto",      "r": 56, "valor": 120, "sombraAncho": 1.1 }
+    { "id": "auto",      "nombre": "Auto",      "r": 56, "valor": 120, "sombraAncho": 1.1 },
+
+    { "id": "botella",    "nombre": "Botella",    "r": 13, "valor": 1 },
+    { "id": "pizza",      "nombre": "Pizza",      "r": 15, "valor": 2 },
+    { "id": "hidrante",   "nombre": "Hidrante",   "r": 19, "valor": 4 },
+    { "id": "maceta",     "nombre": "Maceta",     "r": 22, "valor": 8 },
+    { "id": "quitasol",   "nombre": "Quitasol",   "r": 30, "valor": 16 },
+    { "id": "contenedor", "nombre": "Contenedor", "r": 36, "valor": 30 },
+    { "id": "taxi",       "nombre": "Taxi",       "r": 44, "valor": 55, "sombraAncho": 1.1 },
+    { "id": "bus",        "nombre": "Bus",        "r": 56, "valor": 120, "sombraAncho": 1.15 },
+
+    { "id": "roca_lunar", "nombre": "Roca lunar", "r": 14, "valor": 1 },
+    { "id": "bandera",    "nombre": "Bandera",    "r": 15, "valor": 2 },
+    { "id": "casco",      "nombre": "Casco",      "r": 19, "valor": 4 },
+    { "id": "satelite",   "nombre": "Satélite",   "r": 22, "valor": 8 },
+    { "id": "rover",      "nombre": "Rover",      "r": 30, "valor": 16 },
+    { "id": "modulo",     "nombre": "Módulo",     "r": 36, "valor": 30 },
+    { "id": "antena",     "nombre": "Antena",     "r": 42, "valor": 55 },
+    { "id": "estacion",   "nombre": "Estación",   "r": 56, "valor": 120 },
+
+    { "id": "tractor",  "nombre": "Tractor",           "r": 72, "valor": 400, "sombraAncho": 1.1 },
+    { "id": "bomberos", "nombre": "Carro de bomberos", "r": 76, "valor": 400, "sombraAncho": 1.15 },
+    { "id": "cohete",   "nombre": "Cohete",            "r": 78, "valor": 400, "sombraAncho": 1.1 },
+
+    { "id": "bomba", "nombre": "Bomba", "r": 18, "valor": 5 }
   ],
+
+  "zonas": [
+    {
+      "id": "parque", "nombre": "Parque", "suelo": "suelo", "multiplicadorValor": 1, "jefe": "tractor",
+      "objetos": ["piedra", "lata", "pelota", "cono", "neumatico", "caja", "basurero", "auto"]
+    },
+    {
+      "id": "ciudad", "nombre": "Ciudad", "suelo": "suelo_ciudad", "multiplicadorValor": 12, "jefe": "bomberos",
+      "objetos": ["botella", "pizza", "hidrante", "maceta", "quitasol", "contenedor", "taxi", "bus"]
+    },
+    {
+      "id": "luna", "nombre": "Luna", "suelo": "suelo_luna", "multiplicadorValor": 150, "jefe": "cohete",
+      "objetos": ["roca_lunar", "bandera", "casco", "satelite", "rover", "modulo", "antena", "estacion"]
+    }
+  ],
+
+  "especiales": {
+    "dorado": { "probabilidad": 0.04, "multiplicador": 10, "color": "#ffd34d" },
+    "pesado": { "probabilidad": 0.06, "multiplicador": 4, "peso": 5, "radioMinimo": 20, "color": "#8a8f9c" },
+    "bomba":  { "probabilidad": 0.04, "objeto": "bomba", "radioEfecto": 460, "impulso": 700 }
+  },
 
   "desbloqueo": { "fraccionRadioHoyo": 0.95 },
 
@@ -92,7 +137,9 @@
     "tragar": { "tonoBase": 1.3, "tonoPorTamano": 0.6, "volumenBase": 0.6, "volumenPorTamano": 0.8, "radioReferencia": 56 },
     "moneda": { "semitonosMaximo": 12 },
     "eventos": {
-      "tiro": { "archivo": "comprar", "tono": 1.5, "volumen": 0.8 }
+      "tiro": { "archivo": "comprar", "tono": 1.5, "volumen": 0.8 },
+      "bomba": { "archivo": "tragar", "tono": 0.45, "volumen": 1.6 },
+      "dorado": { "archivo": "desbloquear", "tono": 1.4, "volumen": 0.7 }
     }
   },
 
