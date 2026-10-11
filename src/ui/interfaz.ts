@@ -13,6 +13,7 @@ import { misionCumplida } from "../logica/misiones";
 import { formatearNumero } from "../logica/monedas";
 import { formatearDuracion } from "../logica/offline";
 import { zonaDe } from "../logica/objetos";
+import { crearDock } from "./dock";
 
 /** Altura (en px del juego) donde van los avisos: debajo del marcador, lejos del dock. */
 const Y_AVISOS = 160;
@@ -135,6 +136,9 @@ export function iniciarInterfaz(game: Phaser.Game): Interfaz {
 
   raiz.append(marcador, menuLado, opciones, avisos);
   unica = { raiz, game, aviso };
+
+  // ---------- Dock de mejoras (abajo)
+  crearDock(unica);
 
   // ---------- Datos que cambian
   const actualizar = () => {

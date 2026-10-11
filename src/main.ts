@@ -7,7 +7,6 @@ import Phaser from "phaser";
 import { altoInicial, ANCHO_BASE, seguirTamanoVentana } from "./core/pantalla";
 import { progreso } from "./core/Progreso";
 import { CargaScene } from "./escenas/CargaScene";
-import { HudScene } from "./escenas/HudScene";
 import { JuegoScene } from "./escenas/JuegoScene";
 import { PanelScene } from "./escenas/PanelScene";
 import "./escenas/PestanaColapso";
@@ -25,7 +24,7 @@ const juego = new Phaser.Game({
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
   input: { activePointers: 2 },
-  scene: [CargaScene, JuegoScene, HudScene, PanelScene],
+  scene: [CargaScene, JuegoScene, PanelScene],
 });
 
 seguirTamanoVentana(juego);
