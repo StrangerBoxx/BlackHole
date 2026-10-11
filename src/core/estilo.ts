@@ -8,6 +8,7 @@ export const COLOR = {
   apagado: "#a89a85",
   acento: "#b98cff",
   oro: "#ffc65c",
+  peligro: "#ff8a7a",
   contornoOro: "#28190a",
 } as const;
 

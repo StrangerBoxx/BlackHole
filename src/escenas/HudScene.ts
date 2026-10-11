@@ -88,6 +88,30 @@ export class HudScene extends Phaser.Scene {
     sonido.setInteractive({ useHandCursor: true }).on(Phaser.Input.Events.POINTER_UP, () => {
       getSonido()?.alternar();
       sonido.setText(textoSonido());
+      reiniciar.setX(sonido.x + sonido.width + 4);
+    });
+
+    // Reiniciar con confirmación: hay que tocar dos veces en menos de 3 s
+    const reiniciar = this.add
+      .text(sonido.x + sonido.width + 4, 64, "Reiniciar", estilo)
+      .setOrigin(0, 0.5)
+      .setPadding(0, 6, 12, 6);
+    let armado: Phaser.Time.TimerEvent | null = null;
+    const desarmar = () => {
+      armado?.remove();
+      armado = null;
+      reiniciar.setText("Reiniciar").setColor(COLOR.apagado);
+    };
+    reiniciar.setInteractive({ useHandCursor: true }).on(Phaser.Input.Events.POINTER_UP, () => {
+      if (!armado) {
+        reiniciar.setText("¿Borrar todo? Toca otra vez").setColor(COLOR.peligro);
+        armado = this.time.delayedCall(3000, desarmar);
+        return;
+      }
+      desarmar();
+      progreso.reiniciar();
+      this.game.events.emit(EVENTOS_GLOBALES.REINICIO);
+      this.mostrarAviso("Progreso reiniciado", 2);
     });
   }
 

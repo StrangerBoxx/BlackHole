@@ -57,6 +57,9 @@ Todos los números están en `public/data/balance.json`.
   (como el prototipo); "moneda" al terminar. Volumen general 0.85 y por archivo en `balance.json` → `sonido`.
   El ambiente arranca con el primer toque (los navegadores no dejan sonar antes). "Sonido: sí/no" arriba a la
   izquierda; se recuerda en el dispositivo. Si falta un WAV, ese sonido simplemente no suena.
+- **Guardado** (`src/core/Guardado.ts`): `localStorage["black-hole-save"]` con `{version, monedas, total, niveles}`.
+  Se guarda en cada cambio y al esconder la app. Al cargar se arreglan datos rotos (niveles > máximo → máximo, etc.).
+  "Reiniciar" arriba a la izquierda pide un segundo toque antes de borrar (como el prototipo).
 - **Halo, polvo y línea punteada** se dibujan por código (como en el prototipo); sus colores están en `balance.json` → `visual`.
 - **Lógica pura** en `src/logica/` (sin Phaser) → se prueba en `tests/`.
 - **Assets:** `public/assets/` con los mismos nombres de `LEEME.txt`. Se cargan por nombre, y los de objetos
@@ -72,5 +75,5 @@ Todos los números están en `public/data/balance.json`.
 - [x] 4. Tienda de mejoras
 - [x] 5. Aparición y desbloqueos
 - [x] 6. Sonidos
-- [ ] 7. Guardado
+- [x] 7. Guardado
 - [ ] 8. Panel de debug, tests y Android

@@ -1,6 +1,8 @@
 import Phaser from "phaser";
 import { IMAGENES, texturaObjeto } from "../core/assets";
 import { setBalance } from "../core/Balance";
+import { iniciarGuardado } from "../core/Guardado";
+import { progreso } from "../core/Progreso";
 import { iniciarSonido } from "../core/Sonido";
 import { IDS_SONIDO, revisarBalance, type Balance } from "../logica/balance";
 
@@ -27,6 +29,7 @@ export class CargaScene extends Phaser.Scene {
       return;
     }
     setBalance(balance);
+    iniciarGuardado(progreso, balance);
 
     for (const k of IMAGENES) this.load.image(k, `assets/img/${k}.png`);
     for (const o of balance.objetos) this.load.image(texturaObjeto(o.id), `assets/img/objetos/${o.id}.png`);
