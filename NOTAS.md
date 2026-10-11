@@ -1,8 +1,58 @@
 # BLACK HOLE — notas del proyecto
 
-Juego incremental 2D vertical. Phaser 3 + TypeScript (Vite), tests con Vitest, móvil con Capacitor (Android).
-Referencia de comportamiento: `referencia/prototipo.html` (el prototipo original), `referencia/LEEME.txt`
-(guía de tamaños de los assets) y `referencia/guia_objeto.png` (plantilla del círculo de choque).
+Juego incremental 2D vertical, **estilo "laboratorio blanco"**: un agujero negro se abre en el piso de un
+laboratorio y se traga lo que le lanzas. Phaser 3 + TypeScript (Vite), tests con Vitest, móvil con Capacitor (Android).
+Referencia de comportamiento: `referencia/prototipo.html` (el prototipo original, todavía con el estilo de pasto),
+`referencia/guia_objeto.png` (plantilla del círculo de choque). La guía de assets actual está más abajo.
+
+## Estilo laboratorio
+
+- **Colores:** fondo `#e3e8eb`, paneles de acero claro `#f4f6f8`, bordes `#c3ccd3`, texto `#22303b`,
+  acentos **naranja `#f07a1c`** (chips, costos, "alcanza") y **cian `#1a9fd6`** (pestañas, halo, álbum).
+  Todo en `src/core/estilo.ts`.
+- **Fuentes** (incluidas en el juego, funcionan sin internet): **Rajdhani** para títulos y números,
+  **IBM Plex Sans** para el texto.
+- **Moneda = "chip de energía"** (solo en los textos; por dentro el código sigue diciendo `monedas`).
+- **Efectos** (valores en `balance.json` → `visual`):
+  - Piso que se retuerce y se hunde hacia el hoyo: shader WebGL (`src/efectos/DistorsionFX.ts`) aplicado solo al suelo.
+    Sin WebGL (raro) el piso queda normal. `distorsion.radio` = veces el radio del hoyo.
+  - Brillo naranja y cian que pulsa alrededor del hoyo (`brillo`).
+  - Halo de atracción cian suave con borde punteado que gira despacio (`halo`).
+  - Chispas naranjas y cian que caen en espiral; ráfaga + anillo de luz al tragar (`chispas`).
+  - Capa de luz: cálida desde la izquierda, fría desde la derecha y viñeta suave (`luz`, `src/efectos/Luz.ts`).
+  - Sombras de los objetos gris azulado, desplazadas abajo a la derecha (`sombra`).
+  - Todo esto lo dibuja `src/entidades/Hoyo.ts` (salvo el shader y la luz).
+
+## Salas y objetos
+
+Mismos radios, valores y orden que el prototipo; solo cambian id, nombre e imagen.
+
+| Sala (id) | Multiplica | Objetos (id), de chico a grande | Jefe |
+|---|---|---|---|
+| Laboratorio (`laboratorio`) | x1 | tornillo · matraz · casco · extintor · silla · caja_herramientas · servidor · robot ("Robot de limpieza") | tanque ("Tanque de nitrógeno") |
+| Almacén (`almacen`) | x12 | tuerca · probeta · botiquin · bidon · carrito · barril · estante · montacargas | contenedor_carga |
+| Reactor (`reactor`) | x150 | fusible · bateria · valvula · bobina · panel · generador · transformador · turbina | nucleo ("Núcleo del reactor") |
+
+Especial: `bomba` se llama "Carga inestable". Antes eran Parque/Ciudad/Luna (piedra→tornillo, lata→matraz,
+pelota→casco, cono→extintor, neumatico→silla, caja→caja_herramientas, basurero→servidor, auto→robot, etc.):
+los guardados viejos se traducen solos al cargar (`migrarNombres` en `src/logica/guardado.ts`).
+
+## Assets (nombres fijos)
+
+| Archivo | Tamaño | Escala en el juego |
+|---|---|---|
+| `img/objetos/<id>.png` | 256x256, círculo de choque de 240 px | diámetro de choque = 2 × radio del objeto |
+| `img/suelo.png`, `img/suelo_almacen.png`, `img/suelo_reactor.png` | 720x960, hoyo en (360, 330) | tal cual |
+| `img/hoyo_borde.png` | 512x512 | radio del hoyo × 3.4 |
+| `img/hoyo_remolino.png` | 512x512 (gira a 1.5 rad/s) | radio del hoyo × 3.8 |
+| `img/hoyo_nucleo.png` | 256x256 | radio del hoyo × 2 |
+| `img/moneda.png` (chip de energía) | 64x64 | 32 px en el "+N", 20-32 px en la interfaz |
+| `img/materia.png`, `img/dron.png` | 64x64, 128x128 | ícono / 72 px |
+| `sonidos/ambiente.wav` (loop 30 s), `tragar`, `moneda`, `comprar`, `desbloquear` | WAV | volumen en `balance.json` → `sonido` |
+
+Las imágenes no llevan sombra: la pone el juego. Todo el arte actual es **provisorio** y lo generan:
+`node herramientas/generar-arte.mjs` (crea solo los PNG que faltan; `--todas` rehace todo y **pisa tus dibujos**;
+necesita Google Chrome) y `node herramientas/generar-ambiente.mjs` (rehace `ambiente.wav`).
 
 ## Cómo correrlo
 
@@ -27,26 +77,25 @@ npm run android:abrir # abre el proyecto en Android Studio
   - Sonidos de eventos nuevos (`sonido.eventos`): reusan un WAV con otro tono y volumen.
 - **Imágenes y sonidos** (`public/assets/`): reemplazar el archivo por otro **con el mismo nombre**. Las escalas
   se calculan solas desde el radio y el tamaño real del PNG. Si falta un WAV, ese sonido no suena (no se cae).
-- **Arte provisorio** de lo nuevo (bomba, jefes, ciudad, luna, dron, materia, suelos): lo dibuja
-  `herramientas/arte.js`. `node herramientas/generar-arte.mjs` crea solo los PNG que **faltan** (no pisa tus
-  dibujos); `--todas` los rehace todos. Necesita Google Chrome.
+- **Arte provisorio:** ver "Assets" arriba.
 
 ## Carpetas
 
 ```
 public/data/balance.json   todos los números
-public/assets/             imágenes y sonidos (nombres fijos, ver referencia/LEEME.txt)
+public/assets/             imágenes y sonidos (nombres fijos, ver "Assets")
 src/main.ts                configuración de Phaser
-src/escenas/               CargaScene (lee balance y assets) · JuegoScene (pasto, hoyo, objetos)
+src/escenas/               CargaScene (lee balance y assets) · JuegoScene (piso, hoyo, objetos)
                            HudScene (marcador, avisos, menú, tienda) · PanelScene (Misiones/Álbum)
                            PestanaColapso (pestaña Colapso) · DebugScene (solo desarrollo)
 src/entidades/             Hoyo · Objeto · Dron · BotonMejora · Popup ("+N" y textos flotantes)
 src/ui/                    Boton (botón reutilizable)
+src/efectos/               DistorsionFX (shader del piso) · Luz (capa de luz y viñeta)
 src/core/                  Progreso (autoload) · Guardado · Sonido · Balance · Debug · pantalla · estilo · assets
 src/logica/                lógica pura sin Phaser: fisica, lanzamiento, captura, mejoras, objetos, aparicion,
                            monedas, tiros, especiales, hambre, dron, offline, misiones, album, colapso,
                            economia, sonido, guardado, balance
-herramientas/              generador de arte provisorio
+herramientas/              generadores de arte y de sonido ambiente provisorios
 tests/                     un archivo de tests por módulo de lógica
 android/                   proyecto Android (Capacitor)
 referencia/                prototipo y guías originales
@@ -54,7 +103,7 @@ referencia/                prototipo y guías originales
 
 ## Reglas del juego (resumen)
 
-- Vista desde arriba, pasto. Mundo de 720x960, sin gravedad. Hoyo fijo en (360, 330).
+- Vista desde arriba, piso del laboratorio. Mundo de 720x960, sin gravedad. Hoyo fijo en (360, 330).
 - Arrastras un objeto y al soltarlo sale con la velocidad del dedo de los últimos 90 ms (tope 2400 px/s).
   Se agarra el objeto más cercano si el dedo está a menos de `r + 22` px. Sin restricción de zona.
 - Roce: `v *= max(0, 1 - 1.6*dt)`. Rebote 0.6 en bordes y entre objetos (masa = r²; el agarrado no se mueve por choques).
@@ -65,12 +114,12 @@ referencia/                prototipo y guías originales
   desde el 3.º seguido aparece "¡Combo xN!".
 - Objeto desbloqueado si `r <= radio_hoyo * 0.95`. Aparición con peso `1 + i*0.6`.
   Al empezar salen 4 de una vez. Lugar: a más de `min(radio_atracción, 260) + r + 20` del hoyo y a 8 px de otros
-  (40 intentos; si no hay lugar, ese turno no sale nada). Si el pasto está lleno, se pierde el turno del reloj.
+  (40 intentos; si no hay lugar, ese turno no sale nada). Si el piso está lleno, se pierde el turno del reloj.
 - Mejoras: costo `round(base * mult^nivel)`.
 
 ### Mecánicas agregadas (después del prototipo)
 
-- **Monedas** = valor × zona × Valor × álbum × Valor eterno × combo × tiros × especial (redondeado).
+- **Chips** = valor × sala × Valor × álbum × Valor eterno × combo × tiros × especial (redondeado).
 - **Combo multiplica:** x(1 + combo×0.25), tope x3. Mejora **Combo**: ventana 2.5 s + 0.3 s/nivel (máx 10).
 - **Tiros especiales** (solo lanzados por el jugador, rapidez ≥ 200):
   Carambola (rebotó en pared u objeto; también el objeto golpeado por uno lanzado) x1.5 ·
@@ -79,20 +128,20 @@ referencia/                prototipo y guías originales
   Dorado x10. Pesado x4, peso x5 (choca más fuerte, lo atrae menos), **no se agarra**. Bomba: al caer empuja
   hacia el hoyo todo lo que está a < 460 px con impulso `700 × (1 - d/460) / peso`.
 - **Hambre:** anillo alrededor del hoyo; se llena con el valor base de lo tragado. Meta `150 × 1.5^jefes`.
-  Llena → aparece el **jefe** de la zona (r 72-78, valor 400). El jefe cae si su *centro* entra al hoyo.
-- **Gravedad** (mejora): tirón constante hacia el hoyo en todo el pasto, 18/nivel.
+  Llena → aparece el **jefe** de la sala (r 72-78, valor 400). El jefe cae si su *centro* entra al hoyo.
+- **Gravedad** (mejora): tirón constante hacia el hoyo en todo el piso, 18/nivel.
 - **Dron** (mejora): cada `9 × 0.84^nivel` s (mín 1.2) vuela a un objeto agarrable y lo empuja con
   `v = distancia × 1.6 × 1.12` (llega lento y cae). Lo que empuja no cuenta como tiro especial.
 - **Offline:** al abrir, si hay dron: (segundos / intervalo) × valor promedio × multiplicadores × 50%,
   máximo 2 h (+Hoyo nocturno), mínimo 1 min.
 - **Misiones:** 3 activas de 9 plantillas (`misiones.plantillas`). Premio = 30 × premio × (dificultad+1) × multiplicadores.
-- **Álbum:** por zona, 8 objetos + jefe. Completo → monedas x1.1 para siempre (se acumula por zona).
-- **Zonas:** Parque (x1) → Ciudad (x12) → Luna (x150). Mismos radios, otros objetos y suelo.
+- **Álbum:** por sala, 8 objetos + jefe. Completo → chips x1.1 para siempre (se acumula por sala).
+- **Salas:** Laboratorio (x1) → Almacén (x12) → Reactor (x150). Mismos radios, otros objetos y suelo.
 - **Colapso** (prestigio): requiere Tamaño al máximo. Da `floor(√(monedas de la vuelta / 400))` de materia
-  oscura (mín 1), pasa a la zona siguiente (la Luna se repite) y borra monedas, mejoras, hambre, jefes y misiones.
+  oscura (mín 1), pasa a la sala siguiente (el Reactor se repite) y borra chips, mejoras, hambre, jefes y misiones.
   Se conservan álbum, total, materia oscura y permanentes.
 - **Permanentes** (con materia oscura, costo `round(base × mult^nivel)`): Valor eterno (x1 + 0.5/nivel),
-  Empujón inicial (150 monedas/nivel al empezar zona), Combo largo (+0.5 s), Suerte dorada (+2% dorado),
+  Empujón inicial (150 chips/nivel al empezar sala), Combo largo (+0.5 s), Suerte dorada (+2% dorado),
   Dron de fábrica (empieza con Dron nivel N), Hoyo nocturno (+2 h offline).
 - Sonido: "tragar" con tono `1.3 - tamaño*0.6` (tamaño = r/56, tope 1) y volumen `(0.6 + tamaño*0.8) * vol`;
   "moneda" con tono `2^(combo/12)`, tope 12.
@@ -108,19 +157,19 @@ referencia/                prototipo y guías originales
 - **Física propia** en `src/logica/fisica.ts` (no Arcade/Matter): copia exacta del prototipo y se puede testear.
 - **Corrección al prototipo:** al separar dos objetos que se pisan, el prototipo empujaba más al *grande*.
   Aquí se reparte con el inverso de la masa (el chico se mueve más). Entre objetos iguales da lo mismo.
-- **Pantalla = barra (84) + pasto (960) + tienda (282: menú + 2 filas de mejoras + ayuda)** → base 720x1326
-  (marcador arriba, campo al medio, mejoras abajo). El pasto se centra en el espacio libre entre barra y tienda,
-  así nunca queda tapado. Si la pantalla es más alta o más ancha, sobra espacio color tierra. Medidas en
+- **Pantalla = barra (84) + piso (960) + tienda (282: menú + 2 filas de mejoras + ayuda)** → base 720x1326
+  (marcador arriba, campo al medio, mejoras abajo). El piso se centra en el espacio libre entre barra y tienda,
+  así nunca queda tapado. Si la pantalla es más alta o más ancha, sobra espacio gris claro. Medidas en
   `src/core/pantalla.ts`. En el celular se respeta la zona del reloj y de los botones del sistema (safe area).
 - **Arrastre leído en cada cuadro:** la barra y la tienda atrapan los toques (para no agarrar objetos al comprar),
   así que el juego revisa en cada cuadro dónde está el dedo y si se levantó. Soltar encima de la tienda funciona.
-- **Tienda:** tocar un botón muestra qué hace el siguiente nivel abajo y compra si alcanza. Borde dorado = alcanza.
+- **Tienda:** tocar un botón muestra qué hace el siguiente nivel abajo y compra si alcanza. Borde naranja = alcanza.
 - **Bus de eventos entre escenas** (`game.events`, lista en `src/core/estilo.ts`): `captura` (tipo),
   `tragado` (InfoTragado: tipo, monedas, especial, tiros, combo, jefe), `aviso` (texto, segundos), `combo`,
   `tiro`, `jefe`, `dron`, `mision`, `album`, `compra`, `desbloqueo`, `colapso`, `reinicio`.
   El HUD, el sonido y las misiones escuchan eso en vez de meterse en la escena.
-- **Zonas desde el principio en los datos:** la bomba y los jefes están en `objetos` pero no en ninguna
-  `zonas[].objetos`, así nunca salen como objetos normales.
+- **Salas en los datos** (`zonas` en `balance.json`; en el código se llaman "zonas"): la bomba y los jefes
+  están en `objetos` pero no en ninguna `zonas[].objetos`, así nunca salen como objetos normales.
 - **Reiniciar / colapsar / cambiar de zona** vuelve a armar la escena de juego (`scene.restart`): así el suelo
   y todo lo de la zona quedan siempre bien.
 - **Panel (Misiones · Álbum · Colapso):** escena encima de todo; pausa el juego mientras está abierta.
@@ -129,18 +178,20 @@ referencia/                prototipo y guías originales
 - **Sonido** (`src/core/Sonido.ts`): "tragar" suena al *empezar* a caer (como el prototipo); "moneda" al terminar.
   Volumen general 0.85 y por archivo en `balance.json` → `sonido`. El ambiente arranca con el primer toque
   (los navegadores no dejan sonar antes). "Sonido: sí/no" arriba a la izquierda; se recuerda en el dispositivo.
-- **Guardado** (`src/core/Guardado.ts`): `localStorage["black-hole-save"]`, versión 2: monedas, total, niveles,
+- **Guardado** (`src/core/Guardado.ts`): `localStorage["black-hole-save"]`, versión 3: monedas, total, niveles,
   zona, hambre, jefes, misiones, álbum, materia oscura, permanentes, monedas de la vuelta, colapsos y `ultimaVez`.
   Se guarda en cada cambio, al esconder la app y cada 30 s. Al cargar se arreglan datos rotos (niveles > máximo
-  → máximo, misiones u objetos que no existen se descartan, etc.). Los guardados viejos (v1) cargan bien.
+  → máximo, misiones u objetos que no existen se descartan, etc.). Los guardados viejos (v1, v2) cargan bien
+  y sus nombres de objetos se traducen a los del laboratorio.
   "Reiniciar" arriba a la izquierda pide un segundo toque antes de borrar (como el prototipo).
 - **Panel de debug** (`src/escenas/DebugScene.ts`), solo con `npm run dev`: se abre con **F1** o con **3 toques rápidos
-  en la esquina superior derecha**. Trae +1000 / +100 000 monedas, subir/bajar cada mejora (gratis), sacar
-  dorado / pesado / bomba, hambre llena, +10 materia oscura, zona siguiente, círculos de choque
+  en la esquina superior derecha**. Trae +1000 / +100 000 chips, subir/bajar cada mejora (gratis), sacar
+  dorado / pesado / bomba, hambre llena, +10 materia oscura, sala siguiente ("Zona siguiente"), círculos de choque
   (rojo objetos, amarillo hoyo, celeste atracción), velocidad x2 (dos pasos de física por cuadro) y reiniciar.
   `npm run build` no lo incluye. En desarrollo también quedan `juego` y `progreso` en la consola del navegador.
-- **Halo, polvo y línea punteada** se dibujan por código (como en el prototipo); sus colores están en `balance.json` → `visual`.
-- **Fuentes** "Lilita One" y "Nunito" incluidas en el juego (paquetes `@fontsource`): funcionan sin internet.
+- **Efectos por código** (halo, brillo, chispas, luz, línea punteada): colores en `balance.json` → `visual`.
+- **Sin dibujos de respaldo en el juego:** si falta un PNG, Phaser muestra un cuadro vacío. Para recuperarlo,
+  `node herramientas/generar-arte.mjs` vuelve a crear solo los que faltan.
 - **No portado del prototipo:** el botón "Probar mis dibujos" (cargar imágenes desde el navegador). Para probar arte
   nuevo se reemplaza el archivo en `public/assets/` y se recarga.
 
@@ -155,7 +206,7 @@ Requisito: **Android Studio** (trae Java y el SDK). Este PC no lo tenía, así q
    del repositorio (`*.jks`/`*.keystore` están en `.gitignore`); si se pierde, no se puede actualizar la app.
 
 Configurado: orientación vertical fija, nombre "Black Hole", `appId` `com.blackhole.juego` (**cambiarlo antes de
-publicar** en `capacitor.config.ts` y `android/app/build.gradle`; después ya no se puede), fondo color tierra.
+publicar** en `capacitor.config.ts` y `android/app/build.gradle`; después ya no se puede), fondo gris claro.
 Pendiente: ícono propio (hoy usa el de Capacitor; se puede generar con `@capacitor/assets`).
 
 ## Estado por pasos
@@ -181,5 +232,14 @@ Después (loop y más incremental):
 - [x] Misiones y álbum
 - [x] Zonas, colapso, materia oscura y permanentes
 
-Ideas pendientes: arte definitivo de lo nuevo, sonidos propios para eventos (hoy reusan WAV con otro tono),
-más zonas (Puerto, Sistema solar), ícono de la app, ajustar números de balance jugando.
+Estilo laboratorio (rama `estilo-laboratorio`):
+
+- [x] Objetos y salas renombrados (+ traducción de guardados viejos)
+- [x] Assets estilo laboratorio (generados) y remolino x3.8
+- [x] Efectos: distorsión del piso, brillo, halo punteado, chispas y ráfaga, luz, sombras
+- [x] Interfaz clara, Rajdhani + IBM Plex Sans, chips de energía
+- [x] Ambiente con zumbido eléctrico
+
+Ideas pendientes: arte definitivo (todo es provisorio), sonidos propios para eventos y para tragar/chips
+(hoy son los del prototipo), más salas, ícono de la app, ajustar números de balance jugando.
+No llegó la carpeta `referencia_laboratorio/`: el estilo se hizo desde la descripción (colores, fuentes, efectos).
