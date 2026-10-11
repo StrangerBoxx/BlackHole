@@ -38,6 +38,10 @@ Mismos radios, valores y orden que el prototipo; solo cambian id, nombre e image
 | Almacén (`almacen`) | x12 | tuerca · probeta · botiquin · bidon · carrito · barril · estante · montacargas | contenedor_carga |
 | Reactor (`reactor`) | x150 | fusible · bateria · valvula · bobina · panel · generador · transformador · turbina | nucleo ("Núcleo del reactor") |
 
+**Bing Bong** (`bing_bong`, r 28, valor 10): personaje raro que aparece en cualquier sala (3%, franja propia en
+`especiales.bingBong`), vale x15 y tiene ficha en la sección "Especiales" del álbum (no cuenta para completar salas).
+Su imagen `img/objetos/bing_bong.png` la puso el jugador (no la genera `generar-arte.mjs`).
+
 Especial: `bomba` se llama "Carga inestable". Antes eran Parque/Ciudad/Luna (piedra→tornillo, lata→matraz,
 pelota→casco, cono→extintor, neumatico→silla, caja→caja_herramientas, basurero→servidor, auto→robot, etc.):
 los guardados viejos se traducen solos al cargar (`migrarNombres` en `src/logica/guardado.ts`).
@@ -129,7 +133,8 @@ referencia/                prototipo y guías originales
 - **Tiros especiales** (solo lanzados por el jugador, rapidez ≥ 200):
   Carambola (rebotó en pared u objeto; también el objeto golpeado por uno lanzado) x1.5 ·
   Desde lejos (soltado a ≥ 380 px) x1.5 · Directo (entra en ≤ 0.9 s sin tocar nada) x1.25. Se suman: 1 + Σbonus.
-- **Especiales** (una tirada al aparecer): bomba 4% · dorado 4% (+Suerte dorada) · pesado 6% (solo r ≥ 20).
+- **Especiales** (una tirada al aparecer): bomba 4% · dorado 4% (+Suerte dorada) · pesado 6% (solo r ≥ 20) ·
+  Bing Bong 3% (x15).
   Dorado x10. Pesado x4, peso x5 (choca más fuerte, lo atrae menos), **no se agarra**. Bomba: al caer empuja
   hacia el hoyo todo lo que está a < 460 px con impulso `700 × (1 - d/460) / peso`.
 - **Hambre:** anillo alrededor del hoyo; se llena con el valor base de lo tragado. Meta `150 × 1.5^jefes`.

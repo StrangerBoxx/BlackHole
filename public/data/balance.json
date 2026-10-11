@@ -67,7 +67,8 @@
     { "id": "contenedor_carga", "nombre": "Contenedor de carga", "r": 76, "valor": 400, "sombraAncho": 1.15 },
     { "id": "nucleo",           "nombre": "Núcleo del reactor",  "r": 78, "valor": 400 },
 
-    { "id": "bomba", "nombre": "Carga inestable", "r": 18, "valor": 5 }
+    { "id": "bomba", "nombre": "Carga inestable", "r": 18, "valor": 5 },
+    { "id": "bing_bong", "nombre": "Bing Bong", "r": 28, "valor": 10 }
   ],
 
   "zonas": [
@@ -132,7 +133,8 @@
   "especiales": {
     "dorado": { "probabilidad": 0.04, "multiplicador": 10, "color": "#ffd34d" },
     "pesado": { "probabilidad": 0.06, "multiplicador": 4, "peso": 5, "radioMinimo": 20, "color": "#8a8f9c" },
-    "bomba":  { "probabilidad": 0.04, "objeto": "bomba", "radioEfecto": 460, "impulso": 700 }
+    "bomba":  { "probabilidad": 0.04, "objeto": "bomba", "radioEfecto": 460, "impulso": 700 },
+    "bingBong": { "probabilidad": 0.03, "objeto": "bing_bong", "multiplicador": 15, "color": "#9bd62a" }
   },
 
   "desbloqueo": { "fraccionRadioHoyo": 0.95 },
@@ -193,7 +195,8 @@
       "dron": { "archivo": "comprar", "tono": 2.2, "volumen": 0.35 },
       "mision": { "archivo": "desbloquear", "tono": 1.2, "volumen": 0.8 },
       "album": { "archivo": "moneda", "tono": 0.8, "volumen": 1.2 },
-      "colapso": { "archivo": "tragar", "tono": 0.25, "volumen": 2.0 }
+      "colapso": { "archivo": "tragar", "tono": 0.25, "volumen": 2.0 },
+      "bingBong": { "archivo": "desbloquear", "tono": 1.8, "volumen": 1.0 }
     }
   },
 

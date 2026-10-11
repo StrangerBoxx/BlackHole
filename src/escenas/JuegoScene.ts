@@ -23,7 +23,7 @@ import {
   calcularGanancia, Combo, formatearMultiplicador, formatearNumero, multiplicadorCombo, textoCombo,
 } from "../logica/monedas";
 import { objetosDesbloqueados, tipoPorId, zonaDe } from "../logica/objetos";
-import { elegirEspecial, explotarBomba, multiplicadorEspecial } from "../logica/especiales";
+import { elegirEspecial, explotarBomba, multiplicadorEspecial, objetoDelEspecial } from "../logica/especiales";
 import { hambreLlena, metaHambre, puedeTragarJefe, sumarHambre } from "../logica/hambre";
 import { contextoMisiones, multiplicadorSiempre } from "../logica/economia";
 import { estadisticasPermanentes } from "../logica/colapso";
@@ -154,7 +154,8 @@ export class JuegoScene extends Phaser.Scene {
     let tipo = elegirTipo(tipos, b.aparicion.pesoBase, b.aparicion.pesoPorIndice, Math.random);
     const extraDorado = estadisticasPermanentes(b, progreso.permanentes).doradoExtra;
     const especial = forzar ?? elegirEspecial(tipo, b.especiales, Math.random, extraDorado);
-    if (especial === "bomba") tipo = tipoPorId(b, b.especiales.bomba.objeto);
+    const propio = objetoDelEspecial(especial, b.especiales);
+    if (propio) tipo = tipoPorId(b, propio);
     const lugar = buscarLugar(tipo.r, this.objetos.map((o) => o.cuerpo), s.radioAtraccion, b, Math.random);
     if (lugar) this.objetos.push(new Objeto(this, tipo, lugar.x, lugar.y, deAPoco, especial));
   }
@@ -389,6 +390,10 @@ export class JuegoScene extends Phaser.Scene {
     if (o.especial === "dorado") mostrarTextoFlotante(this, this.hoyo.x, arriba - 100, "¡Dorado! x10", b.especiales.dorado.color);
     if (o.especial === "pesado") mostrarTextoFlotante(this, this.hoyo.x, arriba - 100, "¡Pesado! x4", COLOR.apagado);
     if (o.especial === "bomba") this.explotar();
+    if (o.especial === "bingBong") {
+      mostrarTextoFlotante(this, this.hoyo.x, arriba - 100, `¡Bing Bong! x${b.especiales.bingBong.multiplicador}`, b.especiales.bingBong.color);
+      this.cameras.main.shake(200, 0.004);
+    }
 
     if (o.tirosLogrados.length) {
       const nombres = o.tirosLogrados.map((id) => b.tiros[id].nombre).join(" ");
@@ -414,6 +419,14 @@ export class JuegoScene extends Phaser.Scene {
   /** Primera vez que se traga este objeto en la zona: queda en el álbum. */
   private anotarAlbum(o: Objeto): void {
     const b = getBalance();
+    if (o.especial === "bingBong") {
+      if (progreso.anotarEspecialAlbum(b, o.tipo.id)) {
+        const y = this.hoyo.y + this.hoyo.radioVisible * this.hoyo.inclinacion + 40;
+        mostrarTextoFlotante(this, this.hoyo.x, y, `¡Nuevo en el álbum: ${o.tipo.nombre}!`, COLOR.acento);
+        this.game.events.emit(EVENTOS_GLOBALES.ALBUM, o.tipo, false);
+      }
+      return;
+    }
     const zona = zonaDe(b, progreso.zona);
     const r = progreso.anotarAlbum(zona, o.tipo.id);
     if (!r.nuevo) return;

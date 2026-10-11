@@ -24,7 +24,7 @@ export interface Zona {
   jefe: string;
 }
 
-export type IdEspecial = "dorado" | "pesado" | "bomba";
+export type IdEspecial = "dorado" | "pesado" | "bomba" | "bingBong";
 
 export type IdMejora = "pull" | "force" | "size" | "spawn" | "value" | "combo" | "gravity" | "drone";
 export const IDS_MEJORA: IdMejora[] = ["pull", "force", "size", "spawn", "value", "combo", "gravity", "drone"];
@@ -154,6 +154,8 @@ export interface Balance {
     dorado: { probabilidad: number; multiplicador: number; color: string };
     pesado: { probabilidad: number; multiplicador: number; peso: number; radioMinimo: number; color: string };
     bomba: { probabilidad: number; objeto: string; radioEfecto: number; impulso: number };
+    /** Personaje raro: aparece en cualquier sala y vale mucho. */
+    bingBong: { probabilidad: number; objeto: string; multiplicador: number; color: string };
   };
   desbloqueo: { fraccionRadioHoyo: number };
   aparicion: {

@@ -1,7 +1,7 @@
 // Progreso del jugador (equivale al Autoload Progreso.gd): monedas, objetos tragados y niveles.
 // Un solo objeto compartido por todo el juego. No depende de Phaser, así se puede testear.
 // El guardado en el dispositivo lo hace core/Guardado.ts escuchando los cambios.
-import { anotarEnAlbum, zonaCompleta } from "../logica/album";
+import { anotarEnAlbum, anotarEspecial, zonaCompleta } from "../logica/album";
 import type { Azar } from "../logica/aparicion";
 import type { Balance, IdMejora, IdPermanente, TipoObjeto, Zona } from "../logica/balance";
 import { aplicarColapso, materiaPorColapso, puedeColapsar, type NivelesPermanentes } from "../logica/colapso";
@@ -92,6 +92,13 @@ export class Progreso {
     const r = anotarEnAlbum(this.estado.album, zona, objetoId);
     if (r.nuevo) this.avisar();
     return r;
+  }
+
+  /** Anota un objeto especial (Bing Bong) en el álbum. Devuelve true si es nuevo. */
+  anotarEspecialAlbum(b: Balance, objetoId: string): boolean {
+    const nuevo = anotarEspecial(this.estado.album, b, objetoId);
+    if (nuevo) this.avisar();
+    return nuevo;
   }
 
   /** Crea misiones hasta tener las activas que pide el balance. */

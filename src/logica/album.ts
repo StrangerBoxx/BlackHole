@@ -21,6 +21,21 @@ export function zonaCompleta(album: Album, zona: Zona): boolean {
   return fichasDeZona(zona).every((id) => lista.includes(id));
 }
 
+/** Clave del álbum para objetos especiales que salen en cualquier sala (no cuentan para completar). */
+export const ALBUM_ESPECIALES = "especiales";
+
+/** Fichas de la sección Especiales. */
+export const fichasEspeciales = (b: Balance) => [b.especiales.bingBong.objeto];
+
+/** Anota un objeto especial (Bing Bong). Devuelve true si es la primera vez. */
+export function anotarEspecial(album: Album, b: Balance, objetoId: string): boolean {
+  if (!fichasEspeciales(b).includes(objetoId)) return false;
+  const lista = (album[ALBUM_ESPECIALES] ??= []);
+  if (lista.includes(objetoId)) return false;
+  lista.push(objetoId);
+  return true;
+}
+
 /** Monedas x(1 + bonusPorZona × zonas completas). */
 export function bonusAlbum(b: Balance, album: Album): number {
   const completas = b.zonas.filter((z) => zonaCompleta(album, z)).length;

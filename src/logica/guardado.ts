@@ -1,6 +1,6 @@
 // Guardar y cargar el progreso como texto JSON (equivale a user://save.json).
 // Cargar nunca se cae: si el texto viene roto o raro, se arregla o se empieza de cero.
-import type { Album } from "./album";
+import { ALBUM_ESPECIALES, fichasEspeciales, type Album } from "./album";
 import { IDS_MEJORA, type Balance } from "./balance";
 import { nivelesIniciales, type Niveles } from "./mejoras";
 import type { Mision } from "./misiones";
@@ -167,6 +167,11 @@ function leerAlbum(v: unknown, b: Balance): Album {
     if (!Array.isArray(lista)) continue;
     const validos = [...z.objetos, z.jefe];
     album[z.id] = [...new Set(lista.filter((id): id is string => typeof id === "string" && validos.includes(id)))];
+  }
+  const especiales = (v as Record<string, unknown>)[ALBUM_ESPECIALES];
+  if (Array.isArray(especiales)) {
+    const validos = fichasEspeciales(b);
+    album[ALBUM_ESPECIALES] = [...new Set(especiales.filter((id): id is string => typeof id === "string" && validos.includes(id)))];
   }
   return album;
 }

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Balance } from "../src/logica/balance";
 import { aplicarAtraccion } from "../src/logica/captura";
-import { elegirEspecial, explotarBomba, multiplicadorEspecial } from "../src/logica/especiales";
+import { elegirEspecial, explotarBomba, multiplicadorEspecial, objetoDelEspecial } from "../src/logica/especiales";
 import { crearCuerpo, resolverChoques } from "../src/logica/fisica";
 import { elegirObjeto } from "../src/logica/lanzamiento";
 import { tipoPorId } from "../src/logica/objetos";
@@ -26,6 +26,15 @@ describe("elegir especial (bomba 4%, dorado 4%, pesado 6%)", () => {
   it("la Suerte dorada agranda la franja del dorado", () => {
     expect(elegirEspecial(extintor, cfg, () => 0.1)).toBe("pesado");
     expect(elegirEspecial(extintor, cfg, () => 0.1, 0.05)).toBe("dorado");
+  });
+
+  it("Bing Bong tiene su propia franja (3%) y vale x15", () => {
+    expect(elegirEspecial(extintor, cfg, () => 0.15)).toBe("bingBong");
+    expect(elegirEspecial(tornillo, cfg, () => 0.15)).toBe("bingBong"); // también objetos chicos
+    expect(elegirEspecial(extintor, cfg, () => 0.17)).toBeNull();
+    expect(objetoDelEspecial("bingBong", cfg)).toBe("bing_bong");
+    expect(objetoDelEspecial("dorado", cfg)).toBeNull();
+    expect(multiplicadorEspecial("bingBong", cfg)).toBe(15);
   });
 
   it("multiplicadores: dorado x10, pesado x4, normal x1", () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { anotarEnAlbum, bonusAlbum, zonaCompleta, type Album } from "../src/logica/album";
+import { anotarEnAlbum, anotarEspecial, bonusAlbum, zonaCompleta, type Album } from "../src/logica/album";
 import type { Balance } from "../src/logica/balance";
 import {
   avanzarMisiones, crearMision, misionCumplida, premioMision, textoMision, type EventoMision, type Mision,
@@ -80,6 +80,15 @@ describe("álbum", () => {
     expect(anotarEnAlbum(a, laboratorio, "extintor")).toEqual({ nuevo: false, completo: false });
     expect(anotarEnAlbum(a, laboratorio, "estante")).toEqual({ nuevo: false, completo: false }); // no es del laboratorio
     expect(a).toEqual({ laboratorio: ["extintor"] });
+  });
+
+  it("Bing Bong va a Especiales y no cuenta para completar una sala", () => {
+    const a: Album = {};
+    expect(anotarEspecial(a, b, "bing_bong")).toBe(true);
+    expect(anotarEspecial(a, b, "bing_bong")).toBe(false);
+    expect(anotarEspecial(a, b, "tornillo")).toBe(false);
+    expect(a).toEqual({ especiales: ["bing_bong"] });
+    expect(bonusAlbum(b, a)).toBe(1);
   });
 
   it("se completa con los 8 objetos y el jefe, y da x1.1", () => {
