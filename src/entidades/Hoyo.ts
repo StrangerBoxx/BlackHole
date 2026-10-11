@@ -36,6 +36,9 @@ export class Hoyo {
   private readonly graficos: Phaser.GameObjects.Graphics;
   private readonly sinMovimiento: boolean;
   private polvo: Mota[] = [];
+  /** Barra de hambre de 0 a 1 (anillo alrededor del hoyo). */
+  private hambre = 0;
+  private tiempo = 0;
   private ultimoHalo = { r: -1, p: -1 };
 
   constructor(scene: Phaser.Scene, radio: number, atraccion: number) {
@@ -57,9 +60,11 @@ export class Hoyo {
     this.dibujar();
   }
 
-  /** Llamar cada cuadro con los radios de verdad (según las mejoras). */
-  actualizar(dt: number, radio: number, atraccion: number): void {
+  /** Llamar cada cuadro con los radios de verdad (según las mejoras) y el hambre (0 a 1). */
+  actualizar(dt: number, radio: number, atraccion: number, hambre: number): void {
     const v = getBalance().visual;
+    this.hambre = Math.max(0, Math.min(1, hambre));
+    this.tiempo += dt;
     const k = Math.min(1, dt * v.suavizadoHoyo);
     this.radioVisible += (radio - this.radioVisible) * k;
     this.atraccionVisible += (atraccion - this.atraccionVisible) * k;
@@ -103,6 +108,23 @@ export class Hoyo {
     g.clear();
     g.lineStyle(v.halo.bordeGrosor, color(v.halo.borde), v.halo.bordeOpacidad);
     g.strokeCircle(this.x, this.y, P);
+    // Anillo de hambre: se llena en sentido horario desde arriba; lleno = rojo y late
+    const h = getBalance().hambre;
+    const radioAnillo = R * h.distancia;
+    g.lineStyle(h.grosor, 0x000000, 0.25);
+    g.strokeCircle(this.x, this.y, radioAnillo);
+    if (this.hambre > 0) {
+      const c0 = Phaser.Display.Color.HexStringToColor(h.colorVacio);
+      const c1 = Phaser.Display.Color.HexStringToColor(h.colorLleno);
+      const mezcla = Phaser.Display.Color.Interpolate.ColorWithColor(c0, c1, 100, Math.round(this.hambre * 100));
+      const lleno = this.hambre >= 1;
+      const alfa = lleno ? 0.65 + 0.35 * Math.sin(this.tiempo * 8) : 0.9;
+      g.lineStyle(h.grosor, Phaser.Display.Color.GetColor(mezcla.r, mezcla.g, mezcla.b), alfa);
+      g.beginPath();
+      g.arc(this.x, this.y, radioAnillo, -Math.PI / 2, -Math.PI / 2 + this.hambre * Math.PI * 2);
+      g.strokePath();
+    }
+
     const pv = v.polvo;
     for (const m of this.polvo) {
       g.fillStyle(color(pv.color), Math.min(1, m.dist / P) * pv.opacidad);

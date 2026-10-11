@@ -30,6 +30,25 @@ export class Progreso {
   get zona(): number {
     return this.estado.zona;
   }
+  get hambre(): number {
+    return this.estado.hambre;
+  }
+  get jefes(): number {
+    return this.estado.jefes;
+  }
+
+  /** Suma hambre (ya limitada a la meta por quien llama). */
+  ponerHambre(valor: number): void {
+    this.estado.hambre = valor;
+    this.avisar();
+  }
+
+  /** Se comió al jefe: la barra vuelve a 0 y la próxima meta es más alta. */
+  jefeComido(): void {
+    this.estado.hambre = 0;
+    this.estado.jefes += 1;
+    this.avisar();
+  }
 
   /** Copia del estado (para guardar). */
   exportar(): EstadoProgreso {

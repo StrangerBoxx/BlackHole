@@ -19,6 +19,7 @@ import {
 } from "../logica/monedas";
 import { objetosDesbloqueados, tipoPorId, zonaDe } from "../logica/objetos";
 import { elegirEspecial, explotarBomba, multiplicadorEspecial } from "../logica/especiales";
+import { hambreLlena, metaHambre, puedeTragarJefe, sumarHambre } from "../logica/hambre";
 import * as Tiros from "../logica/tiros";
 import type { Cuerpo } from "../logica/fisica";
 import type { IdEspecial } from "../logica/balance";
@@ -38,6 +39,9 @@ export class JuegoScene extends Phaser.Scene {
   private circulos!: Phaser.GameObjects.Graphics;
   private combo!: Combo;
   private reloj!: RelojAparicion;
+  /** El jefe de la zona, si está en el pasto. */
+  private jefe: Objeto | null = null;
+  private esperaJefe = 0;
   /** Segundos de juego (avanza con el dt del juego, no con el reloj). */
   private tiempo = 0;
 
@@ -54,6 +58,7 @@ export class JuegoScene extends Phaser.Scene {
     this.objetos = [];
     this.agarrado = null;
     this.dedo = null;
+    this.jefe = null;
     this.tiempo = 0;
     this.combo = new Combo();
     this.reloj = new RelojAparicion();
@@ -84,6 +89,7 @@ export class JuegoScene extends Phaser.Scene {
     for (const o of this.objetos) o.destruir();
     this.objetos = [];
     this.agarrado = this.dedo = null;
+    this.jefe = null;
     this.combo = new Combo();
     this.reloj = new RelojAparicion();
     this.poblar();
@@ -164,7 +170,9 @@ export class JuegoScene extends Phaser.Scene {
     const s = this.stats;
     const centro = this.hoyo;
 
-    if (this.reloj.avanzar(dt, s.intervaloAparicion, this.objetos.length, s.maxObjetos)) this.aparecerObjeto(true);
+    const normales = this.objetos.filter((o) => o !== this.jefe).length;
+    if (this.reloj.avanzar(dt, s.intervaloAparicion, normales, s.maxObjetos)) this.aparecerObjeto(true);
+    this.revisarJefe(dt);
 
     // Objetos nuevos crecen; los que caen siguen su espiral
     for (const o of this.objetos) {
@@ -189,9 +197,13 @@ export class JuegoScene extends Phaser.Scene {
       antesDeMover: (c, paso) =>
         aplicarAtraccion(c, centro, s.radioAtraccion, s.fuerza, b.atraccion.fuerzaMinimaFraccion, paso),
       despuesDeMover: (c) => {
-        if (puedeTragar(c, centro, s.radioHoyo, s.velocidadCaptura, b.captura.margenRadioObjeto)) {
+        const o = this.objetoDe(c);
+        const cae =
+          o === this.jefe
+            ? puedeTragarJefe(c, centro, s.radioHoyo, s.velocidadCaptura)
+            : puedeTragar(c, centro, s.radioHoyo, s.velocidadCaptura, b.captura.margenRadioObjeto);
+        if (cae) {
           c.cayendo = true;
-          const o = this.objetoDe(c);
           o.tiempoCaida = 0;
           o.tirosLogrados = Tiros.evaluarTiro(o.tiro, b.tiros);
           this.game.events.emit(EVENTOS_GLOBALES.CAPTURA, o.tipo);
@@ -201,7 +213,27 @@ export class JuegoScene extends Phaser.Scene {
       alChocar: (a, c) => Tiros.alChocar(this.objetoDe(a).tiro, this.objetoDe(c).tiro),
     });
 
-    this.hoyo.actualizar(dt, s.radioHoyo, s.radioAtraccion);
+    this.hoyo.actualizar(dt, s.radioHoyo, s.radioAtraccion, progreso.hambre / this.metaHambre);
+  }
+
+  private get metaHambre(): number {
+    return metaHambre(getBalance().hambre, progreso.jefes);
+  }
+
+  /** Si el hambre está llena y no hay jefe, intenta sacarlo (cada medio segundo hasta que haya lugar). */
+  private revisarJefe(dt: number): void {
+    if (this.jefe || !hambreLlena(progreso.hambre, this.metaHambre)) return;
+    this.esperaJefe -= dt;
+    if (this.esperaJefe > 0) return;
+    this.esperaJefe = 0.5;
+    const b = getBalance();
+    const tipo = tipoPorId(b, zonaDe(b, progreso.zona).jefe);
+    const lugar = buscarLugar(tipo.r, this.objetos.map((o) => o.cuerpo), this.stats.radioAtraccion, b, Math.random);
+    if (!lugar) return;
+    this.jefe = new Objeto(this, tipo, lugar.x, lugar.y, true);
+    this.objetos.push(this.jefe);
+    this.game.events.emit(EVENTOS_GLOBALES.AVISO, `¡El hoyo tiene hambre! Apareció: ${tipo.nombre}`, 3);
+    this.game.events.emit(EVENTOS_GLOBALES.JEFE, tipo);
   }
 
   private objetoDe(c: Cuerpo): Objeto {
@@ -230,8 +262,19 @@ export class JuegoScene extends Phaser.Scene {
     const xCombo = multiplicadorCombo(combo, b.combo.multiplicadorPorCombo, b.combo.multiplicadorMaximo);
     const xTiro = Tiros.multiplicadorTiro(o.tirosLogrados, b.tiros);
     const xEspecial = multiplicadorEspecial(o.especial, b.especiales);
-    const ganancia = calcularGanancia(o.tipo.valor, [s.multiplicadorValor, xCombo, xTiro, xEspecial]);
+    const zona = zonaDe(b, progreso.zona);
+    const ganancia = calcularGanancia(o.tipo.valor, [zona.multiplicadorValor, s.multiplicadorValor, xCombo, xTiro, xEspecial]);
     progreso.registrarTragado(ganancia);
+
+    const esJefe = o === this.jefe;
+    if (esJefe) {
+      this.jefe = null;
+      progreso.jefeComido();
+      this.cameras.main.shake(400, 0.012);
+      this.game.events.emit(EVENTOS_GLOBALES.AVISO, `¡Te comiste el ${o.tipo.nombre}! +${formatearNumero(ganancia)}`, 3);
+    } else if (o.especial !== "bomba") {
+      progreso.ponerHambre(sumarHambre(progreso.hambre, o.tipo.valor, this.metaHambre));
+    }
 
     const arriba = this.hoyo.y - this.hoyo.radioVisible;
     if (o.especial === "dorado") mostrarTextoFlotante(this, this.hoyo.x, arriba - 100, "¡Dorado! x10", b.especiales.dorado.color);
@@ -250,7 +293,7 @@ export class JuegoScene extends Phaser.Scene {
     if (aviso) this.game.events.emit(EVENTOS_GLOBALES.AVISO, `${aviso}  monedas x${formatearMultiplicador(xCombo)}`, 1.2);
 
     mostrarPopupMonedas(this, this.hoyo.x, this.hoyo.y - this.hoyo.radioVisible - 10, `+${formatearNumero(ganancia)}`);
-    const info: InfoTragado = { tipo: o.tipo, monedas: ganancia, especial: o.especial, tiros: o.tirosLogrados, combo, jefe: false };
+    const info: InfoTragado = { tipo: o.tipo, monedas: ganancia, especial: o.especial, tiros: o.tirosLogrados, combo, jefe: esJefe };
     this.game.events.emit(EVENTOS_GLOBALES.TRAGADO, info);
   }
 

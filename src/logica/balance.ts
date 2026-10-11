@@ -98,6 +98,15 @@ export interface Balance {
   };
   objetos: TipoObjeto[];
   zonas: Zona[];
+  hambre: {
+    meta: number;
+    crecePorJefe: number;
+    colorVacio: string;
+    colorLleno: string;
+    grosor: number;
+    /** Radio del anillo = radio del hoyo × distancia. */
+    distancia: number;
+  };
   especiales: {
     dorado: { probabilidad: number; multiplicador: number; color: string };
     pesado: { probabilidad: number; multiplicador: number; peso: number; radioMinimo: number; color: string };

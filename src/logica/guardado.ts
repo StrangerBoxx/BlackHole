@@ -12,10 +12,14 @@ export interface EstadoProgreso {
   niveles: Niveles;
   /** Índice de la zona actual en balance.zonas. */
   zona: number;
+  /** Cuánto se ha llenado la barra de hambre. */
+  hambre: number;
+  /** Jefes comidos en total (la meta de hambre crece con esto). */
+  jefes: number;
 }
 
 export function estadoVacio(): EstadoProgreso {
-  return { monedas: 0, total: 0, niveles: nivelesIniciales(), zona: 0 };
+  return { monedas: 0, total: 0, niveles: nivelesIniciales(), zona: 0, hambre: 0, jefes: 0 };
 }
 
 export function serializar(e: EstadoProgreso): string {
@@ -55,5 +59,7 @@ export function deserializar(texto: string | null | undefined, b: Balance): Esta
     total: entero(d.total),
     niveles,
     zona: Math.min(b.zonas.length - 1, entero(d.zona)),
+    hambre: entero(d.hambre),
+    jefes: entero(d.jefes),
   };
 }

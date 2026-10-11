@@ -35,7 +35,9 @@ export class Sonido {
     ev.on(EVENTOS_GLOBALES.TRAGADO, (info: InfoTragado) => {
       if (info.especial === "bomba") this.tocarEvento("bomba");
       if (info.especial === "dorado") this.tocarEvento("dorado");
+      if (info.jefe) this.tocarEvento("jefeComido");
     });
+    ev.on(EVENTOS_GLOBALES.JEFE, () => this.tocarEvento("jefeAparece"));
 
     if (game.sound.locked) game.sound.once(Phaser.Sound.Events.UNLOCKED, () => this.empezarAmbiente());
     else this.empezarAmbiente();

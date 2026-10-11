@@ -41,6 +41,8 @@ export const EVENTOS_GLOBALES = {
   TRAGADO: "tragado",
   /** Mostrar un aviso abajo: (texto: string, segundos: number) */
   AVISO: "aviso",
+  /** Apareció el jefe de la zona: (tipo: TipoObjeto) */
+  JEFE: "jefe",
   /** Tiros especiales logrados: (ids: IdTiro[]) */
   TIRO: "tiro",
   /** Combo nuevo: (combo: number) */
