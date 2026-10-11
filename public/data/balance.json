@@ -87,6 +87,8 @@
 
   "dron": { "orbita": 150, "giroOrbita": 0.6, "tamano": 72, "vueloSegundos": 0.35, "extraVelocidad": 1.12, "velocidadMaxima": 1600 },
 
+  "offline": { "eficiencia": 0.5, "horasMaximas": 2, "minimoSegundos": 60 },
+
   "hambre": { "meta": 150, "crecePorJefe": 1.5, "colorVacio": "#b98cff", "colorLleno": "#ff5a4f", "grosor": 7, "distancia": 1.9 },
 
   "especiales": {

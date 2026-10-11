@@ -29,7 +29,8 @@ export class CargaScene extends Phaser.Scene {
       return;
     }
     setBalance(balance);
-    iniciarGuardado(progreso, balance);
+    // Lo ganado con el juego cerrado: el HUD lo avisa al empezar
+    this.registry.set("offline", iniciarGuardado(progreso, balance));
 
     for (const k of IMAGENES) this.load.image(k, `assets/img/${k}.png`);
     for (const z of balance.zonas) this.load.image(z.suelo, `assets/img/${z.suelo}.png`);

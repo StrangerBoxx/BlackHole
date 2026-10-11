@@ -9,6 +9,7 @@ import { BotonMejora } from "../entidades/BotonMejora";
 import type { Mejora } from "../logica/balance";
 import { describirMejora, estadisticas, estaAlMaximo } from "../logica/mejoras";
 import { formatearNumero } from "../logica/monedas";
+import { formatearDuracion } from "../logica/offline";
 
 const MARGEN = 20;
 const AYUDA_INICIAL = "Toca una mejora para comprarla";
@@ -77,7 +78,14 @@ export class HudScene extends Phaser.Scene {
       this.game.events.off(EVENTOS_GLOBALES.AVISO, this.mostrarAviso, this);
     });
 
-    if (progreso.total === 0) this.mostrarAviso("Arrastra un objeto y lánzalo al agujero", 4);
+    const offline = this.registry.get("offline") as { segundos: number; monedas: number } | undefined;
+    if (offline && offline.monedas > 0) {
+      this.registry.remove("offline");
+      this.mostrarAviso(
+        `Mientras no estabas (${formatearDuracion(offline.segundos)}), tu dron juntó +${formatearNumero(offline.monedas)}`,
+        5,
+      );
+    } else if (progreso.total === 0) this.mostrarAviso("Arrastra un objeto y lánzalo al agujero", 4);
   }
 
   /** Botones chicos debajo del título. */

@@ -22,6 +22,7 @@ import {
 import { objetosDesbloqueados, tipoPorId, zonaDe } from "../logica/objetos";
 import { elegirEspecial, explotarBomba, multiplicadorEspecial } from "../logica/especiales";
 import { hambreLlena, metaHambre, puedeTragarJefe, sumarHambre } from "../logica/hambre";
+import { multiplicadorSiempre } from "../logica/economia";
 import * as Tiros from "../logica/tiros";
 import type { Cuerpo } from "../logica/fisica";
 import type { IdEspecial } from "../logica/balance";
@@ -290,8 +291,8 @@ export class JuegoScene extends Phaser.Scene {
     const xCombo = multiplicadorCombo(combo, b.combo.multiplicadorPorCombo, b.combo.multiplicadorMaximo);
     const xTiro = Tiros.multiplicadorTiro(o.tirosLogrados, b.tiros);
     const xEspecial = multiplicadorEspecial(o.especial, b.especiales);
-    const zona = zonaDe(b, progreso.zona);
-    const ganancia = calcularGanancia(o.tipo.valor, [zona.multiplicadorValor, s.multiplicadorValor, xCombo, xTiro, xEspecial]);
+    const xSiempre = multiplicadorSiempre(b, progreso.exportar());
+    const ganancia = calcularGanancia(o.tipo.valor, [xSiempre, xCombo, xTiro, xEspecial]);
     progreso.registrarTragado(ganancia);
 
     const esJefe = o === this.jefe;

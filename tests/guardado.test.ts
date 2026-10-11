@@ -9,7 +9,7 @@ const b = balanceJson as Balance;
 
 describe("guardar y cargar", () => {
   it("lo que se guarda se vuelve a cargar igual", () => {
-    const e = { monedas: 1234, total: 56, niveles: { ...nivelesIniciales(), pull: 3, force: 2, size: 1, spawn: 4, value: 5 }, zona: 1, hambre: 40, jefes: 2 };
+    const e = { monedas: 1234, total: 56, niveles: { ...nivelesIniciales(), pull: 3, force: 2, size: 1, spawn: 4, value: 5 }, zona: 1, hambre: 40, jefes: 2, ultimaVez: 1700000000000 };
     expect(deserializar(serializar(e), b)).toEqual(e);
   });
 
@@ -41,6 +41,7 @@ describe("guardar y cargar", () => {
       zona: 0,
       hambre: 0,
       jefes: 0,
+      ultimaVez: 0,
     });
   });
 

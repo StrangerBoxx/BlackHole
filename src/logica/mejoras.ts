@@ -82,6 +82,6 @@ export function describirMejora(id: IdMejora, s: Estadisticas): string {
     case "gravity":
       return `Todo el pasto se acerca solo al hoyo (fuerza ${Math.round(s.gravedadPasiva)})`;
     case "drone":
-      return `Un dron empuja un objeto al hoyo cada ${s.intervaloDron.toFixed(1)} s`;
+      return `Un dron empuja un objeto cada ${s.intervaloDron.toFixed(1)} s (también con el juego cerrado)`;
   }
 }

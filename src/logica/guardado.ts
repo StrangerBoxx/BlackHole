@@ -16,10 +16,12 @@ export interface EstadoProgreso {
   hambre: number;
   /** Jefes comidos en total (la meta de hambre crece con esto). */
   jefes: number;
+  /** Cuándo se guardó por última vez (ms desde 1970), para la ganancia offline. */
+  ultimaVez: number;
 }
 
 export function estadoVacio(): EstadoProgreso {
-  return { monedas: 0, total: 0, niveles: nivelesIniciales(), zona: 0, hambre: 0, jefes: 0 };
+  return { monedas: 0, total: 0, niveles: nivelesIniciales(), zona: 0, hambre: 0, jefes: 0, ultimaVez: 0 };
 }
 
 export function serializar(e: EstadoProgreso): string {
@@ -61,5 +63,6 @@ export function deserializar(texto: string | null | undefined, b: Balance): Esta
     zona: Math.min(b.zonas.length - 1, entero(d.zona)),
     hambre: entero(d.hambre),
     jefes: entero(d.jefes),
+    ultimaVez: entero(d.ultimaVez),
   };
 }

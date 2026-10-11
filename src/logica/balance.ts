@@ -108,6 +108,7 @@ export interface Balance {
     extraVelocidad: number;
     velocidadMaxima: number;
   };
+  offline: { eficiencia: number; horasMaximas: number; minimoSegundos: number };
   hambre: {
     meta: number;
     crecePorJefe: number;
