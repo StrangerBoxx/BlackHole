@@ -1,15 +1,12 @@
 // Progreso del jugador (equivale al Autoload Progreso.gd): monedas, objetos tragados y niveles.
 // Un solo objeto compartido por todo el juego. No depende de Phaser, así se puede testear.
+// El guardado en el dispositivo lo hace core/Guardado.ts escuchando los cambios.
 import type { Balance, IdMejora, TipoObjeto } from "../logica/balance";
-import { costoMejora, estadisticas, nivelesIniciales, puedeComprar, type Niveles } from "../logica/mejoras";
+import { estadoVacio, type EstadoProgreso } from "../logica/guardado";
+import { costoMejora, estadisticas, puedeComprar, type Niveles } from "../logica/mejoras";
 import { objetosDesbloqueados } from "../logica/objetos";
 
-export interface EstadoProgreso {
-  monedas: number;
-  /** Objetos tragados en total. */
-  total: number;
-  niveles: Niveles;
-}
+export type { EstadoProgreso };
 
 export type ResultadoCompra =
   | { comprado: false }
@@ -18,12 +15,8 @@ export type ResultadoCompra =
 type Oyente = (estado: Readonly<EstadoProgreso>) => void;
 
 export class Progreso {
-  private estado: EstadoProgreso = Progreso.vacio();
+  private estado: EstadoProgreso = estadoVacio();
   private oyentes = new Set<Oyente>();
-
-  static vacio(): EstadoProgreso {
-    return { monedas: 0, total: 0, niveles: nivelesIniciales() };
-  }
 
   get monedas(): number {
     return this.estado.monedas;
@@ -35,10 +28,39 @@ export class Progreso {
     return this.estado.niveles;
   }
 
+  /** Copia del estado (para guardar). */
+  exportar(): EstadoProgreso {
+    return { ...this.estado, niveles: { ...this.estado.niveles } };
+  }
+
+  /** Reemplaza todo el estado (al cargar una partida guardada). */
+  cargar(e: EstadoProgreso): void {
+    this.estado = { ...e, niveles: { ...e.niveles } };
+    this.avisar();
+  }
+
+  /** Borra todo y vuelve a empezar. */
+  reiniciar(): void {
+    this.cargar(estadoVacio());
+  }
+
   /** Llamar cuando el hoyo termina de tragarse un objeto. */
   registrarTragado(monedas: number): void {
     this.estado.monedas += monedas;
     this.estado.total += 1;
+    this.avisar();
+  }
+
+  /** Suma monedas sin contar objetos (panel de debug). */
+  agregarMonedas(n: number): void {
+    this.estado.monedas = Math.max(0, this.estado.monedas + n);
+    this.avisar();
+  }
+
+  /** Sube o baja un nivel gratis, sin salir de 0..máximo (panel de debug). */
+  cambiarNivel(b: Balance, id: IdMejora, delta: number): void {
+    const max = b.mejoras.find((m) => m.id === id)?.max ?? 0;
+    this.estado.niveles[id] = Math.max(0, Math.min(max, this.estado.niveles[id] + delta));
     this.avisar();
   }
 
