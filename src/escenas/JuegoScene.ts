@@ -4,6 +4,8 @@ import { debug } from "../core/Debug";
 import { COLOR, EVENTOS_GLOBALES, type InfoTragado } from "../core/estilo";
 import { centrarMundo } from "../core/pantalla";
 import { progreso } from "../core/Progreso";
+import { crearCapaLuz } from "../efectos/Luz";
+import { CLAVE_DISTORSION, registrarDistorsion, type DistorsionFX } from "../efectos/DistorsionFX";
 import { Dron } from "../entidades/Dron";
 import { Hoyo } from "../entidades/Hoyo";
 import { Objeto } from "../entidades/Objeto";
@@ -31,6 +33,8 @@ import type { IdEspecial } from "../logica/balance";
 
 const PROF_LINEA = 25;
 const PROF_DEBUG = 50;
+/** La luz va sobre objetos y dron, pero bajo los "+N" y textos flotantes. */
+const PROF_LUZ = 38;
 
 /** El campo de juego: pasto, hoyo y objetos. */
 export class JuegoScene extends Phaser.Scene {
@@ -51,6 +55,8 @@ export class JuegoScene extends Phaser.Scene {
   private relojDron = 0;
   /** Durante la animación del colapso no se juega. */
   private colapsando = false;
+  /** Shader del piso (null si no hay WebGL). */
+  private distorsion: DistorsionFX | null = null;
   /** Segundos de juego (avanza con el dt del juego, no con el reloj). */
   private tiempo = 0;
 
@@ -73,7 +79,13 @@ export class JuegoScene extends Phaser.Scene {
     this.combo = new Combo();
     this.reloj = new RelojAparicion();
     centrarMundo(this);
-    this.add.image(0, 0, zonaDe(getBalance(), progreso.zona).suelo).setOrigin(0).setDisplaySize(ancho, alto);
+    const suelo = this.add.image(0, 0, zonaDe(getBalance(), progreso.zona).suelo).setOrigin(0).setDisplaySize(ancho, alto);
+    this.distorsion = null;
+    if (registrarDistorsion(this.game)) {
+      suelo.setPostPipeline(CLAVE_DISTORSION);
+      this.distorsion = suelo.getPostPipeline(CLAVE_DISTORSION) as DistorsionFX;
+    }
+    crearCapaLuz(this, PROF_LUZ);
 
     const s = this.stats;
     this.hoyo = new Hoyo(this, s.radioHoyo, s.radioAtraccion);
@@ -201,6 +213,21 @@ export class JuegoScene extends Phaser.Scene {
     for (const o of this.objetos) o.sincronizar();
     this.dibujarLinea();
     this.dibujarCirculos();
+    this.actualizarDistorsion();
+  }
+
+  /** Lleva el centro y el tamaño del hoyo al shader del piso (en píxeles de pantalla). */
+  private actualizarDistorsion(): void {
+    const fx = this.distorsion;
+    if (!fx) return;
+    const d = getBalance().visual.distorsion;
+    const cam = this.cameras.main;
+    fx.centro.x = (this.hoyo.x - cam.scrollX) * cam.zoom;
+    fx.centro.y = (this.hoyo.y - cam.scrollY) * cam.zoom;
+    fx.radio = this.hoyo.radioVisible * d.radio * cam.zoom;
+    fx.giro = d.giro;
+    fx.hundir = d.hundimiento;
+    fx.oscuro = d.oscurecer;
   }
 
   /** Durante el colapso: todo cae (sin dar monedas) y el hoyo crece. */
@@ -216,6 +243,7 @@ export class JuegoScene extends Phaser.Scene {
     this.hoyo.actualizar(dt, 700, 900, 1);
     for (const o of this.objetos) o.sincronizar();
     this.linea.clear();
+    this.actualizarDistorsion();
   }
 
   /** Un paso de simulación de `dt` segundos. */
@@ -333,6 +361,7 @@ export class JuegoScene extends Phaser.Scene {
   /** El objeto terminó de caer: monedas, combo y "+N". */
   private tragar(o: Objeto): void {
     o.destruir();
+    this.hoyo.rafaga(Math.min(1.5, o.tipo.r / 56));
     const b = getBalance();
     const s = this.stats;
     const permanentes = estadisticasPermanentes(b, progreso.permanentes);

@@ -196,17 +196,36 @@ export interface Balance {
     popupSegundos: number;
     popupSubida: number;
     sombra: { dx: number; dy: number; alto: number; color: string; opacidad: number };
-    halo: { color: string; opacidad: number; borde: string; bordeOpacidad: number; bordeGrosor: number };
-    polvo: {
+    halo: {
+      color: string;
+      opacidad: number;
+      borde: string;
+      bordeOpacidad: number;
+      bordeGrosor: number;
+      /** Borde punteado: largo de cada trazo y del espacio, en px. */
+      trazo: number;
+      hueco: number;
+    };
+    /** Brillo que pulsa alrededor del hoyo (un color por capa). tamano = diámetro / radio del hoyo. */
+    brillo: { colores: string[]; tamano: number; opacidad: number; pulso: number };
+    /** Chispas que caen en espiral y ráfaga al tragar. */
+    chispas: {
       maximo: number;
       probabilidad: number;
       velocidad: number;
       giroBase: number;
       giroCerca: number;
-      color: string;
-      opacidad: number;
-      radio: number;
+      colores: string[];
+      largo: number;
+      grosor: number;
+      rafaga: number;
+      rafagaVelocidad: number;
+      rafagaSegundos: number;
     };
+    /** Piso que se retuerce y se hunde: radio = veces el radio del hoyo. */
+    distorsion: { radio: number; giro: number; hundimiento: number; oscurecer: number };
+    /** Capa de luz: cálida a la izquierda, fría a la derecha, viñeta en las orillas. */
+    luz: { calida: string; fria: string; opacidadLados: number; vineta: string; opacidadVineta: number };
     lineaAgarre: { color: string; opacidad: number; grosor: number; trazo: number; hueco: number };
   };
 }
