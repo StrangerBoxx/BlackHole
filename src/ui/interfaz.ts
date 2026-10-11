@@ -174,6 +174,16 @@ export function iniciarInterfaz(game: Phaser.Game): Interfaz {
   progreso.alCambiar(actualizar);
   actualizar();
 
+  // Logros: cada vez que algo cambia se revisa si se cumplió alguno nuevo
+  const revisarLogros = () => {
+    for (const l of progreso.revisarLogros(getBalance())) {
+      aviso(`🏆 ¡Logro! ${l.nombre}`, 3);
+      game.events.emit(EVENTOS_GLOBALES.LOGRO, l);
+    }
+  };
+  progreso.alCambiar(revisarLogros);
+  revisarLogros();
+
   // ---------- Mensajes al empezar (zona nueva, ganancia offline, primera vez)
   game.events.on(EVENTOS_GLOBALES.JUEGO_LISTO, () => {
     const reg = game.registry;

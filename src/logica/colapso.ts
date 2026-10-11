@@ -67,6 +67,8 @@ export function aplicarColapso(b: Balance, e: EstadoProgreso): EstadoProgreso {
     album: structuredClone(e.album),
     ultimaVez: e.ultimaVez,
     permanentes: { ...e.permanentes },
+    records: { ...e.records },
+    logros: [...e.logros],
     materiaOscura: e.materiaOscura + materiaPorColapso(b, e.ganadasVuelta),
     colapsos: e.colapsos + 1,
     zona: Math.min(b.zonas.length - 1, e.zona + 1),

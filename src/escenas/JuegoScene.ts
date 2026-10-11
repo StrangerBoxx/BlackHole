@@ -427,6 +427,7 @@ export class JuegoScene extends Phaser.Scene {
     mostrarPopupMonedas(this, this.hoyo.x, arriba - 10, `+${formatearNumero(ganancia)}`);
     const info: InfoTragado = { tipo: o.tipo, monedas: ganancia, especial: o.especial, tiros: o.tirosLogrados, combo, jefe: esJefe };
     this.game.events.emit(EVENTOS_GLOBALES.TRAGADO, info);
+    progreso.anotarRecords(info);
     this.anotarAlbum(o);
     for (const m of progreso.avanzarMisiones(b, info)) {
       this.game.events.emit(EVENTOS_GLOBALES.AVISO, `¡Misión cumplida: ${textoMision(b, m)}! Cóbrala en Misiones`, 3);

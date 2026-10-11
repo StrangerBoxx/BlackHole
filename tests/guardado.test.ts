@@ -12,7 +12,8 @@ describe("guardar y cargar", () => {
     const e = { monedas: 1234, total: 56, niveles: { ...nivelesIniciales(), pull: 3, force: 2, size: 1, spawn: 4, value: 5 }, zona: 1, hambre: 40, jefes: 2, ultimaVez: 1700000000000,
       misiones: [{ plantilla: "tragarTipo", objetivo: 6, dificultad: 1, objeto: "extintor", progreso: 2 }],
       album: { laboratorio: ["tornillo", "extintor"] },
-      materiaOscura: 12, permanentes: { valorPerm: 3, raros: 1 }, ganadasVuelta: 5000, colapsos: 2 };
+      materiaOscura: 12, permanentes: { valorPerm: 3, raros: 1 }, ganadasVuelta: 5000, colapsos: 2,
+      records: { comboMax: 7, jefes: 2, dorados: 3, tiros: 9 }, logros: ["primer_bocado", "cazajefes"] };
     expect(deserializar(serializar(e), b)).toEqual(e);
   });
 
@@ -62,6 +63,8 @@ describe("guardar y cargar", () => {
       permanentes: {},
       ganadasVuelta: 0,
       colapsos: 0,
+      records: { comboMax: 0, jefes: 0, dorados: 0, tiros: 0 },
+      logros: [],
     });
   });
 

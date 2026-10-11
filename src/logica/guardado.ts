@@ -5,6 +5,7 @@ import { IDS_MEJORA, type Balance } from "./balance";
 import { nivelesIniciales, type Niveles } from "./mejoras";
 import type { Mision } from "./misiones";
 import type { NivelesPermanentes } from "./colapso";
+import { recordsVacios, type Records } from "./logros";
 
 export const VERSION_GUARDADO = 3;
 
@@ -71,10 +72,15 @@ export interface EstadoProgreso {
   ganadasVuelta: number;
   /** Veces que se colapsó. */
   colapsos: number;
+  /** Récords de por vida (para los logros). */
+  records: Records;
+  /** Ids de los logros ya desbloqueados. */
+  logros: string[];
 }
 
 export function estadoVacio(): EstadoProgreso {
-  return { monedas: 0, total: 0, niveles: nivelesIniciales(), zona: 0, hambre: 0, jefes: 0, ultimaVez: 0, misiones: [], album: {}, materiaOscura: 0, permanentes: {}, ganadasVuelta: 0, colapsos: 0 };
+  return { monedas: 0, total: 0, niveles: nivelesIniciales(), zona: 0, hambre: 0, jefes: 0, ultimaVez: 0, misiones: [], album: {}, materiaOscura: 0, permanentes: {}, ganadasVuelta: 0, colapsos: 0,
+    records: recordsVacios(), logros: [] };
 }
 
 export function serializar(e: EstadoProgreso): string {
@@ -123,7 +129,16 @@ export function deserializar(texto: string | null | undefined, b: Balance): Esta
     permanentes: leerPermanentes(d.permanentes, b),
     ganadasVuelta: entero(d.ganadasVuelta),
     colapsos: entero(d.colapsos),
+    records: leerRecords(d.records),
+    logros: Array.isArray(d.logros)
+      ? [...new Set(d.logros.filter((id): id is string => typeof id === "string" && b.logros.some((l) => l.id === id)))]
+      : [],
   };
+}
+
+function leerRecords(v: unknown): Records {
+  const r = (typeof v === "object" && v !== null ? v : {}) as Record<string, unknown>;
+  return { comboMax: entero(r.comboMax), jefes: entero(r.jefes), dorados: entero(r.dorados), tiros: entero(r.tiros) };
 }
 
 /** Niveles de mejoras permanentes que existen, dentro de 0..máximo. */

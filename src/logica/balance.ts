@@ -1,5 +1,6 @@
 // Forma del archivo public/data/balance.json.
 // Aquí solo hay tipos y una revisión básica: los números viven en el JSON.
+import type { DefLogro } from "./logros";
 import type { PlantillaMision } from "./misiones";
 
 export interface TipoObjeto {
@@ -138,6 +139,7 @@ export interface Balance {
   offline: { eficiencia: number; horasMaximas: number; minimoSegundos: number };
   album: { bonusPorZona: number };
   colapso: { divisor: number; exponente: number; minimo: number };
+  logros: DefLogro[];
   permanentes: Permanente[];
   efectosPermanentes: Record<IdEfectoPermanente, EfectoPermanente>;
   misiones: { activas: number; premioBase: number; plantillas: PlantillaMision[] };

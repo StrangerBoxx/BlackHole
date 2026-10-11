@@ -72,6 +72,8 @@ export const EVENTOS_GLOBALES = {
   COMPRA: "compra",
   /** Se compró una mejora que desbloqueó objetos: (objetos: TipoObjeto[]) */
   DESBLOQUEO: "desbloqueo",
+  /** Se desbloqueó un logro: (logro: DefLogro) */
+  LOGRO: "logro",
   /** Se colapsó: ({ materia, zona }) */
   COLAPSO: "colapso",
   /** La escena de juego terminó de armarse (para los avisos del comienzo). */

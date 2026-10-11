@@ -92,6 +92,21 @@
 
   "colapso": { "divisor": 400, "exponente": 0.5, "minimo": 1 },
 
+  "logros": [
+    { "id": "primer_bocado", "nombre": "Primer bocado",    "descripcion": "Traga tu primer objeto",        "tipo": "tragados", "meta": 1 },
+    { "id": "hambriento",    "nombre": "Hambriento",       "descripcion": "Traga 100 objetos",             "tipo": "tragados", "meta": 100 },
+    { "id": "insaciable",    "nombre": "Insaciable",       "descripcion": "Traga 1000 objetos",            "tipo": "tragados", "meta": 1000 },
+    { "id": "en_racha",      "nombre": "En racha",         "descripcion": "Haz un combo x5",               "tipo": "combo",    "meta": 5 },
+    { "id": "imparable",     "nombre": "Imparable",        "descripcion": "Haz un combo x10",              "tipo": "combo",    "meta": 10 },
+    { "id": "cazajefes",     "nombre": "Cazajefes",        "descripcion": "Trágate a un jefe",             "tipo": "jefes",    "meta": 1 },
+    { "id": "fiebre_dorada", "nombre": "Fiebre dorada",    "descripcion": "Traga 10 objetos dorados",      "tipo": "dorados",  "meta": 10 },
+    { "id": "punteria",      "nombre": "Puntería",         "descripcion": "Logra 25 tiros especiales",     "tipo": "tiros",    "meta": 25 },
+    { "id": "big_bang",      "nombre": "Big Bang",         "descripcion": "Colapsa por primera vez",       "tipo": "colapsos", "meta": 1 },
+    { "id": "al_reactor",    "nombre": "Al reactor",       "descripcion": "Llega a la sala del Reactor",   "tipo": "sala",     "meta": 3 },
+    { "id": "coleccionista", "nombre": "Coleccionista",    "descripcion": "Completa el álbum de una sala", "tipo": "albumes",  "meta": 1 },
+    { "id": "bing",          "nombre": "¡Bing Bong!",      "descripcion": "Trágate a Bing Bong",           "tipo": "especial", "meta": "bing_bong" }
+  ],
+
   "permanentes": [
     { "id": "valorPerm", "nombre": "Valor eterno",    "max": 25, "base": 1, "mult": 1.45 },
     { "id": "inicio",    "nombre": "Empujón inicial", "max": 10, "base": 1, "mult": 1.6 },
@@ -196,7 +211,8 @@
       "mision": { "archivo": "desbloquear", "tono": 1.2, "volumen": 0.8 },
       "album": { "archivo": "moneda", "tono": 0.8, "volumen": 1.2 },
       "colapso": { "archivo": "tragar", "tono": 0.25, "volumen": 2.0 },
-      "bingBong": { "archivo": "desbloquear", "tono": 1.8, "volumen": 1.0 }
+      "bingBong": { "archivo": "desbloquear", "tono": 1.8, "volumen": 1.0 },
+      "logro": { "archivo": "desbloquear", "tono": 1.0, "volumen": 1.0 }
     }
   },
 

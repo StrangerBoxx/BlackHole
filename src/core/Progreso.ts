@@ -5,6 +5,7 @@ import { anotarEnAlbum, anotarEspecial, zonaCompleta } from "../logica/album";
 import type { Azar } from "../logica/aparicion";
 import type { Balance, IdMejora, IdPermanente, TipoObjeto, Zona } from "../logica/balance";
 import { aplicarColapso, materiaPorColapso, puedeColapsar, type NivelesPermanentes } from "../logica/colapso";
+import { anotarRecord, logrosNuevos, type DefLogro, type EventoRecord } from "../logica/logros";
 import { estadoVacio, type EstadoProgreso } from "../logica/guardado";
 import { costoMejora, estadisticas, puedeComprar, type Niveles } from "../logica/mejoras";
 import {
@@ -169,6 +170,24 @@ export class Progreso {
     this.estado.ganadasVuelta += monedas;
     this.estado.total += 1;
     this.avisar();
+  }
+
+  /** Anota un objeto tragado en los récords de por vida (para los logros). */
+  anotarRecords(ev: EventoRecord): void {
+    anotarRecord(this.estado.records, ev);
+  }
+
+  /** Marca como desbloqueados los logros recién cumplidos y los devuelve (para avisar). */
+  revisarLogros(b: Balance): DefLogro[] {
+    const nuevos = logrosNuevos(b, this.estado);
+    if (nuevos.length === 0) return [];
+    this.estado.logros.push(...nuevos.map((l) => l.id));
+    this.avisar();
+    return nuevos;
+  }
+
+  get logros(): readonly string[] {
+    return this.estado.logros;
   }
 
   /** Suma materia oscura (panel de debug). */
