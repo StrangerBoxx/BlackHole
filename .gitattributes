@@ -4,3 +4,6 @@
 *.ogg binary
 *.mp3 binary
 *.jar binary
+*.bat text eol=crlf
+*.cmd text eol=crlf
+gradlew text eol=lf
