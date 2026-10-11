@@ -71,7 +71,7 @@ export class DebugScene extends Phaser.Scene {
 
     const boton = (x: number, yy: number, ancho: number, etiqueta: string, accion: () => void) => {
       const fondo = this.add
-        .rectangle(x, yy, ancho, 44, hex(COLOR.tierra2))
+        .rectangle(x, yy, ancho, 44, hex(COLOR.boton))
         .setOrigin(0)
         .setStrokeStyle(1.5, hex(COLOR.linea))
         .setInteractive({ useHandCursor: true })
@@ -87,7 +87,7 @@ export class DebugScene extends Phaser.Scene {
     };
     const anchoUtil = ANCHO_PANEL - 2 * izq;
 
-    boton(izq, y, anchoUtil / 2 - 4, "+1000 monedas", () => progreso.agregarMonedas(1000));
+    boton(izq, y, anchoUtil / 2 - 4, "+1000 chips", () => progreso.agregarMonedas(1000));
     boton(izq + anchoUtil / 2 + 4, y, anchoUtil / 2 - 4, "+100 000", () => progreso.agregarMonedas(100000));
     y += 56;
 
@@ -144,7 +144,7 @@ export class DebugScene extends Phaser.Scene {
     y += 64;
 
     const fondo = this.add
-      .rectangle(0, 0, ANCHO_PANEL, y, hex(COLOR.tierra), 0.94)
+      .rectangle(0, 0, ANCHO_PANEL, y, hex(COLOR.panel), 0.94)
       .setOrigin(0)
       .setStrokeStyle(2, hex(COLOR.acento))
       .setInteractive(); // atrapa los toques: no se arrastran objetos a través del panel

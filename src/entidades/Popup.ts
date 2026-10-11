@@ -8,7 +8,7 @@ const PROF_POPUP = 40;
 export function mostrarTextoFlotante(scene: Phaser.Scene, x: number, y: number, texto: string, color: string): void {
   const v = getBalance().visual;
   const t = scene.add
-    .text(x, y, texto, { fontFamily: FUENTE_TITULO, fontSize: "30px", color, stroke: COLOR.contornoOro, strokeThickness: 5 })
+    .text(x, y, texto, { fontFamily: FUENTE_TITULO, fontSize: "32px", fontStyle: "700", color, stroke: "#ffffff", strokeThickness: 6 })
     .setOrigin(0.5)
     .setDepth(PROF_POPUP);
   scene.tweens.add({
@@ -26,10 +26,11 @@ export function mostrarPopupMonedas(scene: Phaser.Scene, x: number, y: number, t
   const t = scene.add
     .text(0, 0, texto, {
       fontFamily: FUENTE_TITULO,
-      fontSize: "36px",
-      color: COLOR.oro,
-      stroke: COLOR.contornoOro,
-      strokeThickness: 5,
+      fontSize: "40px",
+      fontStyle: "700",
+      color: COLOR.chip,
+      stroke: "#ffffff",
+      strokeThickness: 6,
     })
     .setOrigin(0, 0.5);
   const moneda = scene.add.image(0, 0, "moneda").setDisplaySize(v.monedaPopup, v.monedaPopup);

@@ -1,23 +1,38 @@
 import type { IdEspecial, TipoObjeto } from "../logica/balance";
 import type { IdTiro } from "../logica/tiros";
 
-// Colores y fuentes de la interfaz (los mismos del prototipo).
+// Colores y fuentes de la interfaz: estilo "laboratorio blanco".
 
 export const COLOR = {
-  tierra: "#1d1712",
-  tierra2: "#2a2119",
-  linea: "#3d3127",
-  texto: "#f3ead9",
-  apagado: "#a89a85",
-  acento: "#b98cff",
-  oro: "#ffc65c",
-  peligro: "#ff8a7a",
-  tiro: "#d7b8ff",
-  contornoOro: "#28190a",
+  /** Fondo general (alrededor del mundo). */
+  fondo: "#e3e8eb",
+  /** Paneles de acero claro (barra de arriba, tienda, panel de menú). */
+  panel: "#f4f6f8",
+  /** Fondo de botones y tarjetas. */
+  boton: "#ffffff",
+  /** Bordes y líneas finas. */
+  linea: "#c3ccd3",
+  texto: "#22303b",
+  apagado: "#6b7a86",
+  /** Cian: acento principal (pestañas, álbum, halo). */
+  acento: "#1a9fd6",
+  /** Naranja: chips de energía, costos, "se puede comprar". */
+  chip: "#f07a1c",
+  peligro: "#d9433b",
+  tiro: "#1a9fd6",
+  /** Contorno oscuro de los textos que flotan sobre el piso claro. */
+  contorno: "#1d2a35",
+  /** Avisos: cartel oscuro con letras claras. */
+  oscuro: "#22303b",
+  textoClaro: "#f4f6f8",
+  /** Fondos suaves para resaltar (pestaña activa, botón cobrar, tarjeta de colapso). */
+  cianSuave: "#d9eff9",
+  naranjaSuave: "#fde7d4",
+  moradoSuave: "#ebe7fb",
 } as const;
 
-export const FUENTE_TITULO = '"Lilita One", "Arial Rounded MT Bold", sans-serif';
-export const FUENTE_TEXTO = '"Nunito", system-ui, sans-serif';
+export const FUENTE_TITULO = '"Rajdhani", "Arial Narrow", sans-serif';
+export const FUENTE_TEXTO = '"IBM Plex Sans", system-ui, sans-serif';
 
 /** Lo que se avisa cuando el hoyo termina de tragarse algo (evento "tragado"). */
 export interface InfoTragado {

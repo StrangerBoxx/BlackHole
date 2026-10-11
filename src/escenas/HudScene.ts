@@ -27,6 +27,8 @@ const AYUDA_INICIAL = "Toca una mejora para comprarla";
 export class HudScene extends Phaser.Scene {
   private barra!: Phaser.GameObjects.Rectangle;
   private titulo!: Phaser.GameObjects.Text;
+  private lineaBarra!: Phaser.GameObjects.Rectangle;
+  private lineaTienda!: Phaser.GameObjects.Rectangle;
   private icono!: Phaser.GameObjects.Image;
   private monedas!: Phaser.GameObjects.Text;
   private detalle!: Phaser.GameObjects.Text;
@@ -45,16 +47,17 @@ export class HudScene extends Phaser.Scene {
   }
 
   create(): void {
-    this.barra = this.add.rectangle(0, 0, 10, ALTO_BARRA, hex(COLOR.tierra), 0.78).setOrigin(0);
-    const estiloTitulo = { fontFamily: FUENTE_TITULO, fontSize: "36px", color: COLOR.texto };
-    this.titulo = this.add.text(MARGEN, 30, "Black ", estiloTitulo).setOrigin(0, 0.5);
+    this.barra = this.add.rectangle(0, 0, 10, ALTO_BARRA, hex(COLOR.panel), 0.96).setOrigin(0);
+    this.lineaBarra = this.add.rectangle(0, ALTO_BARRA - 2, 10, 2, hex(COLOR.linea)).setOrigin(0);
+    const estiloTitulo = { fontFamily: FUENTE_TITULO, fontSize: "38px", fontStyle: "700", color: COLOR.texto };
+    this.titulo = this.add.text(MARGEN, 30, "BLACK ", estiloTitulo).setOrigin(0, 0.5);
     this.add
-      .text(MARGEN + this.titulo.width, 30, "Hole", { ...estiloTitulo, color: COLOR.acento })
+      .text(MARGEN + this.titulo.width, 30, "HOLE", { ...estiloTitulo, color: COLOR.chip })
       .setOrigin(0, 0.5);
     this.crearOpciones();
 
     this.monedas = this.add
-      .text(0, 30, "0", { fontFamily: FUENTE_TITULO, fontSize: "40px", color: COLOR.oro })
+      .text(0, 30, "0", { fontFamily: FUENTE_TITULO, fontSize: "42px", fontStyle: "700", color: COLOR.chip })
       .setOrigin(1, 0.5);
     this.icono = this.add.image(0, 30, "moneda").setDisplaySize(32, 32);
     this.detalle = this.add
@@ -63,7 +66,7 @@ export class HudScene extends Phaser.Scene {
 
     this.avisoFondo = this.add.graphics();
     this.avisoTexto = this.add
-      .text(0, 0, "", { fontFamily: FUENTE_TITULO, fontSize: "30px", color: COLOR.texto, align: "center" })
+      .text(0, 0, "", { fontFamily: FUENTE_TITULO, fontSize: "30px", fontStyle: "700", color: COLOR.textoClaro, align: "center" })
       .setOrigin(0.5);
     this.aviso = this.add.container(0, 0, [this.avisoFondo, this.avisoTexto]).setAlpha(0);
 
@@ -94,7 +97,7 @@ export class HudScene extends Phaser.Scene {
     } else if (offline && offline.monedas > 0) {
       this.registry.remove("offline");
       this.mostrarAviso(
-        `Mientras no estabas (${formatearDuracion(offline.segundos)}), tu dron juntó +${formatearNumero(offline.monedas)}`,
+        `Mientras no estabas (${formatearDuracion(offline.segundos)}), tu dron juntó +${formatearNumero(offline.monedas)} chips`,
         5,
       );
     } else if (progreso.total === 0) this.mostrarAviso("Arrastra un objeto y lánzalo al agujero", 4);
@@ -136,7 +139,8 @@ export class HudScene extends Phaser.Scene {
   }
 
   private crearTienda(): void {
-    this.fondoTienda = this.add.rectangle(0, 0, 10, 10, hex(COLOR.tierra), 0.78).setOrigin(0);
+    this.fondoTienda = this.add.rectangle(0, 0, 10, 10, hex(COLOR.panel), 0.96).setOrigin(0);
+    this.lineaTienda = this.add.rectangle(0, 0, 10, 2, hex(COLOR.linea)).setOrigin(0);
     this.botones = getBalance().mejoras.map(
       (m) => new BotonMejora(this, m, () => this.mostrarAyuda(m), () => this.comprar(m)),
     );
@@ -160,7 +164,7 @@ export class HudScene extends Phaser.Scene {
       if (pestana === "misiones") {
         const listas = progreso.misiones.filter(misionCumplida).length;
         boton.setTexto(listas ? `Misiones (${listas} por cobrar)` : "Misiones");
-        boton.setColores(listas ? { borde: COLOR.oro, colorTexto: COLOR.oro } : { borde: COLOR.linea, colorTexto: COLOR.texto });
+        boton.setColores(listas ? { borde: COLOR.chip, colorTexto: COLOR.chip } : { borde: COLOR.linea, colorTexto: COLOR.texto });
       } else if (pestana === "album") {
         const zona = zonaDe(b, progreso.zona);
         boton.setTexto(`Álbum ${progreso.fichasAlbum(zona.id).length}/${fichasDeZona(zona).length}`);
@@ -205,6 +209,7 @@ export class HudScene extends Phaser.Scene {
   private acomodar(): void {
     const { width, height } = this.scale.gameSize;
     this.barra.width = width;
+    this.lineaBarra.width = width;
     this.monedas.setX(width - MARGEN);
     this.icono.setX(width - MARGEN - this.monedas.width - 22);
     this.detalle.setX(width - MARGEN);
@@ -213,6 +218,7 @@ export class HudScene extends Phaser.Scene {
     const altoTienda = ALTO_TIENDA;
     const arriba = height - altoTienda;
     this.fondoTienda.setPosition(0, arriba).setSize(width, altoTienda);
+    this.lineaTienda.setPosition(0, arriba).setSize(width, 2);
     this.fondoTienda.input?.hitArea.setTo(0, 0, width, altoTienda);
     const anchoMenu = (width - 2 * MARGEN + ESPACIO_BOTONES) / this.menu.length - ESPACIO_BOTONES;
     this.menu.forEach(({ boton }, i) => {
@@ -264,7 +270,7 @@ export class HudScene extends Phaser.Scene {
     const ancho = Math.min(width - 40, this.avisoTexto.width + 48);
     this.avisoTexto.setScale(Math.min(1, (ancho - 30) / this.avisoTexto.width));
     this.avisoFondo.clear();
-    this.avisoFondo.fillStyle(hex(COLOR.tierra), 0.82);
+    this.avisoFondo.fillStyle(hex(COLOR.oscuro), 0.88);
     this.avisoFondo.fillRoundedRect(-ancho / 2, -26, ancho, 52, 26);
     this.avisoRestante = segundos;
   }

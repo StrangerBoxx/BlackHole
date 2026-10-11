@@ -76,7 +76,7 @@ export function describirMejora(id: IdMejora, s: Estadisticas): string {
     case "spawn":
       return `Hasta ${Math.round(s.maxObjetos)} objetos, uno cada ${s.intervaloAparicion.toFixed(1)} s`;
     case "value":
-      return `Cada objeto da x${s.multiplicadorValor.toFixed(2)} monedas`;
+      return `Cada objeto da x${s.multiplicadorValor.toFixed(2)} chips de energía`;
     case "combo":
       return `El combo dura ${s.ventanaCombo.toFixed(1)} s entre objeto y objeto`;
     case "gravity":

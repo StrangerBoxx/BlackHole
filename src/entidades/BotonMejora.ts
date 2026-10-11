@@ -27,7 +27,7 @@ export class BotonMejora extends Phaser.GameObjects.Container {
       .text(0, 0, "", { fontFamily: FUENTE_TEXTO, fontSize: "14px", fontStyle: "600", color: COLOR.apagado })
       .setOrigin(0.5);
     this.costo = scene.add
-      .text(0, 0, "", { fontFamily: FUENTE_TITULO, fontSize: "21px", color: COLOR.oro })
+      .text(0, 0, "", { fontFamily: FUENTE_TITULO, fontSize: "23px", fontStyle: "700", color: COLOR.chip })
       .setOrigin(0, 0.5);
     this.moneda = scene.add.image(0, 0, "moneda").setDisplaySize(20, 20);
     this.add([this.fondo, this.nombre, this.nivel, this.moneda, this.costo]);
@@ -75,10 +75,10 @@ export class BotonMejora extends Phaser.GameObjects.Container {
 
     const g = this.fondo;
     g.clear();
-    g.fillStyle(hex(COLOR.tierra2), 1);
+    g.fillStyle(hex(COLOR.boton), 1);
     g.fillRoundedRect(-this.ancho / 2, -this.alto / 2, this.ancho, this.alto, 14);
-    g.lineStyle(this.sePuede ? 2.5 : 1.5, hex(this.sePuede ? COLOR.oro : COLOR.linea), 1);
+    g.lineStyle(this.sePuede ? 2.5 : 1.5, hex(this.sePuede ? COLOR.chip : COLOR.linea), 1);
     g.strokeRoundedRect(-this.ancho / 2, -this.alto / 2, this.ancho, this.alto, 14);
-    this.setAlpha(this.sePuede ? 1 : 0.5);
+    this.setAlpha(this.sePuede ? 1 : 0.55);
   }
 }

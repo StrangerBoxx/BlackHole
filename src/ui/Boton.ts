@@ -23,7 +23,7 @@ export class Boton extends Phaser.GameObjects.Container {
     super(scene, x, y);
     this.op = {
       tamano: 20,
-      fondo: COLOR.tierra2,
+      fondo: COLOR.boton,
       borde: COLOR.linea,
       colorTexto: COLOR.texto,
       fuente: FUENTE_TEXTO,

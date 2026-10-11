@@ -7,7 +7,7 @@ const config: CapacitorConfig = {
   appName: "Black Hole",
   webDir: "dist",
   android: {
-    backgroundColor: "#1d1712",
+    backgroundColor: "#e3e8eb",
   },
 };
 

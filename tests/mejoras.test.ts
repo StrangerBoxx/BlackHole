@@ -72,6 +72,6 @@ describe("costo de las mejoras", () => {
     const s = estadisticas(b, { ...nivelesIniciales(), pull: 1, spawn: 2, value: 3 });
     expect(describirMejora("pull", s)).toBe("Radio de atracción: 83 px");
     expect(describirMejora("spawn", s)).toBe("Hasta 6 objetos, uno cada 1.2 s");
-    expect(describirMejora("value", s)).toBe("Cada objeto da x1.75 monedas");
+    expect(describirMejora("value", s)).toBe("Cada objeto da x1.75 chips de energía");
   });
 });

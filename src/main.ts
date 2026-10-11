@@ -1,6 +1,8 @@
-import "@fontsource/lilita-one/latin-400.css";
-import "@fontsource/nunito/latin-600.css";
-import "@fontsource/nunito/latin-800.css";
+import "@fontsource/ibm-plex-sans/latin-500.css";
+import "@fontsource/ibm-plex-sans/latin-600.css";
+import "@fontsource/ibm-plex-sans/latin-700.css";
+import "@fontsource/rajdhani/latin-600.css";
+import "@fontsource/rajdhani/latin-700.css";
 import Phaser from "phaser";
 import { ALTO_BASE, ANCHO_BASE } from "./core/pantalla";
 import { progreso } from "./core/Progreso";
@@ -15,7 +17,7 @@ import "./escenas/PestanaColapso";
 const juego = new Phaser.Game({
   type: Phaser.AUTO, // WebGL y, si no hay, Canvas
   parent: "juego",
-  backgroundColor: "#1d1712",
+  backgroundColor: "#e3e8eb",
   width: ANCHO_BASE,
   height: ALTO_BASE,
   scale: {

@@ -51,13 +51,13 @@ export class PanelScene extends Phaser.Scene {
     this.scene.pause("Juego");
     const { width, height } = this.scale.gameSize;
     // Fondo oscuro que tapa y atrapa los toques
-    this.add.rectangle(0, 0, width, height, 0x000000, 0.6).setOrigin(0).setInteractive();
+    this.add.rectangle(0, 0, width, height, 0x1d2a35, 0.45).setOrigin(0).setInteractive();
 
     const ancho = Math.min(680, width - 24);
     const alto = Math.min(height - 40, 1000);
     this.marco = new Phaser.Geom.Rectangle((width - ancho) / 2, (height - alto) / 2, ancho, alto);
     const g = this.add.graphics();
-    g.fillStyle(hex(COLOR.tierra), 0.98).fillRoundedRect(this.marco.x, this.marco.y, ancho, alto, 22);
+    g.fillStyle(hex(COLOR.panel), 0.98).fillRoundedRect(this.marco.x, this.marco.y, ancho, alto, 22);
     g.lineStyle(2, hex(COLOR.acento), 1).strokeRoundedRect(this.marco.x, this.marco.y, ancho, alto, 22);
 
     // Pestañas arriba
@@ -96,7 +96,7 @@ export class PanelScene extends Phaser.Scene {
   mostrar(id: Pestana): void {
     this.pestana = id;
     PESTANAS.forEach((p, i) =>
-      this.botonesPestana[i].setColores(p.id === id ? { borde: COLOR.acento, fondo: "#3a2a55" } : { borde: COLOR.linea, fondo: COLOR.tierra2 }),
+      this.botonesPestana[i].setColores(p.id === id ? { borde: COLOR.acento, fondo: COLOR.cianSuave } : { borde: COLOR.linea, fondo: COLOR.boton }),
     );
     this.redibujar();
   }
@@ -132,7 +132,7 @@ export class PanelScene extends Phaser.Scene {
       this.add.text(x, y, texto, {
         fontFamily: titulo ? FUENTE_TITULO : FUENTE_TEXTO,
         fontSize: `${tamano}px`,
-        fontStyle: titulo ? "normal" : "800",
+        fontStyle: titulo ? "700" : "600",
         color,
       }),
     );
@@ -155,20 +155,20 @@ registrarPestana({
       const y = area.y + i * (altoTarjeta + 14);
       const listo = misionCumplida(m);
       const g = panel.poner(panel.add.graphics());
-      g.fillStyle(hex(COLOR.tierra2), 1).fillRoundedRect(area.x, y, area.width, altoTarjeta, 16);
-      g.lineStyle(2, hex(listo ? COLOR.oro : COLOR.linea), 1).strokeRoundedRect(area.x, y, area.width, altoTarjeta, 16);
+      g.fillStyle(hex(COLOR.boton), 1).fillRoundedRect(area.x, y, area.width, altoTarjeta, 16);
+      g.lineStyle(2, hex(listo ? COLOR.chip : COLOR.linea), 1).strokeRoundedRect(area.x, y, area.width, altoTarjeta, 16);
 
       panel.texto(area.x + 18, y + 16, textoMision(b, m), 23);
       // Barra de progreso
       const anchoBarra = area.width - 36;
       const frac = Math.min(1, m.progreso / m.objetivo);
-      g.fillStyle(0x000000, 0.35).fillRoundedRect(area.x + 18, y + 58, anchoBarra, 18, 9);
-      if (frac > 0) g.fillStyle(hex(listo ? COLOR.oro : COLOR.acento), 1).fillRoundedRect(area.x + 18, y + 58, Math.max(18, anchoBarra * frac), 18, 9);
+      g.fillStyle(hex(COLOR.linea), 0.6).fillRoundedRect(area.x + 18, y + 58, anchoBarra, 18, 9);
+      if (frac > 0) g.fillStyle(hex(listo ? COLOR.chip : COLOR.acento), 1).fillRoundedRect(area.x + 18, y + 58, Math.max(18, anchoBarra * frac), 18, 9);
       panel.texto(area.x + 18, y + 86, `${formatearNumero(m.progreso)} / ${formatearNumero(m.objetivo)}`, 18, COLOR.apagado);
 
       const premio = premioMision(b, m, ctx.multiplicador);
       panel.poner(panel.add.image(area.x + 30, y + 126, "moneda").setDisplaySize(24, 24));
-      panel.texto(area.x + 48, y + 112, `+${formatearNumero(premio)}`, 22, COLOR.oro, true);
+      panel.texto(area.x + 48, y + 112, `+${formatearNumero(premio)}`, 22, COLOR.chip, true);
 
       const boton = panel.poner(
         new Boton(panel, area.right - 100, y + 112, { ancho: 168, alto: 48, texto: listo ? "Cobrar" : "En curso", tamano: 20 }, () => {
@@ -176,7 +176,7 @@ registrarPestana({
           if (r > 0) panel.game.events.emit(EVENTOS_GLOBALES.COMPRA, "mision", 0);
         }),
       );
-      if (listo) boton.setColores({ borde: COLOR.oro, fondo: "#4a3a12", colorTexto: COLOR.oro });
+      if (listo) boton.setColores({ borde: COLOR.chip, fondo: COLOR.naranjaSuave, colorTexto: COLOR.chip });
       boton.setActivo(listo);
     });
     panel.texto(area.x, area.y + 3 * (altoTarjeta + 14) + 6, "Las misiones cumplidas se cobran aquí.\nAl cobrar, sale una misión nueva.", 18, COLOR.apagado);
@@ -213,10 +213,10 @@ registrarPestana({
         area.centerX,
         area.y + 52,
         completo
-          ? `¡Completo! Monedas x${1 + b.album.bonusPorZona} para siempre`
-          : `Trágate todo (y al jefe) para ganar monedas x${1 + b.album.bonusPorZona} para siempre`,
+          ? `¡Completo! Chips x${1 + b.album.bonusPorZona} para siempre`
+          : `Trágate todo (y al jefe) para ganar chips x${1 + b.album.bonusPorZona} para siempre`,
         18,
-        completo ? COLOR.oro : COLOR.apagado,
+        completo ? COLOR.chip : COLOR.apagado,
       )
       .setOrigin(0.5, 0);
 
@@ -231,7 +231,7 @@ registrarPestana({
       const la = tengo.includes(id);
       const esJefe = id === zona.jefe;
       const g = panel.poner(panel.add.graphics());
-      g.fillStyle(hex(COLOR.tierra2), 1).fillRoundedRect(x, y, celdaAncho, celdaAlto, 14);
+      g.fillStyle(hex(COLOR.boton), 1).fillRoundedRect(x, y, celdaAncho, celdaAlto, 14);
       g.lineStyle(2, hex(esJefe ? COLOR.peligro : la ? COLOR.acento : COLOR.linea), 1).strokeRoundedRect(x, y, celdaAncho, celdaAlto, 14);
       const img = panel.poner(panel.add.image(x + celdaAncho / 2, y + celdaAlto / 2 - 14, texturaObjeto(id)));
       img.setScale(Math.min(celdaAncho, celdaAlto - 40) * 0.8 / img.width);

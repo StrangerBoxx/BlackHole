@@ -120,8 +120,8 @@
       { "id": "lejos",      "texto": "Mete {n} tiros desde lejos",     "tipo": "tiro", "tiro": "lejos",   "objetivos": [2, 4, 7], "premio": 2 },
       { "id": "directo",    "texto": "Mete {n} tiros directos",        "tipo": "tiro", "tiro": "directo", "objetivos": [3, 5, 8], "premio": 1.5 },
       { "id": "dorado",     "texto": "Traga {n} objetos dorados", "textoUno": "Traga 1 objeto dorado", "tipo": "dorado", "objetivos": [1, 2, 3], "premio": 3 },
-      { "id": "monedas",    "texto": "Gana {n} monedas",               "tipo": "monedas",    "objetivos": [300, 800, 2000], "premio": 1 },
-      { "id": "jefe",       "texto": "Cómete al jefe de la zona",      "tipo": "jefe",       "objetivos": [1], "premio": 4 }
+      { "id": "monedas",    "texto": "Junta {n} chips de energía",               "tipo": "monedas",    "objetivos": [300, 800, 2000], "premio": 1 },
+      { "id": "jefe",       "texto": "Trágate al jefe de la sala",      "tipo": "jefe",       "objetivos": [1], "premio": 4 }
     ]
   },
 

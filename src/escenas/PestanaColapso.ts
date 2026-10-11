@@ -32,11 +32,11 @@ registrarPestana({
     const y0 = area.y + 58;
     const alto = 228;
     const g = panel.poner(panel.add.graphics());
-    g.fillStyle(hex("#2a1d3d"), 1).fillRoundedRect(area.x, y0, area.width, alto, 16);
+    g.fillStyle(hex(COLOR.moradoSuave), 1).fillRoundedRect(area.x, y0, area.width, alto, 16);
     g.lineStyle(2, hex(puede ? COLOR.acento : COLOR.linea), 1).strokeRoundedRect(area.x, y0, area.width, alto, 16);
     const explicacion = ultima
-      ? `El hoyo se traga toda la ${zona.nombre}. Pierdes monedas y mejoras, vuelves a empezar aquí y ganas materia oscura.`
-      : `El hoyo se traga todo el ${zona.nombre}. Pierdes monedas y mejoras, pasas a ${siguiente.nombre} (todo vale x${siguiente.multiplicadorValor}) y ganas materia oscura.`;
+      ? `El hoyo se traga todo el ${zona.nombre}. Pierdes chips y mejoras, vuelves a empezar aquí y ganas materia oscura.`
+      : `El hoyo se traga todo el ${zona.nombre}. Pierdes chips y mejoras, pasas al ${siguiente.nombre} (todo vale x${siguiente.multiplicadorValor}) y ganas materia oscura.`;
     panel.texto(area.x + 18, y0 + 14, explicacion, 18).setWordWrapWidth(area.width - 36);
     const tamano = b.mejoras.find((m) => m.id === "size")!;
     panel.texto(
@@ -46,7 +46,7 @@ registrarPestana({
       21,
       puede ? COLOR.acento : COLOR.peligro,
     );
-    panel.texto(area.x + 18, y0 + 128, `Monedas ganadas en esta vuelta: ${formatearNumero(e.ganadasVuelta)}`, 16, COLOR.apagado);
+    panel.texto(area.x + 18, y0 + 128, `Chips ganados en esta vuelta: ${formatearNumero(e.ganadasVuelta)}`, 16, COLOR.apagado);
 
     const armado = performance.now() < confirmarHasta;
     const boton = panel.poner(
@@ -65,7 +65,7 @@ registrarPestana({
       }),
     );
     boton.setActivo(puede);
-    if (puede) boton.setColores({ borde: COLOR.acento, fondo: "#3a2a55", colorTexto: armado ? COLOR.peligro : COLOR.texto });
+    if (puede) boton.setColores({ borde: COLOR.acento, fondo: COLOR.cianSuave, colorTexto: armado ? COLOR.peligro : COLOR.texto });
 
     // Mejoras permanentes
     const yLista = y0 + alto + 18;
@@ -78,7 +78,7 @@ registrarPestana({
       const costo = costoMejora(p, nivel);
       const alcanza = !max && e.materiaOscura >= costo;
       const gf = panel.poner(panel.add.graphics());
-      gf.fillStyle(hex(COLOR.tierra2), 1).fillRoundedRect(area.x, y, area.width, altoFila, 12);
+      gf.fillStyle(hex(COLOR.boton), 1).fillRoundedRect(area.x, y, area.width, altoFila, 12);
       gf.lineStyle(1.5, hex(alcanza ? COLOR.acento : COLOR.linea), 1).strokeRoundedRect(area.x, y, area.width, altoFila, 12);
       panel.texto(area.x + 14, y + 8, `${p.nombre}  ${nivel}/${p.max}`, 20);
       const proximo = estadisticasPermanentes(b, { ...e.permanentes, [p.id]: max ? nivel : nivel + 1 });

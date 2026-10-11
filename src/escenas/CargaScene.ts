@@ -45,9 +45,9 @@ export class CargaScene extends Phaser.Scene {
       try {
         await Promise.race([
           Promise.all([
-            document.fonts.load('30px "Lilita One"'),
-            document.fonts.load('600 17px "Nunito"'),
-            document.fonts.load('800 17px "Nunito"'),
+            document.fonts.load('700 30px "Rajdhani"'),
+            document.fonts.load('600 17px "IBM Plex Sans"'),
+            document.fonts.load('700 17px "IBM Plex Sans"'),
           ]),
           new Promise((r) => setTimeout(r, 1500)),
         ]);

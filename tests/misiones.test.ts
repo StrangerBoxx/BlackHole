@@ -41,7 +41,7 @@ describe("misiones", () => {
   it("textos con singular", () => {
     expect(textoMision(b, mision("dorado", 1))).toBe("Traga 1 objeto dorado");
     expect(textoMision(b, mision("dorado", 3))).toBe("Traga 3 objetos dorados");
-    expect(textoMision(b, mision("monedas", 2000))).toBe("Gana 2.0k monedas");
+    expect(textoMision(b, mision("monedas", 2000))).toBe("Junta 2.0k chips de energía");
   });
 
   it("cada tipo de misión avanza con lo suyo", () => {

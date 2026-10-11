@@ -136,7 +136,7 @@ export class JuegoScene extends Phaser.Scene {
       o.tiempoCaida = 0;
     }
     const zona = zonaDe(getBalance(), r.zona);
-    this.registry.set("avisoInicial", `¡Bienvenido a ${zona.nombre}! +${formatearNumero(r.materia)} materia oscura`);
+    this.registry.set("avisoInicial", `¡Bienvenido al ${zona.nombre}! +${formatearNumero(r.materia)} materia oscura`);
     this.cameras.main.shake(1800, 0.006);
     this.time.delayedCall(1300, () => this.cameras.main.fade(500, 20, 8, 40));
     this.time.delayedCall(1850, () => this.scene.restart());
@@ -385,7 +385,7 @@ export class JuegoScene extends Phaser.Scene {
 
     const arriba = this.hoyo.y - this.hoyo.radioVisible;
     if (o.especial === "dorado") mostrarTextoFlotante(this, this.hoyo.x, arriba - 100, "¡Dorado! x10", b.especiales.dorado.color);
-    if (o.especial === "pesado") mostrarTextoFlotante(this, this.hoyo.x, arriba - 100, "¡Pesado! x4", COLOR.texto);
+    if (o.especial === "pesado") mostrarTextoFlotante(this, this.hoyo.x, arriba - 100, "¡Pesado! x4", COLOR.apagado);
     if (o.especial === "bomba") this.explotar();
 
     if (o.tirosLogrados.length) {
@@ -397,7 +397,7 @@ export class JuegoScene extends Phaser.Scene {
 
     this.game.events.emit(EVENTOS_GLOBALES.COMBO, combo);
     const aviso = textoCombo(combo, b.combo.mostrarDesde);
-    if (aviso) this.game.events.emit(EVENTOS_GLOBALES.AVISO, `${aviso}  monedas x${formatearMultiplicador(xCombo)}`, 1.2);
+    if (aviso) this.game.events.emit(EVENTOS_GLOBALES.AVISO, `${aviso}  chips x${formatearMultiplicador(xCombo)}`, 1.2);
 
     mostrarPopupMonedas(this, this.hoyo.x, this.hoyo.y - this.hoyo.radioVisible - 10, `+${formatearNumero(ganancia)}`);
     const info: InfoTragado = { tipo: o.tipo, monedas: ganancia, especial: o.especial, tiros: o.tirosLogrados, combo, jefe: esJefe };
@@ -418,7 +418,7 @@ export class JuegoScene extends Phaser.Scene {
     const y = this.hoyo.y + this.hoyo.radioVisible + 40;
     mostrarTextoFlotante(this, this.hoyo.x, y, `¡Nuevo en el álbum: ${o.tipo.nombre}!`, COLOR.acento);
     if (r.completo) {
-      this.game.events.emit(EVENTOS_GLOBALES.AVISO, `¡Álbum de ${zona.nombre} completo! Monedas x${1 + b.album.bonusPorZona} para siempre`, 4);
+      this.game.events.emit(EVENTOS_GLOBALES.AVISO, `¡Álbum de ${zona.nombre} completo! Chips x${1 + b.album.bonusPorZona} para siempre`, 4);
     }
     this.game.events.emit(EVENTOS_GLOBALES.ALBUM, o.tipo, r.completo);
   }

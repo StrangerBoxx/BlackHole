@@ -79,15 +79,15 @@ export function aplicarColapso(b: Balance, e: EstadoProgreso): EstadoProgreso {
 export function describirPermanente(id: IdPermanente, p: EstadisticasPermanentes): string {
   switch (id) {
     case "valorPerm":
-      return `Monedas x${Math.round(p.multiplicadorPermanente * 100) / 100} para siempre`;
+      return `Chips x${Math.round(p.multiplicadorPermanente * 100) / 100} para siempre`;
     case "inicio":
-      return `Empiezas cada zona con ${Math.round(p.monedasIniciales)} monedas`;
+      return `Empiezas cada sala con ${Math.round(p.monedasIniciales)} chips`;
     case "comboPerm":
       return `El combo dura ${p.comboExtra.toFixed(1)} s más`;
     case "raros":
       return `+${Math.round(p.doradoExtra * 100)}% de objetos dorados`;
     case "dronPerm":
-      return `Empiezas cada zona con Dron nivel ${Math.round(p.dronInicial)}`;
+      return `Empiezas cada sala con Dron nivel ${Math.round(p.dronInicial)}`;
     case "offline":
       return `${Math.round(p.horasOfflineExtra)} h más de ganancia sin jugar`;
   }
