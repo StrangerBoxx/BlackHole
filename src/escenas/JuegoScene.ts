@@ -6,7 +6,7 @@ import { progreso } from "../core/Progreso";
 import { Hoyo } from "../entidades/Hoyo";
 import { Objeto } from "../entidades/Objeto";
 import { mostrarPopupMonedas } from "../entidades/Popup";
-import type { TipoObjeto } from "../logica/balance";
+import { buscarLugar, elegirTipo, RelojAparicion } from "../logica/aparicion";
 import { aplicarAtraccion, avanzarCaida, puedeTragar } from "../logica/captura";
 import { pasoFisica } from "../logica/fisica";
 import {
@@ -14,6 +14,7 @@ import {
 } from "../logica/lanzamiento";
 import { estadisticas, type Estadisticas } from "../logica/mejoras";
 import { Combo, formatearNumero, monedasPorObjeto, textoCombo } from "../logica/monedas";
+import { objetosDesbloqueados } from "../logica/objetos";
 
 const PROF_LINEA = 25;
 
@@ -35,6 +36,7 @@ export class JuegoScene extends Phaser.Scene {
   private hoyo!: Hoyo;
   private linea!: Phaser.GameObjects.Graphics;
   private combo!: Combo;
+  private reloj!: RelojAparicion;
   /** Segundos de juego (avanza con el dt del juego, no con el reloj). */
   private tiempo = 0;
 
@@ -53,6 +55,7 @@ export class JuegoScene extends Phaser.Scene {
     this.dedo = null;
     this.tiempo = 0;
     this.combo = new Combo(getBalance().combo.ventanaSegundos);
+    this.reloj = new RelojAparicion();
     centrarMundo(this);
     this.add.image(0, 0, "suelo").setOrigin(0).setDisplaySize(ancho, alto);
 
@@ -60,25 +63,37 @@ export class JuegoScene extends Phaser.Scene {
     this.hoyo = new Hoyo(this, s.radioHoyo, s.radioAtraccion);
     this.linea = this.add.graphics().setDepth(PROF_LINEA);
 
-    this.ponerObjetosDePrueba();
+    this.poblar();
     this.configurarArrastre();
     this.scene.launch("Hud");
+
+    const reiniciar = () => this.reiniciar();
+    this.game.events.on(EVENTOS_GLOBALES.REINICIO, reiniciar);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.game.events.off(EVENTOS_GLOBALES.REINICIO, reiniciar));
   }
 
-  // TEMPORAL (pasos 1-4): uno de cada tipo abajo y, si se lo tragan, vuelve a aparecer.
-  // En el paso 5 se reemplaza por la aparición de verdad.
-  private ponerObjetosDePrueba(): void {
-    getBalance().objetos.forEach((t, i) => {
-      const x = 110 + (i % 4) * 167;
-      const y = 620 + Math.floor(i / 4) * 160;
-      this.objetos.push(new Objeto(this, t, x, y, true));
-    });
-    this.events.on(EVENTOS_JUEGO.TRAGADO, (t: TipoObjeto) => {
-      this.time.delayedCall(800, () => {
-        const x = Phaser.Math.Between(60, 660), y = Phaser.Math.Between(620, 900);
-        this.objetos.push(new Objeto(this, t, x, y, true));
-      });
-    });
+  /** Los objetos del comienzo aparecen de una vez, sin animación. */
+  private poblar(): void {
+    for (let i = 0; i < getBalance().aparicion.iniciales; i++) this.aparecerObjeto(false);
+  }
+
+  /** Progreso borrado: se limpia el pasto y se empieza de nuevo. */
+  private reiniciar(): void {
+    for (const o of this.objetos) o.destruir();
+    this.objetos = [];
+    this.agarrado = this.dedo = null;
+    this.poblar();
+  }
+
+  /** Saca un objeto desbloqueado (al azar con peso) en un lugar libre. Si no hay lugar, no sale. */
+  private aparecerObjeto(deAPoco: boolean): void {
+    const b = getBalance();
+    const s = this.stats;
+    const tipos = objetosDesbloqueados(b, s.radioHoyo);
+    if (tipos.length === 0) return;
+    const tipo = elegirTipo(tipos, b.aparicion.pesoBase, b.aparicion.pesoPorIndice, Math.random);
+    const lugar = buscarLugar(tipo.r, this.objetos.map((o) => o.cuerpo), s.radioAtraccion, b, Math.random);
+    if (lugar) this.objetos.push(new Objeto(this, tipo, lugar.x, lugar.y, deAPoco));
   }
 
   private configurarArrastre(): void {
@@ -127,6 +142,8 @@ export class JuegoScene extends Phaser.Scene {
     const s = this.stats;
     const centro = this.hoyo;
     this.seguirDedo();
+
+    if (this.reloj.avanzar(dt, s.intervaloAparicion, this.objetos.length, s.maxObjetos)) this.aparecerObjeto(true);
 
     // Objetos nuevos crecen; los que caen siguen su espiral
     for (const o of this.objetos) {

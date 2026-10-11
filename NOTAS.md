@@ -25,6 +25,8 @@ npm run build      # versión final en dist/
 - Monedas por objeto: `round(valor * multiplicador)`. Combo si el siguiente cae antes de 2.5 s;
   desde el 3.º seguido aparece "¡Combo xN!".
 - Objeto desbloqueado si `r <= radio_hoyo * 0.95`. Aparición con peso `1 + i*0.6`.
+  Al empezar salen 4 de una vez. Lugar: a más de `min(radio_atracción, 260) + r + 20` del hoyo y a 8 px de otros
+  (40 intentos; si no hay lugar, ese turno no sale nada). Si el pasto está lleno, se pierde el turno del reloj.
 - Mejoras: costo `round(base * mult^nivel)`.
 
 Todos los números están en `public/data/balance.json`.
@@ -60,11 +62,11 @@ Todos los números están en `public/data/balance.json`.
 ## Estado por pasos
 
 - [x] 0. Base del proyecto
-- [x] 1. Objeto arrastrable y lanzable (temporal: aparece uno de cada tipo abajo)
-- [x] 2. Hoyo que atrae y traga (temporal: lo tragado reaparece abajo; niveles fijos en 0)
+- [x] 1. Objeto arrastrable y lanzable
+- [x] 2. Hoyo que atrae y traga
 - [x] 3. Monedas y combo
 - [x] 4. Tienda de mejoras
-- [ ] 5. Aparición y desbloqueos
+- [x] 5. Aparición y desbloqueos
 - [ ] 6. Sonidos
 - [ ] 7. Guardado
 - [ ] 8. Panel de debug, tests y Android
