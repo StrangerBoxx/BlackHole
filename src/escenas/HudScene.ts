@@ -4,6 +4,7 @@ import { COLOR, EVENTOS_GLOBALES, FUENTE_TITULO, FUENTE_TEXTO, hex } from "../co
 import { ALTO_AYUDA_TIENDA as ALTO_AYUDA, ALTO_BARRA_HUD as ALTO_BARRA, ALTO_BOTON_TIENDA as ALTO_BOTON,
   ALTO_TIENDA, ESPACIO_TIENDA as ESPACIO_BOTONES } from "../core/pantalla";
 import { progreso } from "../core/Progreso";
+import { getSonido } from "../core/Sonido";
 import { BotonMejora } from "../entidades/BotonMejora";
 import type { Mejora } from "../logica/balance";
 import { describirMejora, estadisticas, estaAlMaximo } from "../logica/mejoras";
@@ -37,10 +38,11 @@ export class HudScene extends Phaser.Scene {
   create(): void {
     this.barra = this.add.rectangle(0, 0, 10, ALTO_BARRA, hex(COLOR.tierra), 0.78).setOrigin(0);
     const estiloTitulo = { fontFamily: FUENTE_TITULO, fontSize: "36px", color: COLOR.texto };
-    this.titulo = this.add.text(MARGEN, ALTO_BARRA / 2, "Black ", estiloTitulo).setOrigin(0, 0.5);
+    this.titulo = this.add.text(MARGEN, 30, "Black ", estiloTitulo).setOrigin(0, 0.5);
     this.add
-      .text(MARGEN + this.titulo.width, ALTO_BARRA / 2, "Hole", { ...estiloTitulo, color: COLOR.acento })
+      .text(MARGEN + this.titulo.width, 30, "Hole", { ...estiloTitulo, color: COLOR.acento })
       .setOrigin(0, 0.5);
+    this.crearOpciones();
 
     this.monedas = this.add
       .text(0, 30, "0", { fontFamily: FUENTE_TITULO, fontSize: "40px", color: COLOR.oro })
@@ -76,6 +78,17 @@ export class HudScene extends Phaser.Scene {
     });
 
     if (progreso.total === 0) this.mostrarAviso("Arrastra un objeto y lánzalo al agujero", 4);
+  }
+
+  /** Botones chicos debajo del título. */
+  private crearOpciones(): void {
+    const estilo = { fontFamily: FUENTE_TEXTO, fontSize: "17px", fontStyle: "600", color: COLOR.apagado };
+    const textoSonido = () => `Sonido: ${getSonido()?.activo === false ? "no" : "sí"}`;
+    const sonido = this.add.text(MARGEN, 64, textoSonido(), estilo).setOrigin(0, 0.5).setPadding(0, 6, 12, 6);
+    sonido.setInteractive({ useHandCursor: true }).on(Phaser.Input.Events.POINTER_UP, () => {
+      getSonido()?.alternar();
+      sonido.setText(textoSonido());
+    });
   }
 
   private crearTienda(): void {

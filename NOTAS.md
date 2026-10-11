@@ -50,9 +50,13 @@ Todos los números están en `public/data/balance.json`.
 - **Arrastre leído en cada cuadro:** la barra y la tienda atrapan los toques (para no agarrar objetos al comprar),
   así que el juego revisa en cada cuadro dónde está el dedo y si se levantó. Soltar encima de la tienda funciona.
 - **Tienda:** tocar un botón muestra qué hace el siguiente nivel abajo y compra si alcanza. Borde dorado = alcanza.
-- **Bus de eventos entre escenas** (`game.events`): `aviso` (texto, segundos), `combo` (número),
+- **Bus de eventos entre escenas** (`game.events`): `captura` (tipo), `tragado` (tipo, monedas), `aviso` (texto, segundos), `combo` (número),
   `compra` (id, nivel) y `desbloqueo` (objetos nuevos).
 - **Combo y monedas** usan el tiempo del juego (suma de dt), no el reloj: con velocidad x2 todo sigue cuadrando.
+- **Sonido** (`src/core/Sonido.ts`): escucha los eventos y toca los WAV. "tragar" suena al *empezar* a caer
+  (como el prototipo); "moneda" al terminar. Volumen general 0.85 y por archivo en `balance.json` → `sonido`.
+  El ambiente arranca con el primer toque (los navegadores no dejan sonar antes). "Sonido: sí/no" arriba a la
+  izquierda; se recuerda en el dispositivo. Si falta un WAV, ese sonido simplemente no suena.
 - **Halo, polvo y línea punteada** se dibujan por código (como en el prototipo); sus colores están en `balance.json` → `visual`.
 - **Lógica pura** en `src/logica/` (sin Phaser) → se prueba en `tests/`.
 - **Assets:** `public/assets/` con los mismos nombres de `LEEME.txt`. Se cargan por nombre, y los de objetos
@@ -67,6 +71,6 @@ Todos los números están en `public/data/balance.json`.
 - [x] 3. Monedas y combo
 - [x] 4. Tienda de mejoras
 - [x] 5. Aparición y desbloqueos
-- [ ] 6. Sonidos
+- [x] 6. Sonidos
 - [ ] 7. Guardado
 - [ ] 8. Panel de debug, tests y Android

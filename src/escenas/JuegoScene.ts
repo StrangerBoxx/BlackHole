@@ -18,14 +18,6 @@ import { objetosDesbloqueados } from "../logica/objetos";
 
 const PROF_LINEA = 25;
 
-/** Eventos que esta escena avisa (los escucha el HUD y el sonido). */
-export const EVENTOS_JUEGO = {
-  /** Empieza a caer al hoyo: (tipo: TipoObjeto) */
-  CAPTURA: "captura",
-  /** Terminó de caer: (tipo: TipoObjeto) */
-  TRAGADO: "tragado",
-} as const;
-
 /** El campo de juego: pasto, hoyo y objetos. */
 export class JuegoScene extends Phaser.Scene {
   private objetos: Objeto[] = [];
@@ -171,7 +163,7 @@ export class JuegoScene extends Phaser.Scene {
           c.cayendo = true;
           const o = this.objetos.find((x) => x.cuerpo === c)!;
           o.tiempoCaida = 0;
-          this.events.emit(EVENTOS_JUEGO.CAPTURA, o.tipo);
+          this.game.events.emit(EVENTOS_GLOBALES.CAPTURA, o.tipo);
         }
       },
     });
@@ -194,7 +186,7 @@ export class JuegoScene extends Phaser.Scene {
     if (aviso) this.game.events.emit(EVENTOS_GLOBALES.AVISO, aviso, 1.2);
 
     mostrarPopupMonedas(this, this.hoyo.x, this.hoyo.y - this.hoyo.radioVisible - 10, `+${formatearNumero(ganancia)}`);
-    this.events.emit(EVENTOS_JUEGO.TRAGADO, o.tipo);
+    this.game.events.emit(EVENTOS_GLOBALES.TRAGADO, o.tipo, ganancia);
   }
 
   /** Línea punteada del objeto agarrado al hoyo (ayuda a apuntar). */

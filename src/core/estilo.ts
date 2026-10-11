@@ -19,6 +19,10 @@ export const hex = (c: string) => parseInt(c.slice(1), 16);
 
 /** Bus de eventos entre escenas (game.events). */
 export const EVENTOS_GLOBALES = {
+  /** Un objeto empieza a caer al hoyo: (tipo: TipoObjeto) */
+  CAPTURA: "captura",
+  /** Un objeto terminó de caer: (tipo: TipoObjeto, monedas: number) */
+  TRAGADO: "tragado",
   /** Mostrar un aviso abajo: (texto: string, segundos: number) */
   AVISO: "aviso",
   /** Combo nuevo: (combo: number) */

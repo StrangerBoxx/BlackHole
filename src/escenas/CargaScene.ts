@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import { IMAGENES, texturaObjeto } from "../core/assets";
 import { setBalance } from "../core/Balance";
+import { iniciarSonido } from "../core/Sonido";
 import { IDS_SONIDO, revisarBalance, type Balance } from "../logica/balance";
 
 /**
@@ -44,6 +45,7 @@ export class CargaScene extends Phaser.Scene {
       } catch {
         /* sin internet: se usa la fuente de respaldo */
       }
+      iniciarSonido(this.game);
       this.scene.start("Juego");
     });
     this.load.start();
