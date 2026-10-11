@@ -144,6 +144,7 @@ export function crearDock(ui: Interfaz): BotonDock[] {
   mas.addEventListener("click", () => {
     bandeja.hidden = !bandeja.hidden;
     mas.classList.toggle("abierto", !bandeja.hidden);
+    ubicarBandeja();
   });
   // Cerrar la bandeja al tocar fuera
   document.addEventListener("pointerdown", (e) => {
@@ -163,11 +164,14 @@ export function crearDock(ui: Interfaz): BotonDock[] {
   actualizar();
 
   ui.raiz.append(bandeja, dock);
-  // La bandeja va justo encima del dock
-  ui.raiz.addEventListener("acomodar", () => {
-    const alto = ui.raiz.getBoundingClientRect().height;
-    const arribaDock = dock.getBoundingClientRect().top - ui.raiz.getBoundingClientRect().top;
-    bandeja.style.bottom = `${alto - arribaDock + 8}px`;
-  });
+  // La bandeja va justo encima del dock. Se calcula al abrirla (y al cambiar el tamaño):
+  // si se calculara con el dock escondido (pantalla de inicio) quedaría fuera de la pantalla.
+  function ubicarBandeja() {
+    const caja = dock.getBoundingClientRect();
+    if (caja.height === 0) return; // el dock no se ve: se ubica cuando se abra
+    const raiz = ui.raiz.getBoundingClientRect();
+    bandeja.style.bottom = `${raiz.bottom - caja.top + 8}px`;
+  }
+  ui.raiz.addEventListener("acomodar", ubicarBandeja);
   return botones;
 }

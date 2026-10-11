@@ -2,7 +2,7 @@ import Phaser from "phaser";
 import { getBalance } from "../core/Balance";
 import { debug } from "../core/Debug";
 import { COLOR, EVENTOS_GLOBALES, type InfoTragado } from "../core/estilo";
-import { altoMundo, APARICION_ABAJO, APARICION_ARRIBA } from "../core/pantalla";
+import { altoMundo, zonaLibre } from "../core/pantalla";
 import { crearSuelo } from "../efectos/Suelo";
 import { progreso } from "../core/Progreso";
 import { crearCapaLuz } from "../efectos/Luz";
@@ -172,10 +172,10 @@ export class JuegoScene extends Phaser.Scene {
     if (lugar) this.objetos.push(new Objeto(this, tipo, lugar.x, lugar.y, deAPoco, especial));
   }
 
-  /** Los objetos nuevos salen lejos del marcador y del dock. */
+  /** Los objetos nuevos salen en el espacio libre entre el marcador y el dock (medido en la pantalla real). */
   private areaAparicion() {
-    const alto = altoMundo();
-    return { ancho: getBalance().mundo.ancho, alto, yMin: APARICION_ARRIBA, yMax: alto - APARICION_ABAJO };
+    const zona = zonaLibre();
+    return { ancho: getBalance().mundo.ancho, alto: altoMundo(), yMin: zona.arriba, yMax: zona.abajo };
   }
 
   private configurarArrastre(): void {

@@ -5,7 +5,7 @@ import Phaser from "phaser";
 import "./interfaz.css";
 import { getBalance } from "../core/Balance";
 import { EVENTOS_GLOBALES } from "../core/estilo";
-import { ANCHO_BASE } from "../core/pantalla";
+import { ANCHO_BASE, registrarMedidaInterfaz } from "../core/pantalla";
 import { progreso } from "../core/Progreso";
 import { getSonido } from "../core/Sonido";
 import { fichasDeZona } from "../logica/album";
@@ -197,6 +197,23 @@ export function iniciarInterfaz(game: Phaser.Game): Interfaz {
   }
   crearInicio(unica, irAJuego);
   ponerModo("inicio");
+
+  // Dónde termina el marcador y dónde empieza el dock (o la bandeja "Más" abierta), en píxeles del juego.
+  // El juego lo usa para no hacer aparecer objetos debajo de la interfaz.
+  registrarMedidaInterfaz(() => {
+    if (!raiz.classList.contains("modo-juego")) return null;
+    const lienzo = game.canvas.getBoundingClientRect();
+    if (lienzo.height <= 0) return null;
+    const aJuego = (yPantalla: number) => ((yPantalla - lienzo.top) * game.scale.gameSize.height) / lienzo.height;
+    const visibles = (sel: string) =>
+      [...raiz.querySelectorAll<HTMLElement>(sel)].map((e) => e.getBoundingClientRect()).filter((r) => r.height > 0);
+    const arriba = visibles(".marcador").map((r) => r.bottom);
+    const abajo = visibles(".dock, .bandeja").map((r) => r.top);
+    return {
+      arriba: arriba.length ? aJuego(Math.max(...arriba)) : 0,
+      abajo: abajo.length ? aJuego(Math.min(...abajo)) : game.scale.gameSize.height,
+    };
+  });
 
   // ---------- Dock de mejoras (abajo)
   crearDock(unica);

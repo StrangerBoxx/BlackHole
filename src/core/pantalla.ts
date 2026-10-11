@@ -7,9 +7,32 @@ export const ANCHO_BASE = 720;
 export const ALTO_MINIMO = 960;
 export const ALTO_MAXIMO = 1600;
 
-/** Los objetos aparecen lejos del marcador (arriba) y del dock (abajo): entre y=90 y alto−140. */
+/**
+ * Los objetos aparecen lejos del marcador (arriba) y del dock (abajo). Mínimo entre y=90 y alto−140;
+ * si la interfaz está visible, se usa lo que de verdad ocupa (ver zonaLibre).
+ */
 export const APARICION_ARRIBA = 90;
 export const APARICION_ABAJO = 140;
+/** Espacio extra entre la interfaz y el objeto que aparece. */
+const MARGEN_INTERFAZ = 12;
+
+type MedirInterfaz = () => { arriba: number; abajo: number } | null;
+let medirInterfaz: MedirInterfaz = () => null;
+
+/** La interfaz (HTML) dice dónde terminan el marcador y dónde empieza el dock, en píxeles del juego. */
+export function registrarMedidaInterfaz(fn: MedirInterfaz): void {
+  medirInterfaz = fn;
+}
+
+/** Franja donde pueden aparecer objetos: entre el marcador y el dock (o la bandeja "Más" si está abierta). */
+export function zonaLibre(): { arriba: number; abajo: number } {
+  const alto = altoMundo();
+  const medida = medirInterfaz();
+  return {
+    arriba: Math.max(APARICION_ARRIBA, (medida?.arriba ?? 0) + MARGEN_INTERFAZ),
+    abajo: Math.min(alto - APARICION_ABAJO, (medida?.abajo ?? alto) - MARGEN_INTERFAZ),
+  };
+}
 
 /** Alto del juego para una ventana de este tamaño (mismo ancho 720, misma forma, con límites). */
 export function altoParaVentana(anchoVentana: number, altoVentana: number): number {

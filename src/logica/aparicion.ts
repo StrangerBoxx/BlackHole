@@ -23,7 +23,7 @@ export function elegirTipo(tipos: TipoObjeto[], pesoBase: number, pesoPorIndice:
 export interface AreaAparicion {
   ancho: number;
   alto: number;
-  /** Límites de y para el centro del objeto (lejos del marcador y del dock). */
+  /** Límites de y para el objeto ENTERO (su borde no pasa de aquí): lejos del marcador y del dock. */
   yMin?: number;
   yMax?: number;
 }
@@ -44,8 +44,8 @@ export function buscarLugar(
   const { ancho, alto } = area;
   const a = b.aparicion;
   const lejosDelHoyo = Math.min(radioAtraccion, a.distanciaHoyoMaxima) + r + a.margenHoyo;
-  const yMin = Math.max(r + a.margenBorde, area.yMin ?? 0);
-  const yMax = Math.min(alto - r - a.margenBorde, area.yMax ?? alto);
+  const yMin = Math.max(r + a.margenBorde, (area.yMin ?? 0) + r);
+  const yMax = Math.min(alto - r - a.margenBorde, (area.yMax ?? alto) - r);
   if (yMax <= yMin) return null;
   for (let i = 0; i < a.intentos; i++) {
     const x = r + a.margenBorde + azar() * (ancho - 2 * r - 2 * a.margenBorde);

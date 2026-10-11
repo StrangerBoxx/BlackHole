@@ -173,7 +173,10 @@ referencia/                prototipo y guías originales
   pantalla, entre 960 y 1600 (Scale.FIT). El mundo mide lo mismo que la pantalla: las paredes están en los
   bordes. Si el alto pasa de 960, el suelo se repite hacia abajo en filas de 80 px saltándose las primeras 80
   (`src/efectos/Suelo.ts`). En PC (pantalla ancha) queda 720x960 centrado con bandas grises. El hoyo sigue en
-  (360, 330). Los objetos aparecen entre y=90 y alto−140 (lejos del marcador y del dock).
+  (360, 330). Los objetos **nunca aparecen debajo de la interfaz**: antes de cada aparición el juego mide dónde
+  terminan el marcador y dónde empieza el dock (o la bandeja "Más" si está abierta) y deja 12 px de margen;
+  como mínimo usa la franja y=90 a alto−140. Se respeta el cuerpo entero del objeto, no solo su centro
+  (`zonaLibre` en `src/core/pantalla.ts`).
 - **Arrastre leído en cada cuadro:** el juego revisa en cada cuadro dónde está el dedo y si se levantó,
   así soltar un objeto encima del dock también lo lanza.
 
