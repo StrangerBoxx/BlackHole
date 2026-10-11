@@ -1,0 +1,1229 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Black Hole</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;800&display=swap">
+<style>
+/* Layout: pantalla única vertical — marcador arriba, campo de juego al centro, mejoras abajo */
+:root {
+  --soil: #1d1712;        /* fondo: tierra oscura */
+  --soil-2: #2a2119;
+  --line: #3d3127;
+  --text: #f3ead9;
+  --muted: #a89a85;
+  --accent: #b98cff;      /* energía del agujero */
+  --gold: #ffc65c;        /* monedas */
+  --scrim: rgba(29, 23, 18, 0.88);
+  --font-display: "Lilita One", "Arial Rounded MT Bold", sans-serif;
+  --font-body: "Nunito", system-ui, sans-serif;
+  color-scheme: dark;
+}
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body {
+  background: var(--soil);
+  color: var(--text);
+  font-family: var(--font-body);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.hud {
+  width: 100%;
+  max-width: 560px;
+  box-sizing: border-box;
+  padding: 10px 16px 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.hud h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.3rem;
+  letter-spacing: 0.04em;
+}
+.hud h1 span { color: var(--accent); }
+.mass { text-align: right; line-height: 1.1; }
+.mass .big {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+.mass .small { font-size: 0.75rem; color: var(--muted); }
+.coin {
+  display: inline-block;
+  width: 0.8em; height: 0.8em;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #ffe7a3, var(--gold) 55%, #c98a1c);
+  box-shadow: inset 0 0 0 2px #b97a12;
+  flex: none;
+}
+.stage {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+canvas {
+  display: block;
+  border-radius: 14px;
+  box-shadow: 0 0 0 2px var(--line);
+  cursor: grab;
+}
+canvas.dragging { cursor: grabbing; }
+.shop {
+  width: 100%;
+  max-width: 560px;
+  box-sizing: border-box;
+  padding: 8px 16px 10px;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+}
+.up {
+  font: inherit;
+  color: var(--text);
+  background: var(--soil-2);
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  padding: 7px 4px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  cursor: pointer;
+  min-width: 0;
+  transition: transform 0.08s, border-color 0.15s;
+}
+.up:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.up .name { font-weight: 800; font-size: 0.72rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.up .lv { font-size: 0.65rem; color: var(--muted); }
+.up .cost {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.up .cost::before {
+  content: "";
+  width: 0.7em; height: 0.7em; border-radius: 50%;
+  background: var(--gold);
+  box-shadow: inset 0 0 0 1.5px #b97a12;
+}
+.up .cost.maxed::before { display: none; }
+body.has-coin-img .coin,
+body.has-coin-img .up .cost::before {
+  background: var(--coin-img) center / contain no-repeat;
+  box-shadow: none;
+  border-radius: 0;
+}
+.up.can { border-color: var(--gold); }
+.up.can:active { transform: scale(0.95); }
+.up:disabled { opacity: 0.45; cursor: default; }
+.foot {
+  width: 100%;
+  max-width: 560px;
+  box-sizing: border-box;
+  padding: 0 16px 8px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  column-gap: 12px;
+  row-gap: 4px;
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+.foot-actions { display: flex; flex-wrap: wrap; column-gap: 14px; row-gap: 4px; }
+.foot button {
+  font: inherit;
+  color: var(--muted);
+  background: none;
+  border: none;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+.foot button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.foot button.armed { color: #ff8a7a; }
+.foot button.mine { color: var(--accent); }
+.drop {
+  position: fixed;
+  inset: 12px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding-inline: 16px;
+  border: 3px dashed var(--accent);
+  border-radius: 18px;
+  background: var(--scrim);
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  pointer-events: none;
+}
+</style>
+
+<header class="hud">
+  <h1>Black <span>Hole</span></h1>
+  <div class="mass">
+    <div class="big"><span class="coin" aria-hidden="true"></span><span id="mass">0</span></div>
+    <div class="small" id="rate">Lanza objetos al hoyo para ganar monedas</div>
+  </div>
+</header>
+<main class="stage" id="stage">
+  <canvas id="game" width="720" height="960" aria-label="Campo de juego: arrastra los objetos y lánzalos al agujero negro"></canvas>
+</main>
+<nav class="shop" id="shop" aria-label="Mejoras del agujero"></nav>
+<div class="foot">
+  <span id="hint">Mantén presionada una mejora para ver qué hace</span>
+  <span class="foot-actions">
+    <button id="sound" type="button">Sonido: sí</button>
+    <button id="mine" type="button" class="mine">Probar mis dibujos</button>
+    <button id="clear-mine" type="button" hidden>Quitar mis dibujos</button>
+    <button id="reset" type="button">Reiniciar progreso</button>
+  </span>
+  <input id="mine-input" type="file" multiple accept="image/*,audio/*,.wav,.ogg,.mp3" hidden>
+</div>
+<div class="drop" id="drop" hidden>Suelta tus imágenes o sonidos</div>
+
+<script>
+// =====================================================================
+//  BLACK HOLE — prototipo incremental en JS, pensado para portar a Godot 4
+//  Comentarios "GODOT:" indican el equivalente en el motor.
+//
+//  ASSETS: todas las imágenes y sonidos se cargan desde la carpeta assets/.
+//  Si un archivo no existe, el juego lo dibuja (o lo genera) por código.
+//  Lee LEEME.txt para ver nombres y tamaños.
+// =====================================================================
+
+// ---------- Mundo --------------------------------------------------------
+const W = 720, H = 960;
+const HOLE = { x: 360, y: 330 };
+const LINEAR_DAMP = 1.6;          // GODOT: RigidBody2D.linear_damp (roce con el pasto)
+const BOUNCE = 0.6;
+const MAX_THROW = 2400;
+
+// ---------- Tipos de objeto (GODOT: un Resource o diccionario por tipo) --
+// r = radio de colisión, v = monedas que entrega
+const TYPES = [
+  { id: "piedra",    nombre: "Piedra",     r: 14, v: 1 },
+  { id: "lata",      nombre: "Lata",       r: 13, v: 2 },
+  { id: "pelota",    nombre: "Pelota",     r: 20, v: 4 },
+  { id: "cono",      nombre: "Cono",       r: 22, v: 8 },
+  { id: "neumatico", nombre: "Neumático",  r: 30, v: 16 },
+  { id: "caja",      nombre: "Caja",       r: 36, v: 30 },
+  { id: "basurero",  nombre: "Basurero",   r: 42, v: 55 },
+  { id: "auto",      nombre: "Auto",       r: 56, v: 120 },
+];
+
+// ---------- Mejoras --------------------------------------------------------
+// GODOT: un script global (Autoload) "Progreso.gd" con estos datos y las funciones get_*.
+const UPGRADES = [
+  { id: "pull",  nombre: "Atracción", max: 12, base: 10, mult: 1.55,
+    info: (l) => `Radio de atracción: ${pullRadius(l)} px` },
+  { id: "force", nombre: "Fuerza",    max: 12, base: 15, mult: 1.6,
+    info: (l) => `Fuerza de atracción: ${pullForce(l)}` },
+  { id: "size",  nombre: "Tamaño",    max: 7,  base: 25, mult: 1.9,
+    info: (l) => `Hoyo de ${holeRadius(l)} px: traga objetos más grandes y más rápidos` },
+  { id: "spawn", nombre: "Aparición", max: 10, base: 12, mult: 1.5,
+    info: (l) => `Hasta ${maxObjects(l)} objetos, uno cada ${spawnEvery(l).toFixed(1)} s` },
+  { id: "value", nombre: "Valor",     max: 20, base: 40, mult: 1.7,
+    info: (l) => `Cada objeto da x${valueMult(l).toFixed(2)} monedas` },
+];
+const pullRadius  = (l) => 55 + l * 28;
+const pullForce   = (l) => 700 + l * 420;
+const holeRadius  = (l) => 28 + l * 5;
+const captureSpeed= (l) => 420 + l * 110;
+const maxObjects  = (l) => 4 + l;
+const spawnEvery  = (l) => Math.max(0.35, 1.6 * Math.pow(0.86, l));
+const valueMult   = (l) => 1 + l * 0.25;
+const costOf = (u, l) => Math.round(u.base * Math.pow(u.mult, l));
+
+// ---------- Tamaños de los assets ------------------------------------------
+// Cada imagen se dibuja escalada; estas proporciones dicen a qué tamaño.
+const OBJ_ART   = 256 / 240;  // objetos: PNG de 256 px, el círculo de choque mide 240 px
+const RIM_K     = 3.4;        // hoyo_borde: diámetro = radio del hoyo x 3.4
+const SWIRL_K   = 2.7;        // hoyo_remolino: diámetro = radio del hoyo x 2.7
+const CORE_K    = 2;          // hoyo_nucleo: diámetro = diámetro del hoyo
+const COIN_SIZE = 32;         // moneda en el "+5" que aparece al tragar
+
+// ---------- Estado + guardado -----------------------------------------------
+// GODOT: guardar con FileAccess en "user://save.json" o ConfigFile.
+const SAVE_KEY = "blackhole-tierra-v2";
+let save = { coins: 0, total: 0, lv: { pull: 0, force: 0, size: 0, spawn: 0, value: 0 } };
+try {
+  const raw = localStorage.getItem(SAVE_KEY);
+  if (raw) {
+    const s = JSON.parse(raw);
+    save = { ...save, ...s, lv: { ...save.lv, ...(s.lv || {}) } };
+  }
+} catch (e) {}
+function persist() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} }
+
+const L = (id) => save.lv[id];
+const unlockedTypes = () => TYPES.filter((t) => t.r <= holeRadius(L("size")) * 0.95);
+
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+let objects = [];
+let popups = [];
+let dust = [];
+let spawnTimer = 0;
+let toast = { text: save.total === 0 ? "Arrastra un objeto y lánzalo al agujero" : "", t: 4 };
+let shownHoleR = holeRadius(L("size"));
+let shownPullR = pullRadius(L("pull"));
+let time = 0;
+
+// ---------- Carga de imágenes --------------------------------------------------
+// GODOT: preload("res://assets/img/objetos/piedra.png") en un Sprite2D.
+const IMG_KEYS = ["suelo", "hoyo_nucleo", "hoyo_remolino", "hoyo_borde", "moneda", ...TYPES.map((t) => t.id)];
+const imgPath = (k) => TYPES.some((t) => t.id === k) ? `assets/img/objetos/${k}.png` : `assets/img/${k}.png`;
+const IMG_DEF = {};   // las de la carpeta assets/
+const IMG_OVR = {};   // las que pruebas con "Probar mis dibujos"
+IMG_KEYS.forEach((k) => {
+  const im = new Image();
+  im.onload = () => { IMG_DEF[k] = im; if (k === "moneda") updateCoinCss(); };
+  im.src = imgPath(k);
+});
+const img = (k) => IMG_OVR[k] || IMG_DEF[k];
+
+function updateCoinCss() {
+  const im = img("moneda");
+  if (!im) { document.body.classList.remove("has-coin-img"); return; }
+  document.documentElement.style.setProperty("--coin-img", `url("${im.src}")`);
+  document.body.classList.add("has-coin-img");
+}
+
+// ---------- Aparición de objetos ---------------------------------------------
+// GODOT: un Timer que instancia escenas (objeto.tscn) con preload(...).instantiate()
+function spawnObject(instant) {
+  const types = unlockedTypes();
+  const weights = types.map((t, i) => 1 + i * 0.6);
+  let pick = Math.random() * weights.reduce((a, b) => a + b, 0);
+  let type = types[0];
+  for (let i = 0; i < types.length; i++) { pick -= weights[i]; if (pick <= 0) { type = types[i]; break; } }
+
+  for (let tries = 0; tries < 40; tries++) {
+    const x = type.r + 10 + Math.random() * (W - 2 * type.r - 20);
+    const y = type.r + 10 + Math.random() * (H - 2 * type.r - 20);
+    if (Math.hypot(x - HOLE.x, y - HOLE.y) < Math.min(pullRadius(L("pull")), 260) + type.r + 20) continue;
+    if (objects.some((o) => Math.hypot(o.x - x, o.y - y) < o.r + type.r + 8)) continue;
+    objects.push({
+      type, x, y, r: type.r, vx: 0, vy: 0,
+      angle: Math.random() * Math.PI * 2, spin: 0,
+      scale: instant ? 1 : 0, falling: false, fallT: 0, dragging: false,
+    });
+    return;
+  }
+}
+
+// ---------- Entrada: arrastrar y lanzar ---------------------------------------
+// GODOT: _input(event) con InputEventScreenTouch / InputEventScreenDrag.
+let held = null, trail = [];
+
+function toGame(e) {
+  const rect = canvas.getBoundingClientRect();
+  return { x: (e.clientX - rect.left) * (W / rect.width), y: (e.clientY - rect.top) * (H / rect.height) };
+}
+
+canvas.addEventListener("pointerdown", (e) => {
+  const p = toGame(e);
+  let best = null, bestD = Infinity;
+  for (const o of objects) {
+    if (o.falling) continue;
+    const d = Math.hypot(p.x - o.x, p.y - o.y);
+    if (d < o.r + 22 && d < bestD) { best = o; bestD = d; }
+  }
+  if (!best) return;
+  held = best;
+  held.dragging = true;
+  held.vx = held.vy = 0;
+  trail = [{ x: held.x, y: held.y, t: performance.now() }];
+  canvas.classList.add("dragging");
+  canvas.setPointerCapture(e.pointerId);
+});
+
+canvas.addEventListener("pointermove", (e) => {
+  if (!held) return;
+  const p = toGame(e);
+  const x = clamp(p.x, held.r, W - held.r), y = clamp(p.y, held.r, H - held.r);
+  held.x = x; held.y = y;
+  trail.push({ x, y, t: performance.now() });
+  if (trail.length > 8) trail.shift();
+});
+
+function release() {
+  if (!held) return;
+  const now = performance.now();
+  const recent = trail.filter((p) => now - p.t < 90);
+  if (recent.length >= 2) {
+    const a = recent[0], b = recent[recent.length - 1];
+    const dt = Math.max((b.t - a.t) / 1000, 0.016);
+    let vx = (b.x - a.x) / dt, vy = (b.y - a.y) / dt;
+    const sp = Math.hypot(vx, vy);
+    if (sp > MAX_THROW) { vx *= MAX_THROW / sp; vy *= MAX_THROW / sp; }
+    held.vx = vx; held.vy = vy;
+  }
+  held.dragging = false;
+  held = null;
+  canvas.classList.remove("dragging");
+}
+canvas.addEventListener("pointerup", release);
+canvas.addEventListener("pointercancel", release);
+
+// ---------- Física -----------------------------------------------------------
+// GODOT: el motor hace roce, rebotes y choques. Tú programas la atracción
+// (Area2D con gravity_point) y la captura (señal body_entered + revisar velocidad).
+function physics(dt) {
+  const pullR = pullRadius(L("pull"));
+  const force = pullForce(L("force"));
+  const holeR = holeRadius(L("size"));
+  const capSpeed = captureSpeed(L("size"));
+
+  for (const o of objects) {
+    if (o.scale < 1 && !o.falling) o.scale = Math.min(1, o.scale + dt * 4);
+
+    if (o.falling) {
+      // Espiral hacia el centro (GODOT: Tween sobre position, rotation y scale)
+      o.fallT += dt;
+      const t = Math.min(o.fallT / 0.6, 1);
+      o.x += (HOLE.x - o.x) * Math.min(1, dt * 9);
+      o.y += (HOLE.y - o.y) * Math.min(1, dt * 9);
+      o.angle += dt * 16;
+      o.scale = 1 - t;
+      if (t >= 1) { o.dead = true; absorb(o); }
+      continue;
+    }
+    if (o.dragging) continue;
+
+    const dx = HOLE.x - o.x, dy = HOLE.y - o.y;
+    const dist = Math.hypot(dx, dy);
+    if (dist < pullR && dist > 1) {
+      const f = force * (1 - dist / pullR) + force * 0.15;
+      o.vx += (dx / dist) * f * dt;
+      o.vy += (dy / dist) * f * dt;
+    }
+
+    const damp = Math.max(0, 1 - LINEAR_DAMP * dt);
+    o.vx *= damp; o.vy *= damp;
+    o.x += o.vx * dt; o.y += o.vy * dt;
+    o.angle += o.spin * dt;
+    o.spin = Math.hypot(o.vx, o.vy) * 0.006;
+
+    if (o.x < o.r) { o.x = o.r; o.vx = Math.abs(o.vx) * BOUNCE; }
+    if (o.x > W - o.r) { o.x = W - o.r; o.vx = -Math.abs(o.vx) * BOUNCE; }
+    if (o.y < o.r) { o.y = o.r; o.vy = Math.abs(o.vy) * BOUNCE; }
+    if (o.y > H - o.r) { o.y = H - o.r; o.vy = -Math.abs(o.vy) * BOUNCE; }
+
+    if (dist < holeR - o.r * 0.2 && Math.hypot(o.vx, o.vy) < capSpeed) {
+      o.falling = true; o.fallT = 0;
+      Sound.swallow(o.r);
+    }
+  }
+
+  // Choques entre objetos (círculos simples)
+  for (let i = 0; i < objects.length; i++) {
+    for (let j = i + 1; j < objects.length; j++) {
+      const a = objects[i], b = objects[j];
+      if (a.falling || b.falling) continue;
+      const dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy), min = a.r + b.r;
+      if (d >= min || d === 0) continue;
+      const nx = dx / d, ny = dy / d, overlap = min - d;
+      const ma = a.dragging ? 0 : a.r * a.r, mb = b.dragging ? 0 : b.r * b.r;
+      const tot = ma + mb || 1;
+      a.x -= nx * overlap * (ma / tot); a.y -= ny * overlap * (ma / tot);
+      b.x += nx * overlap * (mb / tot); b.y += ny * overlap * (mb / tot);
+      const rel = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
+      if (rel < 0) {
+        const imp = -(1 + BOUNCE) * rel / tot;
+        a.vx -= imp * mb * nx; a.vy -= imp * mb * ny;
+        b.vx += imp * ma * nx; b.vy += imp * ma * ny;
+      }
+    }
+  }
+  objects = objects.filter((o) => !o.dead);
+}
+
+let combo = 0, lastCatch = -10;
+function absorb(o) {
+  const gain = Math.round(o.type.v * valueMult(L("value")));
+  save.coins += gain;
+  save.total += 1;
+  // Combo: si tragas otro antes de 2,5 s, el sonido sube de tono
+  combo = time - lastCatch < 2.5 ? combo + 1 : 0;
+  lastCatch = time;
+  Sound.coin(combo);
+  if (combo >= 2) toast = { text: `¡Combo x${combo + 1}!`, t: 1.2 };
+  popups.push({ x: HOLE.x, y: HOLE.y - shownHoleR - 10, text: `+${fmt(gain)}`, t: 0 });
+  persist();
+  renderShop();
+}
+
+// ---------- Tienda de mejoras ------------------------------------------------
+// GODOT: botones (Button) en un CanvasLayer / HBoxContainer, señal pressed.
+const shop = document.getElementById("shop");
+const hint = document.getElementById("hint");
+const buttons = {};
+for (const u of UPGRADES) {
+  const b = document.createElement("button");
+  b.className = "up";
+  b.type = "button";
+  b.id = "up-" + u.id;
+  b.innerHTML = `<span class="name">${u.nombre}</span><span class="lv"></span><span class="cost"></span>`;
+  b.addEventListener("click", () => buy(u));
+  const show = () => { hint.textContent = u.info(Math.min(L(u.id) + 1, u.max)) + (L(u.id) < u.max ? " (siguiente nivel)" : ""); };
+  b.addEventListener("pointerenter", show);
+  b.addEventListener("focus", show);
+  b.addEventListener("pointerdown", show);
+  shop.appendChild(b);
+  buttons[u.id] = b;
+}
+
+function buy(u) {
+  const lv = L(u.id);
+  if (lv >= u.max) return;
+  const c = costOf(u, lv);
+  if (save.coins < c) return;
+  const before = unlockedTypes().length;
+  save.coins -= c;
+  save.lv[u.id] = lv + 1;
+  const after = unlockedTypes();
+  if (after.length > before) { toast = { text: `¡Nuevo objeto: ${after[after.length - 1].nombre}!`, t: 3 }; Sound.unlock(); }
+  else { toast = { text: `${u.nombre} nivel ${lv + 1}`, t: 1.6 }; Sound.buy(); }
+  persist();
+  renderShop();
+}
+
+function renderShop() {
+  document.getElementById("mass").textContent = fmt(save.coins);
+  document.getElementById("rate").textContent =
+    save.total === 0 ? "Lanza objetos al hoyo para ganar monedas" : `${fmt(save.total)} objetos tragados`;
+  for (const u of UPGRADES) {
+    const b = buttons[u.id], lv = L(u.id);
+    const maxed = lv >= u.max, c = costOf(u, lv);
+    b.querySelector(".lv").textContent = maxed ? "Máximo" : `Nivel ${lv}`;
+    const costEl = b.querySelector(".cost");
+    costEl.textContent = maxed ? "—" : fmt(c);
+    costEl.classList.toggle("maxed", maxed);
+    b.disabled = maxed || save.coins < c;
+    b.classList.toggle("can", !maxed && save.coins >= c);
+    b.title = u.info(lv);
+  }
+}
+
+// Reiniciar con confirmación en dos toques (no hay confirm() en este visor)
+const resetBtn = document.getElementById("reset");
+let resetArmed = 0;
+resetBtn.addEventListener("click", () => {
+  if (!resetArmed) {
+    resetArmed = setTimeout(() => { resetArmed = 0; resetBtn.textContent = "Reiniciar progreso"; resetBtn.classList.remove("armed"); }, 3000);
+    resetBtn.textContent = "Toca otra vez para borrar todo";
+    resetBtn.classList.add("armed");
+    return;
+  }
+  clearTimeout(resetArmed); resetArmed = 0;
+  save = { coins: 0, total: 0, lv: { pull: 0, force: 0, size: 0, spawn: 0, value: 0 } };
+  persist();
+  objects = []; for (let i = 0; i < 4; i++) spawnObject(true);
+  resetBtn.textContent = "Reiniciar progreso"; resetBtn.classList.remove("armed");
+  toast = { text: "Progreso reiniciado", t: 2 };
+  renderShop();
+});
+
+// =====================================================================
+//  DIBUJOS POR CÓDIGO (se usan solo si falta la imagen en assets/)
+//  También sirven para generar las plantillas PNG.
+// =====================================================================
+function circle(c, x, y, r) { c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.fill(); }
+function circleStroke(c, x, y, r) { c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.stroke(); }
+function roundRect(c, x, y, w, h, r) {
+  c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r);
+  c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath();
+}
+
+// Suelo: pasto visto desde arriba (720 x 960)
+function paintGround(g) {
+  let seed = 7;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  g.fillStyle = "#5f8f3e"; g.fillRect(0, 0, W, H);
+  for (let i = 0; i < 70; i++) {
+    g.fillStyle = rnd() > 0.5 ? "rgba(120,170,70,0.35)" : "rgba(60,100,35,0.35)";
+    g.beginPath(); g.ellipse(rnd() * W, rnd() * H, 40 + rnd() * 90, 30 + rnd() * 60, rnd() * 3, 0, Math.PI * 2); g.fill();
+  }
+  g.strokeStyle = "#a88a5e"; g.lineWidth = 46; g.lineCap = "round";
+  g.beginPath(); g.moveTo(-20, 820); g.bezierCurveTo(200, 700, 480, 900, 740, 760); g.stroke();
+  g.strokeStyle = "rgba(140,112,74,0.6)"; g.lineWidth = 30;
+  g.beginPath(); g.moveTo(-20, 820); g.bezierCurveTo(200, 700, 480, 900, 740, 760); g.stroke();
+  for (let i = 0; i < 1600; i++) {
+    const x = rnd() * W, y = rnd() * H;
+    g.strokeStyle = rnd() > 0.5 ? "rgba(150,195,90,0.55)" : "rgba(50,85,30,0.5)";
+    g.lineWidth = 1.5;
+    g.beginPath(); g.moveTo(x, y); g.lineTo(x + (rnd() - 0.5) * 5, y - 4 - rnd() * 5); g.stroke();
+  }
+  for (let i = 0; i < 40; i++) {
+    g.fillStyle = ["#fff6d8", "#ffd65c", "#f6a6c8"][i % 3];
+    circle(g, rnd() * W, rnd() * H, 2.5);
+  }
+}
+const groundFallback = document.createElement("canvas");
+groundFallback.width = W; groundFallback.height = H;
+paintGround(groundFallback.getContext("2d"));
+
+// Hoyo, en capas centradas en (0,0); R = radio del hoyo
+function paintRim(c, R) {   // tierra agrietada alrededor
+  c.fillStyle = "#4a3826";
+  circle(c, 0, 0, R * 1.45);
+  c.strokeStyle = "#2e2216"; c.lineWidth = 2.5;
+  for (let i = 0; i < 9; i++) {
+    const a = i * 0.7 + 0.3;
+    c.beginPath();
+    c.moveTo(Math.cos(a) * R, Math.sin(a) * R);
+    c.lineTo(Math.cos(a + 0.12) * R * 1.3, Math.sin(a + 0.12) * R * 1.3);
+    c.lineTo(Math.cos(a - 0.05) * R * 1.65, Math.sin(a - 0.05) * R * 1.65);
+    c.stroke();
+  }
+}
+function paintSwirl(c, R) { // anillos que giran
+  c.save();
+  for (let i = 0; i < 3; i++) {
+    c.rotate(2.1);
+    c.strokeStyle = `rgba(185,140,255,${0.7 - i * 0.18})`;
+    c.lineWidth = 3;
+    c.beginPath(); c.arc(0, 0, R * (1.05 + i * 0.12), 0, Math.PI * 0.9); c.stroke();
+  }
+  c.restore();
+}
+function paintCore(c, R) {  // centro negro
+  const core = c.createRadialGradient(0, 0, 0, 0, 0, R);
+  core.addColorStop(0, "#000"); core.addColorStop(0.8, "#0b0612"); core.addColorStop(1, "#2b1745");
+  c.fillStyle = core;
+  circle(c, 0, 0, R);
+}
+function paintCoin(c, r) {
+  c.fillStyle = "#b97a12"; circle(c, 0, 0, r);
+  c.fillStyle = "#ffc65c"; circle(c, 0, 0, r * 0.8);
+  c.fillStyle = "#ffe7a3"; circle(c, -r * 0.2, -r * 0.2, r * 0.27);
+}
+
+// Objetos, centrados en (0,0); r = radio de choque
+function paintObject(c, id, r) {
+  switch (id) {
+    case "piedra":
+      c.fillStyle = "#8e8a84";
+      c.beginPath(); c.moveTo(-r, -2); c.lineTo(-r * 0.4, -r); c.lineTo(r * 0.7, -r * 0.8); c.lineTo(r, r * 0.2); c.lineTo(r * 0.3, r); c.lineTo(-r * 0.8, r * 0.7); c.closePath(); c.fill();
+      c.fillStyle = "#b0aca5"; circle(c, -r * 0.25, -r * 0.35, r * 0.35);
+      break;
+    case "lata":
+      c.fillStyle = "#d63b3b"; circle(c, 0, 0, r);
+      c.fillStyle = "#cfd3d8"; circle(c, 0, 0, r * 0.75);
+      c.fillStyle = "#9aa0a8"; c.fillRect(-r * 0.3, -r * 0.15, r * 0.6, r * 0.3);
+      break;
+    case "pelota":
+      c.fillStyle = "#f7f5ef"; circle(c, 0, 0, r);
+      c.fillStyle = "#222";
+      circle(c, 0, 0, r * 0.3);
+      for (let i = 0; i < 5; i++) { const a = i * 1.2566; circle(c, Math.cos(a) * r * 0.72, Math.sin(a) * r * 0.72, r * 0.2); }
+      break;
+    case "cono":
+      c.fillStyle = "#f07a1e"; c.fillRect(-r, -r, r * 2, r * 2);
+      c.fillStyle = "#ff8f2e"; circle(c, 0, 0, r * 0.85);
+      c.fillStyle = "#fff"; circle(c, 0, 0, r * 0.55);
+      c.fillStyle = "#ff8f2e"; circle(c, 0, 0, r * 0.35);
+      c.fillStyle = "#c45a10"; circle(c, 0, 0, r * 0.12);
+      break;
+    case "neumatico":
+      c.fillStyle = "#1e1e1e"; circle(c, 0, 0, r);
+      c.fillStyle = "#3a3a3a"; circle(c, 0, 0, r * 0.62);
+      c.fillStyle = "#9d9d9d"; circle(c, 0, 0, r * 0.45);
+      c.fillStyle = "#555"; circle(c, 0, 0, r * 0.15);
+      break;
+    case "caja": {
+      const s2 = r * 0.82;
+      c.fillStyle = "#b9844c"; c.fillRect(-s2, -s2, s2 * 2, s2 * 2);
+      c.strokeStyle = "#8a5d30"; c.lineWidth = 3; c.strokeRect(-s2, -s2, s2 * 2, s2 * 2);
+      c.fillStyle = "#e3c78f"; c.fillRect(-s2, -5, s2 * 2, 10); c.fillRect(-5, -s2, 10, s2 * 2);
+      break;
+    }
+    case "basurero":
+      c.fillStyle = "#2f6f4a"; circle(c, 0, 0, r);
+      c.strokeStyle = "#245a3b"; c.lineWidth = 3;
+      circleStroke(c, 0, 0, r * 0.75);
+      c.fillStyle = "#1c4630"; c.fillRect(-r * 0.45, -6, r * 0.9, 12);
+      break;
+    case "auto": {
+      const lw = r * 1.05, lh = r * 0.62;
+      c.fillStyle = "#2f63c9"; roundRect(c, -lw, -lh, lw * 2, lh * 2, 16); c.fill();
+      c.fillStyle = "#9fd0f2"; roundRect(c, lw * 0.15, -lh * 0.75, lw * 0.38, lh * 1.5, 6); c.fill();
+      c.fillStyle = "#7fb3dc"; roundRect(c, -lw * 0.75, -lh * 0.7, lw * 0.3, lh * 1.4, 6); c.fill();
+      c.fillStyle = "#24509f"; roundRect(c, -lw * 0.4, -lh * 0.8, lw * 0.5, lh * 1.6, 8); c.fill();
+      c.fillStyle = "#ffe08a"; circle(c, lw * 0.9, -lh * 0.65, 5); circle(c, lw * 0.9, lh * 0.65, 5);
+      break;
+    }
+  }
+}
+
+// ---------- Dibujo del juego ---------------------------------------------------
+// Usa la imagen si existe; si no, el dibujo por código.
+function layer(key, size, fallback) {
+  const im = img(key);
+  if (im) ctx.drawImage(im, -size / 2, -size / 2, size, size);
+  else fallback();
+}
+
+function draw() {
+  ctx.drawImage(img("suelo") || groundFallback, 0, 0, W, H);
+  drawHole();
+
+  for (const o of objects) drawShadow(o);
+  for (const o of objects) drawObject(o);
+
+  if (held) {
+    ctx.strokeStyle = "rgba(185,140,255,0.6)";
+    ctx.lineWidth = 3; ctx.setLineDash([4, 9]);
+    ctx.beginPath(); ctx.moveTo(held.x, held.y); ctx.lineTo(HOLE.x, HOLE.y); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  ctx.textAlign = "center";
+  for (const p of popups) {
+    ctx.globalAlpha = Math.max(0, 1 - p.t / 1.2);
+    ctx.fillStyle = "#ffc65c";
+    ctx.strokeStyle = "rgba(40,25,10,0.8)";
+    ctx.lineWidth = 5;
+    ctx.font = '36px "Lilita One", sans-serif';
+    const py = p.y - p.t * 60;
+    const tw = ctx.measureText(p.text).width;
+    ctx.strokeText(p.text, p.x + 14, py);
+    ctx.fillText(p.text, p.x + 14, py);
+    ctx.save();
+    ctx.translate(p.x + 14 - tw / 2 - 20, py - 12);
+    layer("moneda", COIN_SIZE, () => paintCoin(ctx, 15));
+    ctx.restore();
+    ctx.globalAlpha = 1;
+  }
+
+  if (toast.t > 0 && toast.text) {
+    const a = Math.min(1, toast.t * 2);
+    ctx.font = '30px "Lilita One", sans-serif';
+    const w = Math.min(W - 40, ctx.measureText(toast.text).width + 40);
+    ctx.fillStyle = `rgba(29,23,18,${0.82 * a})`;
+    roundRect(ctx, W / 2 - w / 2, H - 78, w, 52, 26); ctx.fill();
+    ctx.fillStyle = `rgba(243,234,217,${a})`;
+    ctx.fillText(toast.text, W / 2, H - 41, W - 70);
+  }
+}
+
+function drawHole() {
+  const R = shownHoleR, P = shownPullR;
+  // Zona de atracción (efecto por código, no es imagen)
+  const g = ctx.createRadialGradient(HOLE.x, HOLE.y, R, HOLE.x, HOLE.y, P);
+  g.addColorStop(0, "rgba(70,30,120,0.45)");
+  g.addColorStop(1, "rgba(70,30,120,0)");
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.arc(HOLE.x, HOLE.y, P, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = "rgba(185,140,255,0.35)"; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(HOLE.x, HOLE.y, P, 0, Math.PI * 2); ctx.stroke();
+
+  // Polvo que cae en espiral (efecto por código)
+  for (const d of dust) {
+    const x = HOLE.x + Math.cos(d.a) * d.d, y = HOLE.y + Math.sin(d.a) * d.d;
+    ctx.fillStyle = `rgba(200,170,130,${Math.min(1, d.d / P) * 0.7})`;
+    ctx.beginPath(); ctx.arc(x, y, 2, 0, Math.PI * 2); ctx.fill();
+  }
+
+  // Capas del hoyo: borde, remolino (gira) y núcleo
+  // GODOT: tres Sprite2D hijos del nodo Hoyo; el remolino con rotation += delta * 1.5
+  ctx.save();
+  ctx.translate(HOLE.x, HOLE.y);
+  layer("hoyo_borde", R * RIM_K, () => paintRim(ctx, R));
+  ctx.save();
+  ctx.rotate(reduceMotion ? 0 : time * 1.5);
+  layer("hoyo_remolino", R * SWIRL_K, () => paintSwirl(ctx, R));
+  ctx.restore();
+  layer("hoyo_nucleo", R * CORE_K, () => paintCore(ctx, R));
+  ctx.restore();
+}
+
+function drawShadow(o) {
+  if (o.scale <= 0) return;
+  ctx.fillStyle = "rgba(20,35,10,0.3)";
+  ctx.beginPath(); ctx.ellipse(o.x + 5, o.y + 7, o.r * o.scale * (o.type.id === "auto" ? 1.1 : 1), o.r * o.scale * 0.85, 0, 0, Math.PI * 2); ctx.fill();
+}
+
+// GODOT: cada tipo es un Sprite2D con su imagen + CollisionShape2D circular de radio r.
+function drawObject(o) {
+  if (o.scale <= 0) return;
+  ctx.save();
+  ctx.translate(o.x, o.y);
+  ctx.rotate(o.angle);
+  const s = o.dragging ? 1.12 : 1;
+  ctx.scale(o.scale * s, o.scale * s);
+  layer(o.type.id, o.r * 2 * OBJ_ART, () => paintObject(ctx, o.type.id, o.r));
+  ctx.restore();
+}
+
+function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+function fmt(n) {
+  if (n < 1000) return String(Math.floor(n));
+  if (n < 1e6) return (n / 1e3).toFixed(n < 1e4 ? 1 : 0) + "k";
+  return (n / 1e6).toFixed(1) + "M";
+}
+
+// =====================================================================
+//  SONIDO
+//  Usa assets/sonidos/*.wav si existen; si no, los genera por código.
+//  GODOT: AudioStreamPlayer con esos mismos archivos. El ambiente con
+//  loop activado al importar; la moneda con pitch_scale que sube con el combo.
+// =====================================================================
+const SND_KEYS = ["ambiente", "tragar", "moneda", "comprar", "desbloquear"];
+// Volumen de cada archivo en el juego. Los .wav vienen a volumen normal (pico 80 %);
+// sube o baja estos números si un sonido tuyo queda muy fuerte o muy suave.
+const SND_GAIN = { ambiente: 0.16, tragar: 0.56, moneda: 0.18, comprar: 0.19, desbloquear: 0.21 };
+
+const Synth = {
+  noise(ac, sec) {
+    const b = ac.createBuffer(1, Math.ceil(ac.sampleRate * sec), ac.sampleRate);
+    const d = b.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    return b;
+  },
+  note(ac, dest, freq, t, dur, type, vol) {
+    const o = ac.createOscillator(); o.type = type; o.frequency.value = freq;
+    const f = ac.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = 6000;
+    const g = ac.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + 0.006);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(f); f.connect(g); g.connect(dest);
+    o.start(t); o.stop(t + dur + 0.05);
+  },
+  // Zumbido grave y viento lento que "respira"
+  ambient(ac, dest, fadeIn) {
+    const now = ac.currentTime, srcs = [];
+    const out = ac.createGain();
+    if (fadeIn > 0) { out.gain.setValueAtTime(0, now); out.gain.linearRampToValueAtTime(0.22, now + fadeIn); }
+    else out.gain.value = 0.22;
+    out.connect(dest);
+    const lp = ac.createBiquadFilter();
+    lp.type = "lowpass"; lp.frequency.value = 280; lp.Q.value = 3;
+    lp.connect(out);
+    [[55, "sawtooth", 0.16], [55.35, "sawtooth", 0.16], [82.4, "sine", 0.14], [110.2, "sine", 0.08]]
+      .forEach(([f, type, vol]) => {
+        const o = ac.createOscillator(); o.type = type; o.frequency.value = f;
+        const g = ac.createGain(); g.gain.value = vol;
+        o.connect(g); g.connect(lp); o.start(now); srcs.push(o);
+      });
+    const lfo = ac.createOscillator(); lfo.frequency.value = 0.06;
+    const lg = ac.createGain(); lg.gain.value = 140;
+    lfo.connect(lg); lg.connect(lp.frequency); lfo.start(now); srcs.push(lfo);
+    const n = ac.createBufferSource(); n.buffer = Synth.noise(ac, 4); n.loop = true;
+    const bp = ac.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 380; bp.Q.value = 0.7;
+    const ng = ac.createGain(); ng.gain.value = 0.06;
+    n.connect(bp); bp.connect(ng); ng.connect(out); n.start(now); srcs.push(n);
+    const lfo2 = ac.createOscillator(); lfo2.frequency.value = 0.045;
+    const lg2 = ac.createGain(); lg2.gain.value = 220;
+    lfo2.connect(lg2); lg2.connect(bp.frequency); lfo2.start(now); srcs.push(lfo2);
+    return { out, stop: () => srcs.forEach((s) => { try { s.stop(); } catch (e) {} }) };
+  },
+  // "Shhhwuuup": ruido que baja de tono + golpe grave; size de 0 a 1
+  swallow(ac, dest, t, size) {
+    const n = ac.createBufferSource(); n.buffer = Synth.noise(ac, 0.7);
+    const bp = ac.createBiquadFilter(); bp.type = "bandpass"; bp.Q.value = 1.5;
+    bp.frequency.setValueAtTime(1400, t);
+    bp.frequency.exponentialRampToValueAtTime(120, t + 0.55);
+    const g = ac.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.25 + size * 0.25, t + 0.08);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.6);
+    n.connect(bp); bp.connect(g); g.connect(dest); n.start(t);
+    const o = ac.createOscillator(); o.type = "sine";
+    o.frequency.setValueAtTime(260 - size * 120, t + 0.1);
+    o.frequency.exponentialRampToValueAtTime(40, t + 0.6);
+    const og = ac.createGain();
+    og.gain.setValueAtTime(0.0001, t + 0.1);
+    og.gain.exponentialRampToValueAtTime(0.3 + size * 0.3, t + 0.15);
+    og.gain.exponentialRampToValueAtTime(0.0001, t + 0.65);
+    o.connect(og); og.connect(dest); o.start(t + 0.1); o.stop(t + 0.7);
+  },
+  // "¡Cachín!": dos notas brillantes, subidas "semis" semitonos
+  coin(ac, dest, t, semis) {
+    const base = 988 * Math.pow(2, semis / 12);
+    Synth.note(ac, dest, base, t, 0.09, "square", 0.09);
+    Synth.note(ac, dest, base * 1.335, t + 0.075, 0.45, "square", 0.09);
+    Synth.note(ac, dest, base * 2.67, t + 0.075, 0.25, "triangle", 0.05);
+    Synth.note(ac, dest, base * 4, t + 0.12, 0.15, "sine", 0.03);
+  },
+  buy(ac, dest, t) {
+    [523, 659, 784, 1047].forEach((f, i) => Synth.note(ac, dest, f, t + i * 0.055, 0.25, "triangle", 0.14));
+  },
+  unlock(ac, dest, t) {
+    [523, 659, 784, 1047, 1319].forEach((f, i) => Synth.note(ac, dest, f, t + i * 0.09, 0.4, "square", 0.07));
+    [523, 659, 784].forEach((f) => Synth.note(ac, dest, f * 2, t + 0.5, 0.9, "triangle", 0.07));
+  },
+};
+
+const Sound = (() => {
+  let ac = null, master = null, amb = null, on = true;
+  try { on = localStorage.getItem("blackhole-sound") !== "off"; } catch (e) {}
+  const rawDef = {}, rawOvr = {}, bufDef = {}, bufOvr = {};
+  const buf = (k) => bufOvr[k] || bufDef[k];
+
+  // Sonidos de la carpeta assets/ (si se abre el archivo directo sin servidor, no cargan y se usa el sintetizador)
+  SND_KEYS.forEach((k) => {
+    fetch(`assets/sonidos/${k}.wav`)
+      .then((r) => (r.ok ? r.arrayBuffer() : null))
+      .then((ab) => { if (ab) { rawDef[k] = ab; decode(k, false); } })
+      .catch(() => {});
+  });
+
+  function decode(k, ovr) {
+    if (!ac) return;
+    const raw = (ovr ? rawOvr : rawDef)[k];
+    if (!raw) return;
+    ac.decodeAudioData(raw.slice(0))
+      .then((b) => { (ovr ? bufOvr : bufDef)[k] = b; if (k === "ambiente") startAmbient(); })
+      .catch(() => {});
+  }
+
+  function start() {
+    if (ac) { if (ac.state === "suspended") ac.resume(); return; }
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    ac = new AC();
+    master = ac.createGain();
+    master.gain.value = on ? 0.85 : 0;
+    master.connect(ac.destination);
+    SND_KEYS.forEach((k) => { decode(k, false); decode(k, true); });
+    startAmbient();
+  }
+
+  function startAmbient() {
+    if (!ac) return;
+    const b = buf("ambiente") || null;
+    if (amb && amb.buf === b) return;
+    if (amb) {
+      const old = amb;
+      old.out.gain.cancelScheduledValues(ac.currentTime);
+      old.out.gain.setTargetAtTime(0, ac.currentTime, 0.4);
+      setTimeout(() => { old.stop(); try { old.out.disconnect(); } catch (e) {} }, 2500);
+    }
+    if (b) {
+      const src = ac.createBufferSource(); src.buffer = b; src.loop = true;
+      const out = ac.createGain();
+      out.gain.setValueAtTime(0, ac.currentTime);
+      out.gain.setTargetAtTime(SND_GAIN.ambiente, ac.currentTime, 1.2);
+      src.connect(out); out.connect(master); src.start();
+      amb = { buf: b, out, stop: () => { try { src.stop(); } catch (e) {} } };
+    } else {
+      amb = { buf: null, ...Synth.ambient(ac, master, 5) };
+    }
+  }
+
+  function play(k, rate, vol, synthFn) {
+    if (!ac) return;
+    const b = buf(k);
+    if (b) {
+      const s = ac.createBufferSource(); s.buffer = b; s.playbackRate.value = rate;
+      const g = ac.createGain(); g.gain.value = vol * SND_GAIN[k];
+      s.connect(g); g.connect(master); s.start();
+    } else synthFn(ac, master, ac.currentTime);
+  }
+
+  return {
+    start,
+    // objetos grandes: más grave y más fuerte
+    swallow(r) {
+      const size = Math.min(1, r / 56);
+      play("tragar", 1.3 - size * 0.6, 0.6 + size * 0.8, (a, d, t) => Synth.swallow(a, d, t, size));
+    },
+    coin(c) {
+      const semis = Math.min(c, 12);
+      play("moneda", Math.pow(2, semis / 12), 1, (a, d, t) => Synth.coin(a, d, t, semis));
+    },
+    buy() { play("comprar", 1, 1, Synth.buy); },
+    unlock() { play("desbloquear", 1, 1, Synth.unlock); },
+    setOverride(k, ab) { rawOvr[k] = ab; delete bufOvr[k]; decode(k, true); },
+    clearOverrides() {
+      SND_KEYS.forEach((k) => { delete rawOvr[k]; delete bufOvr[k]; });
+      startAmbient();
+    },
+    overrideCount: () => Object.keys(rawOvr).length,
+    toggle() {
+      on = !on;
+      try { localStorage.setItem("blackhole-sound", on ? "on" : "off"); } catch (e) {}
+      if (master) master.gain.setTargetAtTime(on ? 0.85 : 0, ac.currentTime, 0.1);
+      return on;
+    },
+    isOn: () => on,
+  };
+})();
+
+const soundBtn = document.getElementById("sound");
+soundBtn.textContent = Sound.isOn() ? "Sonido: sí" : "Sonido: no";
+soundBtn.addEventListener("click", () => {
+  Sound.start();
+  soundBtn.textContent = Sound.toggle() ? "Sonido: sí" : "Sonido: no";
+});
+document.addEventListener("pointerdown", () => Sound.start());
+
+// =====================================================================
+//  PROBAR MIS DIBUJOS
+//  Elige (o arrastra a la página) archivos con el mismo nombre que las
+//  plantillas: piedra.png, suelo.png, moneda.wav… y se usan al instante.
+//  Se recuerdan en este navegador hasta que toques "Quitar mis dibujos".
+// =====================================================================
+const Store = (() => {
+  let dbp = null;
+  function db() {
+    if (!dbp) dbp = new Promise((res, rej) => {
+      try {
+        const r = indexedDB.open("blackhole-assets", 1);
+        r.onupgradeneeded = () => r.result.createObjectStore("files");
+        r.onsuccess = () => res(r.result);
+        r.onerror = () => rej(r.error);
+      } catch (e) { rej(e); }
+    });
+    return dbp;
+  }
+  async function write(fn) {
+    try {
+      const d = await db();
+      await new Promise((res, rej) => {
+        const t = d.transaction("files", "readwrite");
+        fn(t.objectStore("files"));
+        t.oncomplete = res; t.onerror = () => rej(t.error);
+      });
+    } catch (e) {}
+  }
+  return {
+    put: (k, blob) => write((s) => s.put(blob, k)),
+    clear: () => write((s) => s.clear()),
+    async all() {
+      try {
+        const d = await db();
+        return await new Promise((res) => {
+          const out = {};
+          const req = d.transaction("files", "readonly").objectStore("files").openCursor();
+          req.onsuccess = () => { const c = req.result; if (c) { out[c.key] = c.value; c.continue(); } else res(out); };
+          req.onerror = () => res(out);
+        });
+      } catch (e) { return {}; }
+    },
+  };
+})();
+
+const mineBtn = document.getElementById("mine");
+const clearMineBtn = document.getElementById("clear-mine");
+const mineInput = document.getElementById("mine-input");
+const dropEl = document.getElementById("drop");
+
+function normName(name) {
+  return name.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
+    .replace(/\.[^.]+$/, "").trim().replace(/[\s-]+/g, "_");
+}
+function refreshMine() {
+  clearMineBtn.hidden = Object.keys(IMG_OVR).length + Sound.overrideCount() === 0;
+}
+
+async function applyFile(key, blob, remember) {
+  const [kind, name] = key.split(":");
+  if (kind === "img") {
+    await new Promise((res, rej) => {
+      const im = new Image();
+      im.onload = () => { IMG_OVR[name] = im; res(); };
+      im.onerror = rej;
+      im.src = URL.createObjectURL(blob);
+    });
+    if (name === "moneda") updateCoinCss();
+  } else {
+    Sound.setOverride(name, await blob.arrayBuffer());
+  }
+  if (remember) await Store.put(key, blob);
+}
+
+async function handleFiles(files) {
+  const ok = [], bad = [];
+  for (const f of files) {
+    const base = normName(f.name);
+    const isImg = f.type.startsWith("image/") || /\.(png|jpe?g|webp|gif)$/i.test(f.name);
+    const isSnd = f.type.startsWith("audio/") || /\.(wav|ogg|mp3|m4a)$/i.test(f.name);
+    let key = null;
+    if (isImg && IMG_KEYS.includes(base)) key = "img:" + base;
+    else if (isSnd && SND_KEYS.includes(base)) key = "snd:" + base;
+    if (!key) { bad.push(f.name); continue; }
+    try { await applyFile(key, f, true); ok.push(f.name); } catch (e) { bad.push(f.name); }
+  }
+  refreshMine();
+  if (ok.length) {
+    toast = { text: ok.length <= 2 ? `Usando: ${ok.join(", ")}` : `Usando ${ok.length} archivos tuyos`, t: 2.5 };
+  }
+  if (bad.length) {
+    hint.textContent = `No reconocí: ${bad.join(", ")}. Usa los nombres de las plantillas (piedra.png, suelo.png, moneda.wav…).`;
+    if (!ok.length) toast = { text: "Nombre de archivo no reconocido", t: 2.5 };
+  }
+}
+
+mineBtn.addEventListener("click", () => mineInput.click());
+mineInput.addEventListener("change", () => { handleFiles([...mineInput.files]); mineInput.value = ""; });
+clearMineBtn.addEventListener("click", async () => {
+  await Store.clear();
+  for (const k of Object.keys(IMG_OVR)) delete IMG_OVR[k];
+  Sound.clearOverrides();
+  updateCoinCss();
+  refreshMine();
+  toast = { text: "Volviste a los dibujos originales", t: 2 };
+});
+
+// Arrastrar archivos encima de la página (computador)
+let dragDepth = 0;
+const hasFiles = (e) => e.dataTransfer && [...e.dataTransfer.types].includes("Files");
+window.addEventListener("dragenter", (e) => { if (!hasFiles(e)) return; e.preventDefault(); dragDepth++; dropEl.hidden = false; });
+window.addEventListener("dragover", (e) => { if (hasFiles(e)) e.preventDefault(); });
+window.addEventListener("dragleave", () => { dragDepth = Math.max(0, dragDepth - 1); if (!dragDepth) dropEl.hidden = true; });
+window.addEventListener("drop", (e) => {
+  if (!hasFiles(e)) return;
+  e.preventDefault(); dragDepth = 0; dropEl.hidden = true;
+  handleFiles([...e.dataTransfer.files]);
+});
+
+// Cargar lo que probaste la vez anterior
+Store.all().then(async (map) => {
+  for (const [k, blob] of Object.entries(map)) { try { await applyFile(k, blob, false); } catch (e) {} }
+  refreshMine();
+});
+
+// ---------- Bucle principal ------------------------------------------------------
+// GODOT: _physics_process(delta)
+let last = performance.now();
+function loop(now) {
+  const dt = Math.min((now - last) / 1000, 1 / 30);
+  last = now;
+  time += dt;
+
+  spawnTimer += dt;
+  if (spawnTimer >= spawnEvery(L("spawn"))) {
+    spawnTimer = 0;
+    if (objects.length < maxObjects(L("spawn"))) spawnObject(false);
+  }
+
+  physics(dt);
+
+  shownHoleR += (holeRadius(L("size")) - shownHoleR) * Math.min(1, dt * 4);
+  shownPullR += (pullRadius(L("pull")) - shownPullR) * Math.min(1, dt * 4);
+
+  if (!reduceMotion) {
+    if (dust.length < 30 && Math.random() < 0.5) dust.push({ a: Math.random() * 6.28, d: shownPullR });
+    for (const d of dust) { d.a += dt * (1.2 + 40 / Math.max(d.d, 10)); d.d -= dt * 50; }
+    dust = dust.filter((d) => d.d > shownHoleR);
+  }
+
+  for (const p of popups) p.t += dt;
+  popups = popups.filter((p) => p.t < 1.2);
+  if (toast.t > 0) toast.t -= dt;
+
+  draw();
+  requestAnimationFrame(loop);
+}
+
+// Escalar el canvas sin deformarlo (GODOT: Stretch Mode = canvas_items)
+function fit() {
+  const stage = document.getElementById("stage");
+  const s = Math.min((stage.clientWidth - 32) / W, stage.clientHeight / H);
+  canvas.style.width = Math.floor(W * s) + "px";
+  canvas.style.height = Math.floor(H * s) + "px";
+}
+window.addEventListener("resize", fit);
+
+// ---------- Herramientas: generar las plantillas desde los dibujos por código ----
+window.BH_TOOLS = {
+  images() {
+    const out = {};
+    const mk = (w, h, fn) => {
+      const c = document.createElement("canvas"); c.width = w; c.height = h;
+      const g = c.getContext("2d"); fn(g); return c.toDataURL("image/png");
+    };
+    const Rref = 40; // radio de referencia del hoyo para las plantillas
+    out["img/suelo.png"] = mk(W, H, (g) => paintGround(g));
+    out["img/hoyo_borde.png"] = mk(512, 512, (g) => { g.translate(256, 256); const s = 512 / (RIM_K * Rref); g.scale(s, s); paintRim(g, Rref); });
+    out["img/hoyo_remolino.png"] = mk(512, 512, (g) => { g.translate(256, 256); const s = 512 / (SWIRL_K * Rref); g.scale(s, s); paintSwirl(g, Rref); });
+    out["img/hoyo_nucleo.png"] = mk(256, 256, (g) => { g.translate(128, 128); const s = 256 / (CORE_K * Rref); g.scale(s, s); paintCore(g, Rref); });
+    out["img/moneda.png"] = mk(64, 64, (g) => { g.translate(32, 32); g.scale(2, 2); paintCoin(g, 15); });
+    for (const t of TYPES) {
+      out[`img/objetos/${t.id}.png`] = mk(256, 256, (g) => { g.translate(128, 128); g.scale(120 / t.r, 120 / t.r); paintObject(g, t.id, t.r); });
+    }
+    out["guia_objeto.png"] = mk(256, 256, (g) => {
+      g.fillStyle = "#ffffff"; g.fillRect(0, 0, 256, 256);
+      g.strokeStyle = "#999"; g.lineWidth = 2; g.strokeRect(1, 1, 254, 254);
+      g.setLineDash([8, 6]); g.strokeStyle = "#d33"; g.lineWidth = 2;
+      g.beginPath(); g.arc(128, 128, 120, 0, Math.PI * 2); g.stroke();
+      g.setLineDash([]); g.strokeStyle = "#555"; g.lineWidth = 1;
+      g.beginPath(); g.moveTo(118, 128); g.lineTo(138, 128); g.moveTo(128, 118); g.lineTo(128, 138); g.stroke();
+      g.fillStyle = "#333"; g.font = "bold 13px sans-serif"; g.textAlign = "center";
+      g.fillText("256 x 256 px", 128, 20);
+      g.fillStyle = "#d33"; g.fillText("círculo de choque: 240 px", 128, 246);
+    });
+    return out;
+  },
+  async sounds() {
+    const SR = 44100, out = {};
+    async function render(sec, fn) {
+      const oc = new OfflineAudioContext(1, Math.ceil(SR * sec), SR);
+      fn(oc, oc.destination);
+      return (await oc.startRendering()).getChannelData(0);
+    }
+    function wav(data) {
+      let peak = 0;
+      for (let i = 0; i < data.length; i++) peak = Math.max(peak, Math.abs(data[i]));
+      const norm = peak > 0 ? 0.8 / peak : 1; // normalizado a 80 %
+      data = data.map((x) => x * norm);
+      const n = data.length, b = new ArrayBuffer(44 + n * 2), v = new DataView(b);
+      const w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+      w(0, "RIFF"); v.setUint32(4, 36 + n * 2, true); w(8, "WAVE"); w(12, "fmt ");
+      v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+      v.setUint32(24, SR, true); v.setUint32(28, SR * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+      w(36, "data"); v.setUint32(40, n * 2, true);
+      for (let i = 0; i < n; i++) { const s = Math.max(-1, Math.min(1, data[i])); v.setInt16(44 + i * 2, s < 0 ? s * 0x8000 : s * 0x7fff, true); }
+      const bytes = new Uint8Array(b); let bin = "";
+      for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+      return btoa(bin);
+    }
+    out["sonidos/tragar.wav"] = wav(await render(0.8, (a, d) => Synth.swallow(a, d, 0, 0.5)));
+    out["sonidos/moneda.wav"] = wav(await render(0.65, (a, d) => Synth.coin(a, d, 0, 0)));
+    out["sonidos/comprar.wav"] = wav(await render(0.5, (a, d) => Synth.buy(a, d, 0)));
+    out["sonidos/desbloquear.wav"] = wav(await render(1.5, (a, d) => Synth.unlock(a, d, 0)));
+    // Ambiente: 30 s con cruce suave al final para que el loop no se note
+    const LOOP = 30, X = 2;
+    const amb = await render(LOOP + X, (a, d) => Synth.ambient(a, d, 0));
+    const n = LOOP * SR, x = X * SR, loop = amb.slice(0, n);
+    for (let i = 0; i < x; i++) loop[i] = amb[i] * (i / x) + amb[n + i] * (1 - i / x);
+    out["sonidos/ambiente.wav"] = wav(loop);
+    return out;
+  },
+};
+
+for (let i = 0; i < 4; i++) spawnObject(true);
+fit();
+renderShop();
+requestAnimationFrame(loop);
+</script>

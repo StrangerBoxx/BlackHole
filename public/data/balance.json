@@ -1,0 +1,100 @@
+{
+  "mundo": {
+    "ancho": 720,
+    "alto": 960,
+    "hoyo": { "x": 360, "y": 330 },
+    "rozamiento": 1.6,
+    "rebote": 0.6,
+    "dtMaximo": 0.0333
+  },
+
+  "lanzamiento": {
+    "velocidadMaxima": 2400,
+    "ventanaMs": 90,
+    "puntosRastro": 8,
+    "dtMinimo": 0.016,
+    "margenAgarre": 22,
+    "escalaAgarrado": 1.12
+  },
+
+  "atraccion": { "fuerzaMinimaFraccion": 0.15 },
+
+  "captura": {
+    "margenRadioObjeto": 0.2,
+    "caidaSegundos": 0.6,
+    "caidaAcercamiento": 9,
+    "caidaGiro": 16
+  },
+
+  "combo": { "ventanaSegundos": 2.5, "mostrarDesde": 3 },
+
+  "objetos": [
+    { "id": "piedra",    "nombre": "Piedra",    "r": 14, "valor": 1 },
+    { "id": "lata",      "nombre": "Lata",      "r": 13, "valor": 2 },
+    { "id": "pelota",    "nombre": "Pelota",    "r": 20, "valor": 4 },
+    { "id": "cono",      "nombre": "Cono",      "r": 22, "valor": 8 },
+    { "id": "neumatico", "nombre": "Neumático", "r": 30, "valor": 16 },
+    { "id": "caja",      "nombre": "Caja",      "r": 36, "valor": 30 },
+    { "id": "basurero",  "nombre": "Basurero",  "r": 42, "valor": 55 },
+    { "id": "auto",      "nombre": "Auto",      "r": 56, "valor": 120 }
+  ],
+
+  "desbloqueo": { "fraccionRadioHoyo": 0.95 },
+
+  "aparicion": {
+    "iniciales": 4,
+    "pesoBase": 1,
+    "pesoPorIndice": 0.6,
+    "distanciaHoyoMaxima": 260,
+    "margenHoyo": 20,
+    "separacion": 8,
+    "margenBorde": 10,
+    "intentos": 40,
+    "velocidadCrecer": 4
+  },
+
+  "mejoras": [
+    { "id": "pull",  "nombre": "Atracción", "max": 12, "base": 10, "mult": 1.55 },
+    { "id": "force", "nombre": "Fuerza",    "max": 12, "base": 15, "mult": 1.6 },
+    { "id": "size",  "nombre": "Tamaño",    "max": 7,  "base": 25, "mult": 1.9 },
+    { "id": "spawn", "nombre": "Aparición", "max": 10, "base": 12, "mult": 1.5 },
+    { "id": "value", "nombre": "Valor",     "max": 20, "base": 40, "mult": 1.7 }
+  ],
+
+  "efectos": {
+    "radioAtraccion":     { "mejora": "pull",  "base": 55,  "porNivel": 28 },
+    "fuerza":             { "mejora": "force", "base": 700, "porNivel": 420 },
+    "radioHoyo":          { "mejora": "size",  "base": 28,  "porNivel": 5 },
+    "velocidadCaptura":   { "mejora": "size",  "base": 420, "porNivel": 110 },
+    "maxObjetos":         { "mejora": "spawn", "base": 4,   "porNivel": 1 },
+    "intervaloAparicion": { "mejora": "spawn", "base": 1.6, "factorPorNivel": 0.86, "minimo": 0.35 },
+    "multiplicadorValor": { "mejora": "value", "base": 1,   "porNivel": 0.25 }
+  },
+
+  "sonido": {
+    "general": 0.85,
+    "volumen": {
+      "ambiente": 0.16,
+      "tragar": 0.56,
+      "moneda": 0.18,
+      "comprar": 0.19,
+      "desbloquear": 0.21
+    },
+    "tragar": { "tonoBase": 1.3, "tonoPorTamano": 0.6, "volumenBase": 0.6, "volumenPorTamano": 0.8, "radioReferencia": 56 },
+    "moneda": { "semitonosMaximo": 12 }
+  },
+
+  "visual": {
+    "objetoImagenPx": 256,
+    "objetoCirculoPx": 240,
+    "hoyoBorde": 3.4,
+    "hoyoRemolino": 2.7,
+    "hoyoNucleo": 2,
+    "giroRemolino": 1.5,
+    "giroPorVelocidad": 0.006,
+    "suavizadoHoyo": 4,
+    "monedaPopup": 32,
+    "popupSegundos": 1.2,
+    "popupSubida": 60
+  }
+}

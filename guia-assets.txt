@@ -1,0 +1,84 @@
+BLACK HOLE - CÓMO CAMBIAR LAS IMÁGENES Y SONIDOS
+==================================================
+
+Cada imagen y sonido del juego es un archivo dentro de la carpeta "assets".
+Para cambiar uno: ábrelo en tu programa de dibujo (o de audio), dibuja encima
+con tu estilo y guárdalo CON EL MISMO NOMBRE Y TAMAÑO.
+Los archivos que trae son plantillas: el arte actual del juego, para que veas
+el tamaño y la posición correctos.
+
+Si borras un archivo, el juego vuelve a dibujar esa cosa por código.
+
+
+CÓMO PROBAR TUS DIBUJOS
+-----------------------
+Opción A (la más fácil): en el juego publicado, toca "Probar mis dibujos" y
+elige tus archivos (o arrástralos sobre la página en el computador).
+Se usan al instante y quedan guardados en ese navegador.
+"Quitar mis dibujos" vuelve a los originales.
+El nombre del archivo tiene que ser igual al de la plantilla (piedra.png, moneda.wav...).
+
+Opción B: reemplaza los archivos en esta carpeta y abre index.html.
+  - Las imágenes funcionan abriendo index.html directamente.
+  - Los sonidos de la carpeta solo cargan si el juego se abre desde un
+    servidor (si no, suenan los sonidos generados por código).
+    Para probar tus sonidos sin servidor, usa la opción A.
+
+
+IMÁGENES  (PNG con fondo transparente)
+--------------------------------------
+assets/img/objetos/  (8 archivos, 256 x 256 px)
+    piedra.png  lata.png  pelota.png  cono.png
+    neumatico.png  caja.png  basurero.png  auto.png
+
+    El objeto va centrado. El círculo de choque mide 240 px de diámetro
+    (mira plantillas/guia_objeto.png). Lo que dibujes fuera del círculo se ve,
+    pero no choca. Todos los objetos usan el mismo tamaño de imagen: el
+    juego los achica o agranda según el objeto (la piedra es chica, el auto grande).
+    Los objetos giran al rodar, así que dibújalos vistos desde arriba.
+
+assets/img/suelo.png          720 x 960 px   El fondo completo (sin transparencia).
+                                             El hoyo está en x=360, y=330.
+assets/img/hoyo_borde.png     512 x 512 px   La tierra/grietas alrededor del hoyo.
+assets/img/hoyo_remolino.png  512 x 512 px   Anillo que GIRA encima del borde.
+assets/img/hoyo_nucleo.png    256 x 256 px   El centro negro. Ocupa todo el cuadrado.
+assets/img/moneda.png          64 x 64 px    La moneda (marcador, tienda y "+5").
+
+Las tres capas del hoyo se agrandan juntas cuando compras "Tamaño".
+Proporciones (por si cambias el diseño):
+  núcleo  = diámetro del hoyo
+  remolino = 1,35 veces el diámetro del hoyo
+  borde    = 1,7 veces el diámetro del hoyo
+
+El halo morado de atracción, el polvo y las sombras son efectos por código.
+
+
+SONIDOS  (WAV; también sirve OGG o MP3 si usas "Probar mis dibujos")
+-------------------------------------------------------------------
+assets/sonidos/ambiente.wav     Ambiente en loop (30 s). Debe empalmar bien
+                                el final con el inicio.
+assets/sonidos/tragar.wav       Cuando el hoyo se traga algo. El juego lo pone
+                                más grave con objetos grandes.
+assets/sonidos/moneda.wav       El "cachín" al ganar monedas. Sube de tono
+                                solo con cada combo.
+assets/sonidos/comprar.wav      Al comprar una mejora.
+assets/sonidos/desbloquear.wav  Al desbloquear un objeto nuevo.
+
+Los sonidos vienen a volumen normal. Si uno tuyo queda muy fuerte o muy suave,
+cambia su número en SND_GAIN dentro de index.html.
+
+
+CONSEJOS DE ESTILO
+------------------
+- Haz primero suelo + hoyo + piedra y pruébalos juntos antes de dibujar todo.
+- Luz siempre desde el mismo lado (por ejemplo arriba a la izquierda).
+- Contornos o colores que contrasten con el suelo, para que los objetos se lean
+  bien en un celular.
+- Programas gratis: Krita (dibujo), LibreSprite (pixel art), Inkscape (vector),
+  Audacity (audio), jsfxr (efectos arcade, en el navegador).
+
+
+PARA GODOT
+----------
+Estos mismos archivos sirven en Godot: copia la carpeta "assets" dentro de tu
+proyecto (res://assets). En el ambiente.wav activa "Loop" en la pestaña Importar.
