@@ -42,6 +42,10 @@ Todos los números están en `public/data/balance.json`.
 - **Pantalla:** con EXPAND la cámara centra el mundo de 720x960; en pantallas más altas sobra espacio arriba/abajo.
 - **Eventos:** la escena de juego avisa `captura` (empieza a caer) y `tragado` (terminó de caer).
   El HUD, las monedas y el sonido escuchan esos eventos en vez de meterse en la escena.
+- **HUD encima del juego:** el prototipo tenía el marcador y la tienda fuera del campo; aquí van en `HudScene`,
+  pegados a los bordes de la *pantalla* (en celulares altos usan el espacio que sobra; en 720x960 tapan un poco el pasto).
+- **Bus de eventos entre escenas** (`game.events`): `aviso` (texto, segundos) y `combo` (número).
+- **Combo y monedas** usan el tiempo del juego (suma de dt), no el reloj: con velocidad x2 todo sigue cuadrando.
 - **Halo, polvo y línea punteada** se dibujan por código (como en el prototipo); sus colores están en `balance.json` → `visual`.
 - **Lógica pura** en `src/logica/` (sin Phaser) → se prueba en `tests/`.
 - **Assets:** `public/assets/` con los mismos nombres de `LEEME.txt`. Se cargan por nombre, y los de objetos
@@ -53,7 +57,7 @@ Todos los números están en `public/data/balance.json`.
 - [x] 0. Base del proyecto
 - [x] 1. Objeto arrastrable y lanzable (temporal: aparece uno de cada tipo abajo)
 - [x] 2. Hoyo que atrae y traga (temporal: lo tragado reaparece abajo; niveles fijos en 0)
-- [ ] 3. Monedas y combo
+- [x] 3. Monedas y combo
 - [ ] 4. Tienda de mejoras
 - [ ] 5. Aparición y desbloqueos
 - [ ] 6. Sonidos

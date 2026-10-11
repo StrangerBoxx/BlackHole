@@ -1,15 +1,19 @@
 import Phaser from "phaser";
 import { getBalance } from "../core/Balance";
+import { EVENTOS_GLOBALES } from "../core/estilo";
 import { centrarMundo } from "../core/pantalla";
+import { progreso } from "../core/Progreso";
 import { Hoyo } from "../entidades/Hoyo";
 import { Objeto } from "../entidades/Objeto";
+import { mostrarPopupMonedas } from "../entidades/Popup";
 import type { TipoObjeto } from "../logica/balance";
 import { aplicarAtraccion, avanzarCaida, puedeTragar } from "../logica/captura";
 import { pasoFisica } from "../logica/fisica";
 import {
   agregarPunto, elegirObjeto, limitarAlMundo, velocidadLanzamiento, type PuntoRastro,
 } from "../logica/lanzamiento";
-import { estadisticas, nivelesIniciales, type Estadisticas, type Niveles } from "../logica/mejoras";
+import { estadisticas, type Estadisticas } from "../logica/mejoras";
+import { Combo, formatearNumero, monedasPorObjeto, textoCombo } from "../logica/monedas";
 
 const PROF_LINEA = 25;
 
@@ -28,21 +32,24 @@ export class JuegoScene extends Phaser.Scene {
   private rastro: PuntoRastro[] = [];
   private hoyo!: Hoyo;
   private linea!: Phaser.GameObjects.Graphics;
-  // Temporal hasta el paso 4/7: niveles en 0
-  private niveles: Niveles = nivelesIniciales();
+  private combo!: Combo;
+  /** Segundos de juego (avanza con el dt del juego, no con el reloj). */
+  private tiempo = 0;
 
   constructor() {
     super("Juego");
   }
 
   private get stats(): Estadisticas {
-    return estadisticas(getBalance(), this.niveles);
+    return estadisticas(getBalance(), progreso.niveles);
   }
 
   create(): void {
     const { ancho, alto } = getBalance().mundo;
     this.objetos = [];
     this.agarrado = null;
+    this.tiempo = 0;
+    this.combo = new Combo(getBalance().combo.ventanaSegundos);
     centrarMundo(this);
     this.add.image(0, 0, "suelo").setOrigin(0).setDisplaySize(ancho, alto);
 
@@ -52,6 +59,7 @@ export class JuegoScene extends Phaser.Scene {
 
     this.ponerObjetosDePrueba();
     this.configurarArrastre();
+    this.scene.launch("Hud");
   }
 
   // TEMPORAL (pasos 1-4): uno de cada tipo abajo y, si se lo tragan, vuelve a aparecer.
@@ -110,6 +118,7 @@ export class JuegoScene extends Phaser.Scene {
   update(_time: number, deltaMs: number): void {
     const b = getBalance();
     const dt = Math.min(deltaMs / 1000, b.mundo.dtMaximo);
+    this.tiempo += dt;
     const s = this.stats;
     const centro = this.hoyo;
 
@@ -149,8 +158,19 @@ export class JuegoScene extends Phaser.Scene {
     this.dibujarLinea();
   }
 
+  /** El objeto terminó de caer: monedas, combo y "+N". */
   private tragar(o: Objeto): void {
     o.destruir();
+    const b = getBalance();
+    const ganancia = monedasPorObjeto(o.tipo.valor, this.stats.multiplicadorValor);
+    progreso.registrarTragado(ganancia);
+
+    const combo = this.combo.registrar(this.tiempo);
+    this.game.events.emit(EVENTOS_GLOBALES.COMBO, combo);
+    const aviso = textoCombo(combo, b.combo.mostrarDesde);
+    if (aviso) this.game.events.emit(EVENTOS_GLOBALES.AVISO, aviso, 1.2);
+
+    mostrarPopupMonedas(this, this.hoyo.x, this.hoyo.y - this.hoyo.radioVisible - 10, `+${formatearNumero(ganancia)}`);
     this.events.emit(EVENTOS_JUEGO.TRAGADO, o.tipo);
   }
 

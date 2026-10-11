@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { CargaScene } from "./escenas/CargaScene";
+import { HudScene } from "./escenas/HudScene";
 import { JuegoScene } from "./escenas/JuegoScene";
 
 // El tamaño base es 720x960. Phaser lo escala para llenar la pantalla
@@ -15,7 +16,7 @@ const juego = new Phaser.Game({
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
   input: { activePointers: 2 },
-  scene: [CargaScene, JuegoScene],
+  scene: [CargaScene, JuegoScene, HudScene],
 });
 
 // Solo en desarrollo: acceso desde la consola del navegador para revisar el estado
