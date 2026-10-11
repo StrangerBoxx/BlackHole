@@ -78,6 +78,8 @@ export class JuegoScene extends Phaser.Scene {
     for (const o of this.objetos) o.destruir();
     this.objetos = [];
     this.agarrado = this.dedo = null;
+    this.combo = new Combo(getBalance().combo.ventanaSegundos);
+    this.reloj = new RelojAparicion();
     this.poblar();
   }
 
