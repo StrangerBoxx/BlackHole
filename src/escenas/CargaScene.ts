@@ -4,6 +4,7 @@ import { setBalance } from "../core/Balance";
 import { iniciarGuardado } from "../core/Guardado";
 import { progreso } from "../core/Progreso";
 import { iniciarSonido } from "../core/Sonido";
+import { iniciarInterfaz } from "../ui/interfaz";
 import { IDS_SONIDO, revisarBalance, type Balance } from "../logica/balance";
 
 /**
@@ -55,6 +56,7 @@ export class CargaScene extends Phaser.Scene {
         /* si la fuente falla, se usa la de respaldo */
       }
       iniciarSonido(this.game);
+      iniciarInterfaz(this.game);
       this.scene.start("Juego");
     });
     this.load.start();

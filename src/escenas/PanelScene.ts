@@ -49,6 +49,7 @@ export class PanelScene extends Phaser.Scene {
 
   create(): void {
     this.scene.pause("Juego");
+    this.game.events.emit(EVENTOS_GLOBALES.PANEL, true);
     const { width, height } = this.scale.gameSize;
     // Fondo oscuro que tapa y atrapa los toques
     this.add.rectangle(0, 0, width, height, 0x1d2a35, 0.45).setOrigin(0).setInteractive();
@@ -90,6 +91,7 @@ export class PanelScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       dejar();
       this.scene.resume("Juego");
+      this.game.events.emit(EVENTOS_GLOBALES.PANEL, false);
     });
   }
 

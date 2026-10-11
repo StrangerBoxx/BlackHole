@@ -96,6 +96,7 @@ export class JuegoScene extends Phaser.Scene {
     this.configurarArrastre();
     this.prepararMisiones();
     this.scene.launch("Hud");
+    this.game.events.emit(EVENTOS_GLOBALES.JUEGO_LISTO);
 
     // Reiniciar o cambiar de zona: se vuelve a armar la escena (con el suelo de la zona actual)
     const reiniciar = () => this.scene.restart();

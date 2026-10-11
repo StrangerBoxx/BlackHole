@@ -7,7 +7,7 @@ import type { IdEspecial, IdMejora } from "../logica/balance";
 import { metaHambre } from "../logica/hambre";
 import type { JuegoScene } from "./JuegoScene";
 
-const ESQUINA = 90; // px de la esquina superior derecha donde cuentan los 3 toques
+const ESQUINA = 90; // px de la esquina superior izquierda donde cuentan los 3 toques
 const TOQUES = 3;
 const VENTANA_TOQUES_MS = 1000;
 const ANCHO_PANEL = 560;
@@ -19,7 +19,7 @@ interface Fila {
 
 /**
  * Panel de debug (solo en desarrollo). Se abre con F1 o con 3 toques rápidos
- * en la esquina superior derecha de la pantalla.
+ * en la esquina superior izquierda de la pantalla (sobre el título, que deja pasar los toques).
  */
 export class DebugScene extends Phaser.Scene {
   private panel: Phaser.GameObjects.Container | null = null;
@@ -36,7 +36,7 @@ export class DebugScene extends Phaser.Scene {
       this.alternar();
     });
     this.input.on(Phaser.Input.Events.POINTER_DOWN, (p: Phaser.Input.Pointer) => {
-      if (p.x < this.scale.gameSize.width - ESQUINA || p.y > ESQUINA) return;
+      if (p.x > ESQUINA || p.y > ESQUINA) return;
       const ahora = performance.now();
       this.toques = [...this.toques.filter((t) => ahora - t < VENTANA_TOQUES_MS), ahora];
       if (this.toques.length >= TOQUES) {

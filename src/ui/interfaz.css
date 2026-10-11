@@ -1,0 +1,268 @@
+/* Interfaz encima del juego: marcador arriba, dock abajo, avisos y burbuja. Estilo "vidrio" de laboratorio. */
+
+#ui {
+  --naranja: #f07a1c;
+  --cian: #1a9fd6;
+  --texto: #1b252e;
+  --gris: #64717c;
+  --borde: #c3ccd3;
+  --vidrio: rgba(255, 255, 255, 0.86);
+  /* --e = escala (ancho del canvas / 720); la pone interfaz.ts */
+  --e: 1;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* solo los controles reciben toques; el resto pasa al juego */
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+  font-size: clamp(13px, calc(var(--e) * 22px), 22px);
+  color: var(--texto);
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  z-index: 10;
+}
+#ui.oculto > * { visibility: hidden; }
+#ui button { font: inherit; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+#ui img { pointer-events: none; }
+
+.vidrio {
+  background: var(--vidrio);
+  -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  backdrop-filter: blur(10px) saturate(1.2);
+  border: 1px solid var(--borde);
+  box-shadow: 0 6px 18px rgba(27, 37, 46, 0.12);
+}
+
+/* ---------------------------------------------------------------- Marcador */
+.marcador {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: max(0.7em, env(safe-area-inset-top)) 0.7em 0 max(0.8em, env(safe-area-inset-left));
+}
+.titulo {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 1em;
+  letter-spacing: 0.22em;
+  color: var(--texto);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+.titulo span { color: var(--cian); }
+.derecha { display: flex; align-items: center; gap: 0.45em; pointer-events: auto; }
+.pastilla {
+  display: flex;
+  align-items: center;
+  gap: 0.35em;
+  height: 2.3em;
+  min-height: 44px;
+  box-sizing: border-box;
+  padding: 0 0.85em 0 0.6em;
+  border-radius: 999px;
+}
+.pastilla img { width: 1.35em; height: 1.35em; }
+.chips {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 1.45em;
+  color: var(--naranja);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.redondo {
+  position: relative;
+  width: 2.3em;
+  height: 2.3em;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  pointer-events: auto;
+  transition: transform 0.08s;
+}
+.redondo:active { transform: scale(0.92); }
+.redondo img { width: 55%; height: 55%; }
+.redondo .punto {
+  position: absolute;
+  top: 8%;
+  right: 8%;
+  width: 0.6em;
+  height: 0.6em;
+  min-width: 10px;
+  min-height: 10px;
+  border-radius: 50%;
+  background: var(--naranja);
+  border: 2px solid #fff;
+  display: none;
+}
+.redondo.aviso .punto { display: block; }
+
+/* Columna de Misiones · Álbum · Colapso debajo del ⚙ */
+.menu-lado {
+  position: absolute;
+  right: 0.7em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45em;
+}
+
+/* Panelcito de opciones (⚙) */
+.opciones {
+  position: absolute;
+  right: 0.7em;
+  min-width: 13em;
+  padding: 0.8em 0.9em;
+  border-radius: 1em;
+  background: #fff;
+  border: 1px solid var(--borde);
+  box-shadow: 0 10px 28px rgba(27, 37, 46, 0.18);
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35em;
+}
+.opciones[hidden] { display: none; }
+.opciones .dato { color: var(--gris); font-size: 0.85em; padding-bottom: 0.3em; border-bottom: 1px solid #e3e8eb; }
+.opciones .dato b { font-family: "Rajdhani", sans-serif; color: var(--texto); font-size: 1.15em; }
+.opciones button {
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0.55em 0.2em;
+  min-height: 44px;
+  font-weight: 600;
+  border-radius: 0.5em;
+}
+.opciones button:active { background: #eef2f5; }
+.opciones button.peligro { color: #d9433b; }
+
+/* ---------------------------------------------------------------- Avisos (arriba, bajo el marcador) */
+.avisos {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4em;
+}
+.aviso {
+  max-width: 88%;
+  padding: 0.45em 1.1em;
+  border-radius: 999px;
+  background: rgba(27, 37, 46, 0.88);
+  color: #f4f6f8;
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 1.15em;
+  text-align: center;
+  box-shadow: 0 6px 18px rgba(27, 37, 46, 0.2);
+  transition: opacity 0.35s, transform 0.35s;
+}
+.aviso.saliendo { opacity: 0; transform: translateY(-0.4em); }
+
+/* ---------------------------------------------------------------- Dock */
+.dock {
+  position: absolute;
+  left: 0.7em;
+  right: 0.7em;
+  bottom: max(0.7em, env(safe-area-inset-bottom));
+  display: flex;
+  gap: 0.4em;
+  padding: 0.45em;
+  border-radius: 1.3em;
+  pointer-events: auto;
+}
+.mejora {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0.45em 0.2em 0.4em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15em;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1.5px solid var(--borde);
+  border-radius: 0.9em;
+  transition: transform 0.08s, box-shadow 0.2s, border-color 0.2s, opacity 0.2s;
+}
+.mejora.mas { flex: 0.72 1 0; }
+.mejora img.icono { width: 1.6em; height: 1.6em; }
+.mejora .nombre {
+  font-size: 0.68em;
+  font-weight: 600;
+  color: var(--texto);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.mejora .costo {
+  display: flex;
+  align-items: center;
+  gap: 0.2em;
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 1em;
+  color: var(--naranja);
+  line-height: 1;
+}
+.mejora .costo img { width: 0.95em; height: 0.95em; }
+.mejora .nivel {
+  position: absolute;
+  top: 0.3em;
+  right: 0.4em;
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 0.6em;
+  color: var(--gris);
+}
+.mejora.alcanza {
+  border-color: var(--naranja);
+  box-shadow: 0 0 0 3px rgba(240, 122, 28, 0.18), 0 0 14px rgba(240, 122, 28, 0.45);
+}
+.mejora.falta { opacity: 0.55; }
+.mejora.apretado { transform: scale(0.94); }
+
+/* Bandeja "Más" (Combo, Gravedad, Dron) encima del dock */
+.bandeja {
+  position: absolute;
+  right: 0.7em;
+  display: flex;
+  gap: 0.4em;
+  padding: 0.45em;
+  border-radius: 1.1em;
+  pointer-events: auto;
+}
+.bandeja[hidden] { display: none; }
+.bandeja .mejora { width: 4.6em; flex: none; }
+
+/* ---------------------------------------------------------------- Burbuja de ayuda */
+.burbuja {
+  position: absolute;
+  max-width: 80%;
+  padding: 0.5em 0.85em;
+  border-radius: 0.8em;
+  background: #fff;
+  border: 1px solid var(--borde);
+  box-shadow: 0 8px 22px rgba(27, 37, 46, 0.18);
+  font-size: 0.8em;
+  font-weight: 600;
+  color: var(--texto);
+  transform: translate(-50%, -100%);
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+.burbuja b { font-family: "Rajdhani", sans-serif; color: var(--cian); font-size: 1.15em; }
+.burbuja.falta b { color: var(--naranja); }
+.burbuja[hidden] { display: none; }

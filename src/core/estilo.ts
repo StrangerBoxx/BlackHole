@@ -74,6 +74,10 @@ export const EVENTOS_GLOBALES = {
   DESBLOQUEO: "desbloqueo",
   /** Se colapsó: ({ materia, zona }) */
   COLAPSO: "colapso",
+  /** La escena de juego terminó de armarse (para los avisos del comienzo). */
+  JUEGO_LISTO: "juegoListo",
+  /** Se abrió o cerró el panel de Misiones/Álbum/Colapso: (abierto: boolean) */
+  PANEL: "panel",
   /** Se borró el progreso: el pasto vuelve a empezar. */
   REINICIO: "reinicio",
 } as const;
