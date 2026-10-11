@@ -17,6 +17,8 @@ export class Objeto {
   readonly tipo: TipoObjeto;
   /** 0 → 1 al aparecer, 1 → 0 al caer al hoyo. */
   escalaAnim: number;
+  /** Segundos que lleva cayendo al hoyo. */
+  tiempoCaida = 0;
   private readonly imagen: Phaser.GameObjects.Image;
   private readonly sombra: Phaser.GameObjects.Ellipse;
   /** Escala para que el círculo de choque del PNG (240 de 256 px) mida 2r en pantalla. */

@@ -107,6 +107,18 @@ export interface Balance {
     popupSegundos: number;
     popupSubida: number;
     sombra: { dx: number; dy: number; alto: number; color: string; opacidad: number };
+    halo: { color: string; opacidad: number; borde: string; bordeOpacidad: number; bordeGrosor: number };
+    polvo: {
+      maximo: number;
+      probabilidad: number;
+      velocidad: number;
+      giroBase: number;
+      giroCerca: number;
+      color: string;
+      opacidad: number;
+      radio: number;
+    };
+    lineaAgarre: { color: string; opacidad: number; grosor: number; trazo: number; hueco: number };
   };
 }
 
