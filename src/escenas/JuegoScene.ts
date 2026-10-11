@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { getBalance } from "../core/Balance";
+import { debug } from "../core/Debug";
 import { EVENTOS_GLOBALES } from "../core/estilo";
 import { centrarMundo } from "../core/pantalla";
 import { progreso } from "../core/Progreso";
@@ -17,6 +18,7 @@ import { Combo, formatearNumero, monedasPorObjeto, textoCombo } from "../logica/
 import { objetosDesbloqueados } from "../logica/objetos";
 
 const PROF_LINEA = 25;
+const PROF_DEBUG = 50;
 
 /** El campo de juego: pasto, hoyo y objetos. */
 export class JuegoScene extends Phaser.Scene {
@@ -27,6 +29,7 @@ export class JuegoScene extends Phaser.Scene {
   private rastro: PuntoRastro[] = [];
   private hoyo!: Hoyo;
   private linea!: Phaser.GameObjects.Graphics;
+  private circulos!: Phaser.GameObjects.Graphics;
   private combo!: Combo;
   private reloj!: RelojAparicion;
   /** Segundos de juego (avanza con el dt del juego, no con el reloj). */
@@ -54,6 +57,7 @@ export class JuegoScene extends Phaser.Scene {
     const s = this.stats;
     this.hoyo = new Hoyo(this, s.radioHoyo, s.radioAtraccion);
     this.linea = this.add.graphics().setDepth(PROF_LINEA);
+    this.circulos = this.add.graphics().setDepth(PROF_DEBUG);
 
     this.poblar();
     this.configurarArrastre();
@@ -128,12 +132,21 @@ export class JuegoScene extends Phaser.Scene {
   }
 
   update(_time: number, deltaMs: number): void {
+    const dt = Math.min(deltaMs / 1000, getBalance().mundo.dtMaximo);
+    this.seguirDedo();
+    // Velocidad x2 (debug): dos pasos por cuadro en vez de uno más largo, así nada atraviesa paredes
+    for (let i = 0; i < debug.velocidad; i++) this.paso(dt);
+    for (const o of this.objetos) o.sincronizar();
+    this.dibujarLinea();
+    this.dibujarCirculos();
+  }
+
+  /** Un paso de simulación de `dt` segundos. */
+  private paso(dt: number): void {
     const b = getBalance();
-    const dt = Math.min(deltaMs / 1000, b.mundo.dtMaximo);
     this.tiempo += dt;
     const s = this.stats;
     const centro = this.hoyo;
-    this.seguirDedo();
 
     if (this.reloj.avanzar(dt, s.intervaloAparicion, this.objetos.length, s.maxObjetos)) this.aparecerObjeto(true);
 
@@ -169,8 +182,19 @@ export class JuegoScene extends Phaser.Scene {
     });
 
     this.hoyo.actualizar(dt, s.radioHoyo, s.radioAtraccion);
-    for (const o of this.objetos) o.sincronizar();
-    this.dibujarLinea();
+  }
+
+  /** Debug: círculos de choque (rojo), radio del hoyo (amarillo) y radio de atracción (celeste). */
+  private dibujarCirculos(): void {
+    const g = this.circulos;
+    g.clear();
+    if (!debug.mostrarCirculos) return;
+    const s = this.stats;
+    g.lineStyle(2, 0x5ad1ff, 0.9).strokeCircle(this.hoyo.x, this.hoyo.y, s.radioAtraccion);
+    g.lineStyle(2, 0xffe14d, 0.9).strokeCircle(this.hoyo.x, this.hoyo.y, s.radioHoyo);
+    for (const o of this.objetos) {
+      g.lineStyle(2, o.cuerpo.cayendo ? 0x999999 : 0xff4d4d, 0.9).strokeCircle(o.cuerpo.x, o.cuerpo.y, o.cuerpo.r);
+    }
   }
 
   /** El objeto terminó de caer: monedas, combo y "+N". */

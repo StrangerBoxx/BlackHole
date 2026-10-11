@@ -22,4 +22,8 @@ const juego = new Phaser.Game({
 });
 
 // Solo en desarrollo: acceso desde la consola del navegador para revisar el estado
-if (import.meta.env.DEV) Object.assign(window, { juego, progreso });
+if (import.meta.env.DEV) {
+  Object.assign(window, { juego, progreso });
+  // Panel de debug: solo en desarrollo (no entra en la versión final)
+  import("./escenas/DebugScene").then(({ DebugScene }) => juego.scene.add("Debug", DebugScene, true));
+}

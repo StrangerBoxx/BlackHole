@@ -60,6 +60,10 @@ Todos los números están en `public/data/balance.json`.
 - **Guardado** (`src/core/Guardado.ts`): `localStorage["black-hole-save"]` con `{version, monedas, total, niveles}`.
   Se guarda en cada cambio y al esconder la app. Al cargar se arreglan datos rotos (niveles > máximo → máximo, etc.).
   "Reiniciar" arriba a la izquierda pide un segundo toque antes de borrar (como el prototipo).
+- **Panel de debug** (`src/escenas/DebugScene.ts`), solo con `npm run dev`: se abre con **F1** o con **3 toques rápidos
+  en la esquina superior derecha**. Trae +1000 / +100 000 monedas, subir/bajar cada mejora (gratis), círculos de choque
+  (rojo objetos, amarillo hoyo, celeste atracción), velocidad x2 (dos pasos de física por cuadro) y reiniciar.
+  `npm run build` no lo incluye. En desarrollo también quedan `juego` y `progreso` en la consola del navegador.
 - **Halo, polvo y línea punteada** se dibujan por código (como en el prototipo); sus colores están en `balance.json` → `visual`.
 - **Lógica pura** en `src/logica/` (sin Phaser) → se prueba en `tests/`.
 - **Assets:** `public/assets/` con los mismos nombres de `LEEME.txt`. Se cargan por nombre, y los de objetos
