@@ -22,6 +22,11 @@ Referencia de comportamiento: `referencia/prototipo.html` (el prototipo original
   - Capa de luz: cálida desde la izquierda, fría desde la derecha y viñeta suave (`luz`, `src/efectos/Luz.ts`).
   - Sombras de los objetos gris azulado, desplazadas abajo a la derecha (`sombra`).
   - Todo esto lo dibuja `src/entidades/Hoyo.ts` (salvo el shader y la luz).
+- **Hoyo inclinado (en perspectiva):** `visual.inclinacion` (1 = desde arriba, 0.75 = un poco de lado) aplasta
+  en vertical todo el hoyo (capas, halo, anillo de hambre, chispas, distorsión) y la órbita del dron.
+  `visual.profundidad` = qué tan hondo se ve el pozo: se dibuja la pared interior de atrás.
+  La atracción, la captura y la regla de aparición usan el mismo óvalo (`distanciaInclinada` en
+  `src/logica/captura.ts`), así lo que se ve coincide con lo que pasa. Los objetos siguen vistos desde arriba.
 
 ## Salas y objetos
 

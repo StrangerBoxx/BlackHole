@@ -1,5 +1,6 @@
 // Aparición de objetos: cuál sale, dónde y cuándo.
 import type { Balance, TipoObjeto } from "./balance";
+import { distanciaInclinada } from "./captura";
 
 /** Número al azar entre 0 y 1 (se puede cambiar en los tests para que sea predecible). */
 export type Azar = () => number;
@@ -35,7 +36,7 @@ export function buscarLugar(
   for (let i = 0; i < a.intentos; i++) {
     const x = r + a.margenBorde + azar() * (ancho - 2 * r - 2 * a.margenBorde);
     const y = r + a.margenBorde + azar() * (alto - 2 * r - 2 * a.margenBorde);
-    if (Math.hypot(x - hoyo.x, y - hoyo.y) < lejosDelHoyo) continue;
+    if (distanciaInclinada(x - hoyo.x, y - hoyo.y, b.visual.inclinacion ?? 1) < lejosDelHoyo) continue;
     if (otros.some((o) => Math.hypot(o.x - x, o.y - y) < o.r + r + a.separacion)) continue;
     return { x, y };
   }

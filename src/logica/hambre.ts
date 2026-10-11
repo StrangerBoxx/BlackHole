@@ -1,5 +1,6 @@
 // Hambre del hoyo: se llena tragando objetos; cuando está llena aparece el jefe de la zona.
 import type { Balance } from "./balance";
+import { distanciaInclinada } from "./captura";
 
 /** Cuánto hay que llenar: meta * crecePorJefe^(jefes ya comidos). */
 export function metaHambre(cfg: Balance["hambre"], jefesComidos: number): number {
@@ -22,6 +23,7 @@ export function puedeTragarJefe(
   hoyo: { x: number; y: number },
   radioHoyo: number,
   velocidadCaptura: number,
+  inclinacion = 1,
 ): boolean {
-  return Math.hypot(c.x - hoyo.x, c.y - hoyo.y) < radioHoyo && Math.hypot(c.vx, c.vy) < velocidadCaptura;
+  return distanciaInclinada(c.x - hoyo.x, c.y - hoyo.y, inclinacion) < radioHoyo && Math.hypot(c.vx, c.vy) < velocidadCaptura;
 }

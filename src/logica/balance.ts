@@ -184,6 +184,10 @@ export interface Balance {
     eventos: Record<string, SonidoEvento>;
   };
   visual: {
+    /** Cuánto se ve inclinado el hoyo: 1 = desde arriba (círculo), 0.75 = un poco de lado (óvalo). */
+    inclinacion: number;
+    /** Qué tan hondo se ve el pozo por dentro (veces el radio del hoyo). */
+    profundidad: number;
     objetoImagenPx: number;
     objetoCirculoPx: number;
     hoyoBorde: number;

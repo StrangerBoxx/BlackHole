@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buscarLugar, elegirTipo, RelojAparicion } from "../src/logica/aparicion";
 import type { Balance } from "../src/logica/balance";
+import { distanciaInclinada } from "../src/logica/captura";
 import balanceJson from "../public/data/balance.json";
 
 const b = balanceJson as Balance;
@@ -42,7 +43,7 @@ describe("buscar lugar", () => {
     const azar = azarFijo(3);
     for (let i = 0; i < 300; i++) {
       const p = buscarLugar(20, [], 55, b, azar)!;
-      expect(Math.hypot(p.x - 360, p.y - 330)).toBeGreaterThanOrEqual(55 + 20 + 20);
+      expect(distanciaInclinada(p.x - 360, p.y - 330, b.visual.inclinacion)).toBeGreaterThanOrEqual(55 + 20 + 20);
       expect(p.x).toBeGreaterThanOrEqual(30);
       expect(p.x).toBeLessThanOrEqual(690);
       expect(p.y).toBeLessThanOrEqual(930);
@@ -53,7 +54,7 @@ describe("buscar lugar", () => {
     const azar = azarFijo(5);
     const p = buscarLugar(14, [], 1000, b, azar);
     expect(p).not.toBeNull();
-    expect(Math.hypot(p!.x - 360, p!.y - 330)).toBeGreaterThanOrEqual(260 + 14 + 20);
+    expect(distanciaInclinada(p!.x - 360, p!.y - 330, b.visual.inclinacion)).toBeGreaterThanOrEqual(260 + 14 + 20);
   });
 
   it("no pisa a otros objetos (deja 8 px)", () => {

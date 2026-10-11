@@ -7,6 +7,14 @@ export interface Punto {
 }
 
 /**
+ * Distancia al hoyo vista "en perspectiva": el hoyo se ve inclinado (un óvalo más bajo que ancho),
+ * así que la distancia vertical cuenta 1/inclinacion veces más. Con inclinacion = 1 es la distancia normal.
+ */
+export function distanciaInclinada(dx: number, dy: number, inclinacion = 1): number {
+  return Math.hypot(dx, dy / inclinacion);
+}
+
+/**
  * Fuerza de atracción a cierta distancia del centro.
  * Dentro del radio: fuerza * (1 - dist/radio) + fuerza * fraccionMinima. Fuera: 0.
  */
@@ -15,7 +23,10 @@ export function fuerzaAtraccion(dist: number, radio: number, fuerza: number, fra
   return fuerza * (1 - dist / radio) + fuerza * fraccionMinima;
 }
 
-/** Empuja la velocidad del objeto hacia el centro del hoyo (a los pesados les cuesta más). */
+/**
+ * Empuja la velocidad del objeto hacia el centro del hoyo (a los pesados les cuesta más).
+ * El radio de atracción es un óvalo si el hoyo se ve inclinado.
+ */
 export function aplicarAtraccion(
   c: Cuerpo,
   hoyo: Punto,
@@ -23,11 +34,13 @@ export function aplicarAtraccion(
   fuerza: number,
   fraccionMinima: number,
   dt: number,
+  inclinacion = 1,
 ): void {
   const dx = hoyo.x - c.x, dy = hoyo.y - c.y;
-  const dist = Math.hypot(dx, dy);
-  const f = fuerzaAtraccion(dist, radio, fuerza, fraccionMinima);
+  const f = fuerzaAtraccion(distanciaInclinada(dx, dy, inclinacion), radio, fuerza, fraccionMinima);
   if (f === 0) return;
+  const dist = Math.hypot(dx, dy);
+  if (dist < 1) return;
   c.vx += ((dx / dist) * f * dt) / c.peso;
   c.vy += ((dy / dist) * f * dt) / c.peso;
 }
@@ -45,6 +58,7 @@ export function aplicarGravedadPasiva(c: Cuerpo, hoyo: Punto, aceleracion: numbe
 /**
  * ¿Se lo traga? El centro del objeto tiene que estar bien adentro
  * (dist < radioHoyo - r*margen) y tiene que ir más lento que la velocidad de captura.
+ * Con el hoyo inclinado, "adentro" es dentro del óvalo.
  */
 export function puedeTragar(
   c: { x: number; y: number; vx: number; vy: number; r: number },
@@ -52,8 +66,9 @@ export function puedeTragar(
   radioHoyo: number,
   velocidadCaptura: number,
   margenRadioObjeto: number,
+  inclinacion = 1,
 ): boolean {
-  const dist = Math.hypot(hoyo.x - c.x, hoyo.y - c.y);
+  const dist = distanciaInclinada(hoyo.x - c.x, hoyo.y - c.y, inclinacion);
   return dist < radioHoyo - c.r * margenRadioObjeto && rapidez(c) < velocidadCaptura;
 }
 

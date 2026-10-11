@@ -228,6 +228,7 @@ export class JuegoScene extends Phaser.Scene {
     fx.giro = d.giro;
     fx.hundir = d.hundimiento;
     fx.oscuro = d.oscurecer;
+    fx.inclinacion = this.hoyo.inclinacion;
   }
 
   /** Durante el colapso: todo cae (sin dar monedas) y el hoyo crece. */
@@ -279,15 +280,15 @@ export class JuegoScene extends Phaser.Scene {
       rebote: b.mundo.rebote,
       giroPorVelocidad: b.visual.giroPorVelocidad,
       antesDeMover: (c, paso) => {
-        aplicarAtraccion(c, centro, s.radioAtraccion, s.fuerza, b.atraccion.fuerzaMinimaFraccion, paso);
+        aplicarAtraccion(c, centro, s.radioAtraccion, s.fuerza, b.atraccion.fuerzaMinimaFraccion, paso, centro.inclinacion);
         aplicarGravedadPasiva(c, centro, s.gravedadPasiva, paso);
       },
       despuesDeMover: (c) => {
         const o = this.objetoDe(c);
         const cae =
           o === this.jefe
-            ? puedeTragarJefe(c, centro, s.radioHoyo, s.velocidadCaptura)
-            : puedeTragar(c, centro, s.radioHoyo, s.velocidadCaptura, b.captura.margenRadioObjeto);
+            ? puedeTragarJefe(c, centro, s.radioHoyo, s.velocidadCaptura, centro.inclinacion)
+            : puedeTragar(c, centro, s.radioHoyo, s.velocidadCaptura, b.captura.margenRadioObjeto, centro.inclinacion);
         if (cae) {
           c.cayendo = true;
           o.tiempoCaida = 0;
@@ -351,8 +352,9 @@ export class JuegoScene extends Phaser.Scene {
     g.clear();
     if (!debug.mostrarCirculos) return;
     const s = this.stats;
-    g.lineStyle(2, 0x5ad1ff, 0.9).strokeCircle(this.hoyo.x, this.hoyo.y, s.radioAtraccion);
-    g.lineStyle(2, 0xffe14d, 0.9).strokeCircle(this.hoyo.x, this.hoyo.y, s.radioHoyo);
+    const k = this.hoyo.inclinacion;
+    g.lineStyle(2, 0x5ad1ff, 0.9).strokeEllipse(this.hoyo.x, this.hoyo.y, s.radioAtraccion * 2, s.radioAtraccion * 2 * k);
+    g.lineStyle(2, 0xffe14d, 0.9).strokeEllipse(this.hoyo.x, this.hoyo.y, s.radioHoyo * 2, s.radioHoyo * 2 * k);
     for (const o of this.objetos) {
       g.lineStyle(2, o.cuerpo.cayendo ? 0x999999 : 0xff4d4d, 0.9).strokeCircle(o.cuerpo.x, o.cuerpo.y, o.cuerpo.r);
     }
@@ -383,14 +385,14 @@ export class JuegoScene extends Phaser.Scene {
       progreso.ponerHambre(sumarHambre(progreso.hambre, o.tipo.valor, this.metaHambre));
     }
 
-    const arriba = this.hoyo.y - this.hoyo.radioVisible;
+    const arriba = this.hoyo.y - this.hoyo.radioVisible * this.hoyo.inclinacion;
     if (o.especial === "dorado") mostrarTextoFlotante(this, this.hoyo.x, arriba - 100, "¡Dorado! x10", b.especiales.dorado.color);
     if (o.especial === "pesado") mostrarTextoFlotante(this, this.hoyo.x, arriba - 100, "¡Pesado! x4", COLOR.apagado);
     if (o.especial === "bomba") this.explotar();
 
     if (o.tirosLogrados.length) {
       const nombres = o.tirosLogrados.map((id) => b.tiros[id].nombre).join(" ");
-      const y = this.hoyo.y - this.hoyo.radioVisible - 60;
+      const y = arriba - 60;
       mostrarTextoFlotante(this, this.hoyo.x, y, `${nombres} x${formatearMultiplicador(xTiro)}`, COLOR.tiro);
       this.game.events.emit(EVENTOS_GLOBALES.TIRO, o.tirosLogrados);
     }
@@ -399,7 +401,7 @@ export class JuegoScene extends Phaser.Scene {
     const aviso = textoCombo(combo, b.combo.mostrarDesde);
     if (aviso) this.game.events.emit(EVENTOS_GLOBALES.AVISO, `${aviso}  chips x${formatearMultiplicador(xCombo)}`, 1.2);
 
-    mostrarPopupMonedas(this, this.hoyo.x, this.hoyo.y - this.hoyo.radioVisible - 10, `+${formatearNumero(ganancia)}`);
+    mostrarPopupMonedas(this, this.hoyo.x, arriba - 10, `+${formatearNumero(ganancia)}`);
     const info: InfoTragado = { tipo: o.tipo, monedas: ganancia, especial: o.especial, tiros: o.tirosLogrados, combo, jefe: esJefe };
     this.game.events.emit(EVENTOS_GLOBALES.TRAGADO, info);
     this.anotarAlbum(o);
@@ -415,7 +417,7 @@ export class JuegoScene extends Phaser.Scene {
     const zona = zonaDe(b, progreso.zona);
     const r = progreso.anotarAlbum(zona, o.tipo.id);
     if (!r.nuevo) return;
-    const y = this.hoyo.y + this.hoyo.radioVisible + 40;
+    const y = this.hoyo.y + this.hoyo.radioVisible * this.hoyo.inclinacion + 40;
     mostrarTextoFlotante(this, this.hoyo.x, y, `¡Nuevo en el álbum: ${o.tipo.nombre}!`, COLOR.acento);
     if (r.completo) {
       this.game.events.emit(EVENTOS_GLOBALES.AVISO, `¡Álbum de ${zona.nombre} completo! Chips x${1 + b.album.bonusPorZona} para siempre`, 4);
@@ -429,7 +431,7 @@ export class JuegoScene extends Phaser.Scene {
     explotarBomba(this.objetos.map((x) => x.cuerpo), this.hoyo, e.radioEfecto, e.impulso);
     this.cameras.main.shake(260, 0.008);
     this.cameras.main.flash(180, 255, 200, 120);
-    mostrarTextoFlotante(this, this.hoyo.x, this.hoyo.y - this.hoyo.radioVisible - 100, "¡BOOM!", COLOR.peligro);
+    mostrarTextoFlotante(this, this.hoyo.x, this.hoyo.y - this.hoyo.radioVisible * this.hoyo.inclinacion - 100, "¡BOOM!", COLOR.peligro);
   }
 
   /** Línea punteada del objeto agarrado al hoyo (ayuda a apuntar). */

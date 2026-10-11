@@ -1,16 +1,14 @@
 import Phaser from "phaser";
 import { getBalance } from "../core/Balance";
 
-const PROF_HALO = 1;
-const PROF_BRILLO = 1.5;
-const PROF_BORDE = 2;
-const PROF_REMOLINO = 3;
-const PROF_NUCLEO = 4;
-const PROF_CHISPAS = 5;
+/** Todo el hoyo va en un contenedor bajo los objetos (que están en 10-30). */
+const PROF_HOYO = 2;
 
 const TEX_HALO = "halo_atraccion";
 const TAM_HALO = 512;
 const TEX_BRILLO = "brillo_suave";
+const TEX_PARED = "pared_hoyo";
+const TAM_PARED = 256;
 
 const color = (hex: string) => Phaser.Display.Color.HexStringToColor(hex).color;
 
@@ -35,10 +33,17 @@ interface Destello {
  * El agujero negro: tres capas de imagen (borde, remolino que gira, núcleo) y efectos por código:
  * brillo naranja/cian que pulsa, halo de atracción cian con borde punteado, chispas en espiral,
  * ráfaga al tragar y anillo de hambre. Cuando sube de nivel, el tamaño cambia suave.
+ *
+ * Se ve INCLINADO: todo va dentro de un contenedor aplastado en vertical (visual.inclinacion),
+ * así el hoyo es un óvalo acostado en el piso y el remolino gira sobre el piso. Encima del núcleo
+ * se dibuja la pared interior del pozo (el lado de atrás), para que se note que es hondo.
+ * Las cosas dentro del contenedor se dibujan con coordenadas relativas al centro (0, 0).
  */
 export class Hoyo {
   readonly x: number;
   readonly y: number;
+  /** 1 = visto desde arriba; menos = más inclinado (el óvalo mide radio × inclinacion de alto). */
+  readonly inclinacion: number;
   /** Radios que se ven ahora (se acercan de a poco a los de verdad). */
   radioVisible: number;
   atraccionVisible: number;
@@ -46,6 +51,8 @@ export class Hoyo {
   private readonly borde: Phaser.GameObjects.Image;
   private readonly remolino: Phaser.GameObjects.Image;
   private readonly nucleo: Phaser.GameObjects.Image;
+  private readonly pared: Phaser.GameObjects.Image;
+  private readonly contenedor: Phaser.GameObjects.Container;
   private readonly halo: Phaser.GameObjects.Image;
   private readonly haloTex: Phaser.Textures.CanvasTexture;
   private readonly brillos: Phaser.GameObjects.Image[];
@@ -65,6 +72,7 @@ export class Hoyo {
     const b = getBalance();
     this.x = b.mundo.hoyo.x;
     this.y = b.mundo.hoyo.y;
+    this.inclinacion = b.visual.inclinacion;
     this.radioVisible = radio;
     this.atraccionVisible = atraccion;
     this.sinMovimiento = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
@@ -72,19 +80,25 @@ export class Hoyo {
     this.haloTex =
       (scene.textures.exists(TEX_HALO) && (scene.textures.get(TEX_HALO) as Phaser.Textures.CanvasTexture)) ||
       scene.textures.createCanvas(TEX_HALO, TAM_HALO, TAM_HALO)!;
-    this.halo = scene.add.image(this.x, this.y, TEX_HALO).setDepth(PROF_HALO);
-    this.graficos = scene.add.graphics().setDepth(PROF_HALO);
+    this.halo = scene.add.image(0, 0, TEX_HALO);
+    this.graficos = scene.add.graphics();
 
     // Brillos: un degradado blanco teñido de naranja y otro de cian, que pulsan desfasados
     Hoyo.crearTexturaBrillo(scene);
-    this.brillos = b.visual.brillo.colores.map((c) =>
-      scene.add.image(this.x, this.y, TEX_BRILLO).setTint(color(c)).setDepth(PROF_BRILLO),
-    );
+    this.brillos = b.visual.brillo.colores.map((c) => scene.add.image(0, 0, TEX_BRILLO).setTint(color(c)));
 
-    this.borde = scene.add.image(this.x, this.y, "hoyo_borde").setDepth(PROF_BORDE);
-    this.remolino = scene.add.image(this.x, this.y, "hoyo_remolino").setDepth(PROF_REMOLINO);
-    this.nucleo = scene.add.image(this.x, this.y, "hoyo_nucleo").setDepth(PROF_NUCLEO);
-    this.graficosChispas = scene.add.graphics().setDepth(PROF_CHISPAS);
+    this.borde = scene.add.image(0, 0, "hoyo_borde");
+    this.remolino = scene.add.image(0, 0, "hoyo_remolino");
+    this.nucleo = scene.add.image(0, 0, "hoyo_nucleo");
+    Hoyo.crearTexturaPared(scene, b.visual.inclinacion, b.visual.profundidad);
+    this.pared = scene.add.image(0, 0, TEX_PARED).setVisible(b.visual.inclinacion < 0.999);
+    this.graficosChispas = scene.add.graphics();
+
+    // Orden de abajo hacia arriba
+    this.contenedor = scene.add
+      .container(this.x, this.y, [this.halo, this.graficos, ...this.brillos, this.borde, this.remolino, this.nucleo, this.pared, this.graficosChispas])
+      .setDepth(PROF_HOYO)
+      .setScale(1, b.visual.inclinacion);
     this.dibujar();
   }
 
@@ -98,6 +112,48 @@ export class Hoyo {
     grad.addColorStop(1, "rgba(255,255,255,0)");
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 256, 256);
+    tex.refresh();
+  }
+
+  /**
+   * Pared interior del pozo vista en perspectiva: la parte de la boca que queda ARRIBA del fondo.
+   * En coordenadas sin aplastar, el fondo es el mismo círculo corrido hacia abajo.
+   * Se dibuja una vez, según la inclinación y la profundidad del balance.
+   */
+  private static crearTexturaPared(scene: Phaser.Scene, inclinacion: number, profundidad: number): void {
+    if (scene.textures.exists(TEX_PARED)) scene.textures.remove(TEX_PARED);
+    const tex = scene.textures.createCanvas(TEX_PARED, TAM_PARED, TAM_PARED)!;
+    const ctx = tex.getContext();
+    const r = TAM_PARED / 2;
+    const k = Math.max(0.2, Math.min(1, inclinacion));
+    // Cuánto baja el fondo: profundidad × sen(ángulo), pasado a coordenadas sin aplastar (÷ k)
+    const corrimiento = (profundidad * r * Math.sqrt(1 - k * k)) / k;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(r, r, r, 0, Math.PI * 2);
+    ctx.clip();
+    const grad = ctx.createLinearGradient(0, 0, 0, corrimiento + r * 0.4);
+    grad.addColorStop(0, "#8d9ba7");
+    grad.addColorStop(0.25, "#4a5a68");
+    grad.addColorStop(0.7, "#121c26");
+    grad.addColorStop(1, "#04080c");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, TAM_PARED, TAM_PARED);
+    // Franjas de la pared (anillos que bajan) con un toque cian
+    for (let i = 1; i <= 4; i++) {
+      const y = (corrimiento * i) / 5;
+      ctx.strokeStyle = `rgba(26,159,214,${0.35 - i * 0.06})`;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(r, r + y, r - 2, Math.PI * 1.05, Math.PI * 1.95);
+      ctx.stroke();
+    }
+    // Recortar el fondo: lo que queda es solo la pared de atrás
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.beginPath();
+    ctx.arc(r, r + corrimiento, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
     tex.refresh();
   }
 
@@ -127,8 +183,8 @@ export class Hoyo {
       const a = Math.random() * Math.PI * 2;
       const vel = c.rafagaVelocidad * (0.5 + Math.random() * 0.7);
       this.destellos.push({
-        x: this.x + Math.cos(a) * this.radioVisible * 0.6,
-        y: this.y + Math.sin(a) * this.radioVisible * 0.6,
+        x: Math.cos(a) * this.radioVisible * 0.6,
+        y: Math.sin(a) * this.radioVisible * 0.6,
         vx: Math.cos(a) * vel,
         vy: Math.sin(a) * vel,
         vida: c.rafagaSegundos * (0.6 + Math.random() * 0.4),
@@ -171,10 +227,13 @@ export class Hoyo {
     const v = b.visual;
     const R = this.radioVisible, P = this.atraccionVisible;
 
+    this.contenedor.setScale(1, this.inclinacion);
+
     // Capas de imagen: el tamaño sale del radio; setDisplaySize usa el tamaño real del PNG
     this.borde.setDisplaySize(R * v.hoyoBorde, R * v.hoyoBorde);
     this.remolino.setDisplaySize(R * v.hoyoRemolino, R * v.hoyoRemolino);
     this.nucleo.setDisplaySize(R * v.hoyoNucleo, R * v.hoyoNucleo);
+    this.pared.setDisplaySize(R * 2, R * 2);
 
     // Brillos que pulsan (uno naranja, otro cian, desfasados)
     const br = v.brillo;
@@ -201,7 +260,7 @@ export class Hoyo {
     const giro = this.sinMovimiento ? 0 : this.tiempo * 0.15;
     for (let a = 0; a < Math.PI * 2 - paso / 2; a += paso) {
       g.beginPath();
-      g.arc(this.x, this.y, P, a + giro, a + giro + largo);
+      g.arc(0, 0, P, a + giro, a + giro + largo);
       g.strokePath();
     }
 
@@ -209,7 +268,7 @@ export class Hoyo {
     const hm = b.hambre;
     const radioAnillo = R * hm.distancia;
     g.lineStyle(hm.grosor, 0x2b3640, 0.18);
-    g.strokeCircle(this.x, this.y, radioAnillo);
+    g.strokeCircle(0, 0, radioAnillo);
     if (this.hambre > 0) {
       const c0 = Phaser.Display.Color.HexStringToColor(hm.colorVacio);
       const c1 = Phaser.Display.Color.HexStringToColor(hm.colorLleno);
@@ -218,7 +277,7 @@ export class Hoyo {
       const alfa = lleno ? 0.65 + 0.35 * Math.sin(this.tiempo * 8) : 0.9;
       g.lineStyle(hm.grosor, Phaser.Display.Color.GetColor(mezcla.r, mezcla.g, mezcla.b), alfa);
       g.beginPath();
-      g.arc(this.x, this.y, radioAnillo, -Math.PI / 2, -Math.PI / 2 + this.hambre * Math.PI * 2);
+      g.arc(0, 0, radioAnillo, -Math.PI / 2, -Math.PI / 2 + this.hambre * Math.PI * 2);
       g.strokePath();
     }
 
@@ -228,10 +287,10 @@ export class Hoyo {
     const ch = v.chispas;
     for (const m of this.chispas) {
       const alfa = Math.min(1, (P - m.dist) / 30 + 0.2) * Math.min(1, (m.dist - R * 0.9) / 20);
-      const x = this.x + Math.cos(m.angulo) * m.dist, y = this.y + Math.sin(m.angulo) * m.dist;
+      const x = Math.cos(m.angulo) * m.dist, y = Math.sin(m.angulo) * m.dist;
       const atras = m.angulo - ch.largo / Math.max(m.dist, 10);
       gc.lineStyle(ch.grosor, m.color, Math.max(0, alfa));
-      gc.lineBetween(this.x + Math.cos(atras) * (m.dist + 4), this.y + Math.sin(atras) * (m.dist + 4), x, y);
+      gc.lineBetween(Math.cos(atras) * (m.dist + 4), Math.sin(atras) * (m.dist + 4), x, y);
     }
     for (const d of this.destellos) {
       const alfa = Math.min(1, d.vida / (ch.rafagaSegundos * 0.5));
@@ -241,9 +300,9 @@ export class Hoyo {
     if (this.onda > 0) {
       const t = 1 - this.onda / ch.rafagaSegundos;
       gc.lineStyle(4, 0xffffff, 0.8 * (1 - t));
-      gc.strokeCircle(this.x, this.y, R * (1 + t * 1.6));
+      gc.strokeCircle(0, 0, R * (1 + t * 1.6));
       gc.lineStyle(2, color(ch.colores[1] ?? "#1a9fd6"), 0.9 * (1 - t));
-      gc.strokeCircle(this.x, this.y, R * (1.05 + t * 1.6));
+      gc.strokeCircle(0, 0, R * (1.05 + t * 1.6));
     }
   }
 

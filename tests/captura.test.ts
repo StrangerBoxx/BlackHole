@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { aplicarAtraccion, avanzarCaida, fuerzaAtraccion, puedeTragar } from "../src/logica/captura";
+import {
+  aplicarAtraccion, avanzarCaida, distanciaInclinada, fuerzaAtraccion, puedeTragar,
+} from "../src/logica/captura";
 import { crearCuerpo } from "../src/logica/fisica";
 
 const hoyo = { x: 360, y: 330 };
@@ -56,6 +58,28 @@ describe("regla de captura", () => {
     const grande = crearCuerpo(hoyo.x + 20, hoyo.y, 56);
     expect(puedeTragar(chico, hoyo, 28, 420, 0.2)).toBe(true);
     expect(puedeTragar(grande, hoyo, 28, 420, 0.2)).toBe(false);
+  });
+});
+
+describe("hoyo inclinado (óvalo)", () => {
+  it("la distancia vertical cuenta más", () => {
+    expect(distanciaInclinada(30, 0, 0.75)).toBe(30);
+    expect(distanciaInclinada(0, 30, 0.75)).toBeCloseTo(40);
+    expect(distanciaInclinada(0, 30, 1)).toBe(30);
+  });
+
+  it("se traga lo que entra al óvalo: más ancho que alto", () => {
+    expect(puedeTragar(crearCuerpo(hoyo.x + 22, hoyo.y, 14), hoyo, 28, 420, 0.2, 0.75)).toBe(true);
+    expect(puedeTragar(crearCuerpo(hoyo.x, hoyo.y + 22, 14), hoyo, 28, 420, 0.2, 0.75)).toBe(false);
+    expect(puedeTragar(crearCuerpo(hoyo.x, hoyo.y + 18, 14), hoyo, 28, 420, 0.2, 0.75)).toBe(true);
+  });
+
+  it("la atracción llega menos lejos hacia arriba y abajo", () => {
+    const lado = crearCuerpo(hoyo.x + 50, hoyo.y, 14), abajo = crearCuerpo(hoyo.x, hoyo.y + 50, 14);
+    aplicarAtraccion(lado, hoyo, 55, 700, 0.15, 0.1, 0.75);
+    aplicarAtraccion(abajo, hoyo, 55, 700, 0.15, 0.1, 0.75);
+    expect(lado.vx).toBeLessThan(0);
+    expect(abajo.vy).toBe(0); // 50 / 0.75 = 66.7 > 55: fuera del óvalo
   });
 });
 

@@ -198,6 +198,8 @@
   },
 
   "visual": {
+    "inclinacion": 0.75,
+    "profundidad": 0.55,
     "objetoImagenPx": 256,
     "objetoCirculoPx": 240,
     "hoyoBorde": 3.4,

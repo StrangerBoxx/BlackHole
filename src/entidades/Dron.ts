@@ -15,7 +15,7 @@ export class Dron {
 
   constructor(
     private readonly scene: Phaser.Scene,
-    private readonly centro: { x: number; y: number },
+    private readonly centro: { x: number; y: number; inclinacion: number },
   ) {
     const d = getBalance().dron;
     this.imagen = scene.add.image(centro.x + d.orbita, centro.y, "dron").setDepth(PROF_DRON).setVisible(false);
@@ -24,7 +24,10 @@ export class Dron {
 
   private posicionOrbita(): { x: number; y: number } {
     const d = getBalance().dron;
-    return { x: this.centro.x + Math.cos(this.angulo) * d.orbita, y: this.centro.y + Math.sin(this.angulo) * d.orbita };
+    return {
+      x: this.centro.x + Math.cos(this.angulo) * d.orbita,
+      y: this.centro.y + Math.sin(this.angulo) * d.orbita * this.centro.inclinacion,
+    };
   }
 
   /** Cada cuadro: gira en órbita (si no está volando) y se mece un poco. */

@@ -12,11 +12,13 @@ uniform float uTiempo;
 uniform float uGiro;
 uniform float uHundir;
 uniform float uOscuro;
+uniform float uInclinacion;
 varying vec2 outTexCoord;
 
 void main() {
   vec2 px = vec2(outTexCoord.x, 1.0 - outTexCoord.y) * uResolucion;
   vec2 d = px - uCentro;
+  d.y /= uInclinacion; // el hoyo inclinado es un óvalo: se trabaja "desaplastado"
   float dist = length(d);
   if (dist >= uRadio) {
     gl_FragColor = texture2D(uMainSampler, outTexCoord);
@@ -28,6 +30,7 @@ void main() {
   float s = sin(ang);
   float c = cos(ang);
   vec2 r = vec2(c * d.x - s * d.y, s * d.x + c * d.y) * (1.0 + uHundir * t2);
+  r.y *= uInclinacion;
   vec2 src = uCentro + r;
   vec4 color = texture2D(uMainSampler, vec2(src.x / uResolucion.x, 1.0 - src.y / uResolucion.y));
   color.rgb *= 1.0 - uOscuro * t2;
@@ -45,6 +48,7 @@ export class DistorsionFX extends Phaser.Renderer.WebGL.Pipelines.PostFXPipeline
   giro = 1;
   hundir = 0.3;
   oscuro = 0.25;
+  inclinacion = 1;
 
   constructor(game: Phaser.Game) {
     super({ game, name: CLAVE_DISTORSION, fragShader: FRAG });
@@ -58,6 +62,7 @@ export class DistorsionFX extends Phaser.Renderer.WebGL.Pipelines.PostFXPipeline
     this.set1f("uGiro", this.giro);
     this.set1f("uHundir", this.hundir);
     this.set1f("uOscuro", this.oscuro);
+    this.set1f("uInclinacion", this.inclinacion);
   }
 }
 
