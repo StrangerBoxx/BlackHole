@@ -1,5 +1,5 @@
 // Mejoras: cuánto cuestan y qué valores le dan al hoyo según el nivel.
-import { IDS_MEJORA, type Balance, type Efecto, type IdEfecto, type IdMejora, type Mejora } from "./balance";
+import { IDS_MEJORA, type Balance, type FormulaEfecto, type IdEfecto, type IdMejora } from "./balance";
 
 export type Niveles = Record<IdMejora, number>;
 
@@ -8,7 +8,7 @@ export function nivelesIniciales(): Niveles {
 }
 
 /** Valor de un efecto en un nivel: lineal (base + nivel*porNivel) o exponencial (base*factor^nivel), con mínimo opcional. */
-export function valorEfecto(ef: Efecto, nivel: number): number {
+export function valorEfecto(ef: FormulaEfecto, nivel: number): number {
   const v =
     ef.factorPorNivel !== undefined
       ? ef.base * Math.pow(ef.factorPorNivel, nivel)
@@ -53,14 +53,14 @@ export function estadisticas(b: Balance, niveles: Niveles): Estadisticas {
 }
 
 /** Costo para subir del nivel `nivel` al siguiente: round(base * mult^nivel). */
-export function costoMejora(m: Mejora, nivel: number): number {
+export function costoMejora(m: { base: number; mult: number }, nivel: number): number {
   return Math.round(m.base * Math.pow(m.mult, nivel));
 }
 
-export const estaAlMaximo = (m: Mejora, nivel: number) => nivel >= m.max;
+export const estaAlMaximo = (m: { max: number }, nivel: number) => nivel >= m.max;
 
 /** ¿Alcanza la plata y queda nivel por subir? */
-export function puedeComprar(m: Mejora, nivel: number, monedas: number): boolean {
+export function puedeComprar(m: { base: number; mult: number; max: number }, nivel: number, monedas: number): boolean {
   return !estaAlMaximo(m, nivel) && monedas >= costoMejora(m, nivel);
 }
 

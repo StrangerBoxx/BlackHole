@@ -11,7 +11,8 @@ describe("guardar y cargar", () => {
   it("lo que se guarda se vuelve a cargar igual", () => {
     const e = { monedas: 1234, total: 56, niveles: { ...nivelesIniciales(), pull: 3, force: 2, size: 1, spawn: 4, value: 5 }, zona: 1, hambre: 40, jefes: 2, ultimaVez: 1700000000000,
       misiones: [{ plantilla: "tragarTipo", objetivo: 6, dificultad: 1, objeto: "cono", progreso: 2 }],
-      album: { parque: ["piedra", "cono"] } };
+      album: { parque: ["piedra", "cono"] },
+      materiaOscura: 12, permanentes: { valorPerm: 3, raros: 1 }, ganadasVuelta: 5000, colapsos: 2 };
     expect(deserializar(serializar(e), b)).toEqual(e);
   });
 
@@ -46,6 +47,10 @@ describe("guardar y cargar", () => {
       ultimaVez: 0,
       misiones: [],
       album: {},
+      materiaOscura: 0,
+      permanentes: {},
+      ganadasVuelta: 0,
+      colapsos: 0,
     });
   });
 
@@ -57,6 +62,11 @@ describe("guardar y cargar", () => {
     const e = deserializar(raro, b);
     expect(e.misiones).toEqual([{ plantilla: "tragar", objetivo: 15, dificultad: 0, progreso: 15 }]);
     expect(e.album).toEqual({ parque: ["piedra"] });
+  });
+
+  it("niveles permanentes: solo los que existen y sin pasar el máximo", () => {
+    const e = deserializar(JSON.stringify({ permanentes: { valorPerm: 99, inventada: 3, raros: -1 } }), b);
+    expect(e.permanentes).toEqual({ valorPerm: 25 });
   });
 
   it("guardados viejos sin alguna mejora la dejan en 0", () => {

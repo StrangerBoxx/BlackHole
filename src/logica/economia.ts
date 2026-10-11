@@ -5,10 +5,16 @@ import type { EstadoProgreso } from "./guardado";
 import { estadisticas } from "./mejoras";
 import { objetosDesbloqueados, zonaDe } from "./objetos";
 import { gananciaOffline, valorPromedio } from "./offline";
+import { estadisticasPermanentes } from "./colapso";
 
-/** Multiplicador que se aplica a TODO lo tragado: zona × mejora Valor × álbum. */
+/** Multiplicador que se aplica a TODO lo tragado: zona × mejora Valor × álbum × Valor eterno. */
 export function multiplicadorSiempre(b: Balance, e: EstadoProgreso): number {
-  return zonaDe(b, e.zona).multiplicadorValor * estadisticas(b, e.niveles).multiplicadorValor * bonusAlbum(b, e.album);
+  return (
+    zonaDe(b, e.zona).multiplicadorValor *
+    estadisticas(b, e.niveles).multiplicadorValor *
+    bonusAlbum(b, e.album) *
+    estadisticasPermanentes(b, e.permanentes).multiplicadorPermanente
+  );
 }
 
 /** Monedas ganadas mientras el juego estuvo cerrado (desde e.ultimaVez hasta `ahoraMs`). */
@@ -20,7 +26,7 @@ export function calcularOffline(b: Balance, e: EstadoProgreso, ahoraMs: number):
   const monedas = gananciaOffline(
     {
       segundos,
-      horasMaximas: b.offline.horasMaximas,
+      horasMaximas: b.offline.horasMaximas + estadisticasPermanentes(b, e.permanentes).horasOfflineExtra,
       hayDron: s.hayDron,
       intervaloDron: s.intervaloDron,
       valorObjeto: valorPromedio(tipos, b.aparicion.pesoBase, b.aparicion.pesoPorIndice),

@@ -89,6 +89,26 @@
 
   "album": { "bonusPorZona": 0.1 },
 
+  "colapso": { "divisor": 400, "exponente": 0.5, "minimo": 1 },
+
+  "permanentes": [
+    { "id": "valorPerm", "nombre": "Valor eterno",    "max": 25, "base": 1, "mult": 1.45 },
+    { "id": "inicio",    "nombre": "Empujón inicial", "max": 10, "base": 1, "mult": 1.6 },
+    { "id": "comboPerm", "nombre": "Combo largo",     "max": 5,  "base": 2, "mult": 1.8 },
+    { "id": "raros",     "nombre": "Suerte dorada",   "max": 5,  "base": 2, "mult": 1.7 },
+    { "id": "dronPerm",  "nombre": "Dron de fábrica", "max": 3,  "base": 4, "mult": 2.5 },
+    { "id": "offline",   "nombre": "Hoyo nocturno",   "max": 4,  "base": 3, "mult": 2 }
+  ],
+
+  "efectosPermanentes": {
+    "multiplicadorPermanente": { "permanente": "valorPerm", "base": 1, "porNivel": 0.5 },
+    "monedasIniciales":        { "permanente": "inicio",    "base": 0, "porNivel": 150 },
+    "comboExtra":              { "permanente": "comboPerm", "base": 0, "porNivel": 0.5 },
+    "doradoExtra":             { "permanente": "raros",     "base": 0, "porNivel": 0.02 },
+    "dronInicial":             { "permanente": "dronPerm",  "base": 0, "porNivel": 1 },
+    "horasOfflineExtra":       { "permanente": "offline",   "base": 0, "porNivel": 2 }
+  },
+
   "misiones": {
     "activas": 3,
     "premioBase": 30,
@@ -172,7 +192,8 @@
       "jefeComido": { "archivo": "tragar", "tono": 0.35, "volumen": 1.8 },
       "dron": { "archivo": "comprar", "tono": 2.2, "volumen": 0.35 },
       "mision": { "archivo": "desbloquear", "tono": 1.2, "volumen": 0.8 },
-      "album": { "archivo": "moneda", "tono": 0.8, "volumen": 1.2 }
+      "album": { "archivo": "moneda", "tono": 0.8, "volumen": 1.2 },
+      "colapso": { "archivo": "tragar", "tono": 0.25, "volumen": 2.0 }
     }
   },
 

@@ -38,13 +38,39 @@ export interface Mejora {
 }
 
 // Un efecto es lineal (base + nivel*porNivel) o exponencial (max(minimo, base*factor^nivel))
-export interface Efecto {
-  mejora: IdMejora;
+export interface FormulaEfecto {
   base: number;
   porNivel?: number;
   factorPorNivel?: number;
   minimo?: number;
 }
+
+export interface Efecto extends FormulaEfecto {
+  mejora: IdMejora;
+}
+
+export type IdPermanente = "valorPerm" | "inicio" | "comboPerm" | "raros" | "dronPerm" | "offline";
+
+/** Mejora permanente (se compra con materia oscura y no se pierde al colapsar). */
+export interface Permanente {
+  id: IdPermanente;
+  nombre: string;
+  max: number;
+  base: number;
+  mult: number;
+}
+
+export interface EfectoPermanente extends FormulaEfecto {
+  permanente: IdPermanente;
+}
+
+export type IdEfectoPermanente =
+  | "multiplicadorPermanente"
+  | "monedasIniciales"
+  | "comboExtra"
+  | "doradoExtra"
+  | "dronInicial"
+  | "horasOfflineExtra";
 
 export type IdEfecto =
   | "radioAtraccion"
@@ -111,6 +137,9 @@ export interface Balance {
   };
   offline: { eficiencia: number; horasMaximas: number; minimoSegundos: number };
   album: { bonusPorZona: number };
+  colapso: { divisor: number; exponente: number; minimo: number };
+  permanentes: Permanente[];
+  efectosPermanentes: Record<IdEfectoPermanente, EfectoPermanente>;
   misiones: { activas: number; premioBase: number; plantillas: PlantillaMision[] };
   hambre: {
     meta: number;

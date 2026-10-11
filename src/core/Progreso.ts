@@ -3,7 +3,8 @@
 // El guardado en el dispositivo lo hace core/Guardado.ts escuchando los cambios.
 import { anotarEnAlbum, zonaCompleta } from "../logica/album";
 import type { Azar } from "../logica/aparicion";
-import type { Balance, IdMejora, TipoObjeto, Zona } from "../logica/balance";
+import type { Balance, IdMejora, IdPermanente, TipoObjeto, Zona } from "../logica/balance";
+import { aplicarColapso, materiaPorColapso, puedeColapsar, type NivelesPermanentes } from "../logica/colapso";
 import { estadoVacio, type EstadoProgreso } from "../logica/guardado";
 import { costoMejora, estadisticas, puedeComprar, type Niveles } from "../logica/mejoras";
 import {
@@ -41,6 +42,40 @@ export class Progreso {
   get jefes(): number {
     return this.estado.jefes;
   }
+  get materiaOscura(): number {
+    return this.estado.materiaOscura;
+  }
+  get permanentes(): Readonly<Partial<NivelesPermanentes>> {
+    return this.estado.permanentes;
+  }
+  get ganadasVuelta(): number {
+    return this.estado.ganadasVuelta;
+  }
+  get colapsos(): number {
+    return this.estado.colapsos;
+  }
+
+  /** Compra un nivel de una mejora permanente con materia oscura. */
+  comprarPermanente(b: Balance, id: IdPermanente): boolean {
+    const p = b.permanentes.find((x) => x.id === id);
+    if (!p) return false;
+    const nivel = this.estado.permanentes[id] ?? 0;
+    if (!puedeComprar(p, nivel, this.estado.materiaOscura)) return false;
+    this.estado.materiaOscura -= costoMejora(p, nivel);
+    this.estado.permanentes[id] = nivel + 1;
+    this.avisar();
+    return true;
+  }
+
+  /** Colapsa (si se puede): pasa a la siguiente zona y suma materia oscura. */
+  colapsar(b: Balance): { materia: number; zona: number } | null {
+    if (!puedeColapsar(b, this.estado)) return null;
+    const materia = materiaPorColapso(b, this.estado.ganadasVuelta);
+    this.estado = aplicarColapso(b, this.estado);
+    this.avisar();
+    return { materia, zona: this.estado.zona };
+  }
+
   get misiones(): readonly Readonly<Mision>[] {
     return this.estado.misiones;
   }
@@ -85,6 +120,7 @@ export class Progreso {
     if (!m || !misionCumplida(m)) return 0;
     const premio = premioMision(b, m, multiplicador);
     this.estado.monedas += premio;
+    this.estado.ganadasVuelta += premio;
     const resto = this.estado.misiones.filter((_, i) => i !== indice);
     this.estado.misiones[indice] = crearMision(b, resto, objetosZona, escalaMonedas, azar);
     this.avisar();
@@ -123,13 +159,29 @@ export class Progreso {
   /** Llamar cuando el hoyo termina de tragarse un objeto. */
   registrarTragado(monedas: number): void {
     this.estado.monedas += monedas;
+    this.estado.ganadasVuelta += monedas;
     this.estado.total += 1;
     this.avisar();
   }
 
-  /** Suma monedas sin contar objetos (panel de debug). */
+  /** Suma materia oscura (panel de debug). */
+  agregarMateria(n: number): void {
+    this.estado.materiaOscura = Math.max(0, this.estado.materiaOscura + n);
+    this.avisar();
+  }
+
+  /** Cambia de zona directo, sin colapsar (panel de debug). */
+  irAZona(b: Balance, zona: number): void {
+    this.estado.zona = Math.max(0, Math.min(b.zonas.length - 1, zona));
+    this.estado.misiones = [];
+    this.estado.hambre = 0;
+    this.avisar();
+  }
+
+  /** Suma monedas sin contar objetos (offline, debug). */
   agregarMonedas(n: number): void {
     this.estado.monedas = Math.max(0, this.estado.monedas + n);
+    if (n > 0) this.estado.ganadasVuelta += n;
     this.avisar();
   }
 

@@ -4,6 +4,7 @@ import type { Album } from "./album";
 import { IDS_MEJORA, type Balance } from "./balance";
 import { nivelesIniciales, type Niveles } from "./mejoras";
 import type { Mision } from "./misiones";
+import type { NivelesPermanentes } from "./colapso";
 
 export const VERSION_GUARDADO = 2;
 
@@ -24,10 +25,18 @@ export interface EstadoProgreso {
   misiones: Mision[];
   /** Objetos tragados por zona. */
   album: Album;
+  /** Moneda del colapso (no se pierde). */
+  materiaOscura: number;
+  /** Niveles de las mejoras permanentes. */
+  permanentes: Partial<NivelesPermanentes>;
+  /** Monedas ganadas desde el último colapso (dan la materia oscura). */
+  ganadasVuelta: number;
+  /** Veces que se colapsó. */
+  colapsos: number;
 }
 
 export function estadoVacio(): EstadoProgreso {
-  return { monedas: 0, total: 0, niveles: nivelesIniciales(), zona: 0, hambre: 0, jefes: 0, ultimaVez: 0, misiones: [], album: {} };
+  return { monedas: 0, total: 0, niveles: nivelesIniciales(), zona: 0, hambre: 0, jefes: 0, ultimaVez: 0, misiones: [], album: {}, materiaOscura: 0, permanentes: {}, ganadasVuelta: 0, colapsos: 0 };
 }
 
 export function serializar(e: EstadoProgreso): string {
@@ -72,7 +81,22 @@ export function deserializar(texto: string | null | undefined, b: Balance): Esta
     ultimaVez: entero(d.ultimaVez),
     misiones: leerMisiones(d.misiones, b),
     album: leerAlbum(d.album, b),
+    materiaOscura: entero(d.materiaOscura),
+    permanentes: leerPermanentes(d.permanentes, b),
+    ganadasVuelta: entero(d.ganadasVuelta),
+    colapsos: entero(d.colapsos),
   };
+}
+
+/** Niveles de mejoras permanentes que existen, dentro de 0..máximo. */
+function leerPermanentes(v: unknown, b: Balance): Partial<NivelesPermanentes> {
+  const salida: Partial<NivelesPermanentes> = {};
+  if (typeof v !== "object" || v === null) return salida;
+  for (const p of b.permanentes) {
+    const n = Math.min(p.max, entero((v as Record<string, unknown>)[p.id]));
+    if (n > 0) salida[p.id] = n;
+  }
+  return salida;
 }
 
 /** Solo misiones con plantilla conocida y números válidos. */
