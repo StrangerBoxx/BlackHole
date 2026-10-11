@@ -32,6 +32,16 @@ export function aplicarAtraccion(
   c.vy += ((dy / dist) * f * dt) / c.peso;
 }
 
+/** Gravedad pasiva: un tirón suave y constante hacia el hoyo, desde cualquier parte del pasto. */
+export function aplicarGravedadPasiva(c: Cuerpo, hoyo: Punto, aceleracion: number, dt: number): void {
+  if (aceleracion <= 0) return;
+  const dx = hoyo.x - c.x, dy = hoyo.y - c.y;
+  const dist = Math.hypot(dx, dy);
+  if (dist < 1) return;
+  c.vx += ((dx / dist) * aceleracion * dt) / c.peso;
+  c.vy += ((dy / dist) * aceleracion * dt) / c.peso;
+}
+
 /**
  * ¿Se lo traga? El centro del objeto tiene que estar bien adentro
  * (dist < radioHoyo - r*margen) y tiene que ir más lento que la velocidad de captura.

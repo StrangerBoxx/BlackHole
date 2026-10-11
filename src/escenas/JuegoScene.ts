@@ -4,11 +4,13 @@ import { debug } from "../core/Debug";
 import { COLOR, EVENTOS_GLOBALES, type InfoTragado } from "../core/estilo";
 import { centrarMundo } from "../core/pantalla";
 import { progreso } from "../core/Progreso";
+import { Dron } from "../entidades/Dron";
 import { Hoyo } from "../entidades/Hoyo";
 import { Objeto } from "../entidades/Objeto";
 import { mostrarPopupMonedas, mostrarTextoFlotante } from "../entidades/Popup";
 import { buscarLugar, elegirTipo, RelojAparicion } from "../logica/aparicion";
-import { aplicarAtraccion, avanzarCaida, puedeTragar } from "../logica/captura";
+import { aplicarAtraccion, aplicarGravedadPasiva, avanzarCaida, puedeTragar } from "../logica/captura";
+import { elegirObjetivo, empujarHaciaHoyo } from "../logica/dron";
 import { pasoFisica } from "../logica/fisica";
 import {
   agregarPunto, elegirObjeto, limitarAlMundo, velocidadLanzamiento, type PuntoRastro,
@@ -42,6 +44,8 @@ export class JuegoScene extends Phaser.Scene {
   /** El jefe de la zona, si está en el pasto. */
   private jefe: Objeto | null = null;
   private esperaJefe = 0;
+  private dron!: Dron;
+  private relojDron = 0;
   /** Segundos de juego (avanza con el dt del juego, no con el reloj). */
   private tiempo = 0;
 
@@ -68,6 +72,8 @@ export class JuegoScene extends Phaser.Scene {
     const s = this.stats;
     this.hoyo = new Hoyo(this, s.radioHoyo, s.radioAtraccion);
     this.linea = this.add.graphics().setDepth(PROF_LINEA);
+    this.dron = new Dron(this, this.hoyo);
+    this.relojDron = 0;
     this.circulos = this.add.graphics().setDepth(PROF_DEBUG);
 
     this.poblar();
@@ -173,6 +179,7 @@ export class JuegoScene extends Phaser.Scene {
     const normales = this.objetos.filter((o) => o !== this.jefe).length;
     if (this.reloj.avanzar(dt, s.intervaloAparicion, normales, s.maxObjetos)) this.aparecerObjeto(true);
     this.revisarJefe(dt);
+    this.usarDron(dt, s);
 
     // Objetos nuevos crecen; los que caen siguen su espiral
     for (const o of this.objetos) {
@@ -194,8 +201,10 @@ export class JuegoScene extends Phaser.Scene {
       rozamiento: b.mundo.rozamiento,
       rebote: b.mundo.rebote,
       giroPorVelocidad: b.visual.giroPorVelocidad,
-      antesDeMover: (c, paso) =>
-        aplicarAtraccion(c, centro, s.radioAtraccion, s.fuerza, b.atraccion.fuerzaMinimaFraccion, paso),
+      antesDeMover: (c, paso) => {
+        aplicarAtraccion(c, centro, s.radioAtraccion, s.fuerza, b.atraccion.fuerzaMinimaFraccion, paso);
+        aplicarGravedadPasiva(c, centro, s.gravedadPasiva, paso);
+      },
       despuesDeMover: (c) => {
         const o = this.objetoDe(c);
         const cae =
@@ -214,6 +223,25 @@ export class JuegoScene extends Phaser.Scene {
     });
 
     this.hoyo.actualizar(dt, s.radioHoyo, s.radioAtraccion, progreso.hambre / this.metaHambre);
+  }
+
+  /** El dron (si se compró): cada `intervaloDron` segundos vuela a un objeto y lo empuja al hoyo. */
+  private usarDron(dt: number, s: Estadisticas): void {
+    this.dron.actualizar(dt, s.hayDron);
+    if (!s.hayDron || this.dron.ocupado) return;
+    this.relojDron += dt;
+    if (this.relojDron < s.intervaloDron) return;
+    this.relojDron = 0;
+    const objetivo = elegirObjetivo(this.objetos.map((o) => o.cuerpo), Math.random);
+    if (!objetivo) return;
+    this.dron.volarA(objetivo.x, objetivo.y, () => {
+      const o = this.objetos.find((x) => x.cuerpo === objetivo);
+      if (!o || objetivo.cayendo || objetivo.arrastrado) return;
+      const d = getBalance();
+      empujarHaciaHoyo(objetivo, this.hoyo, d.mundo.rozamiento, d.dron.extraVelocidad, d.dron.velocidadMaxima);
+      o.tiro = Tiros.tiroQuieto(); // los tiros especiales son solo para el jugador
+      this.game.events.emit(EVENTOS_GLOBALES.DRON);
+    });
   }
 
   private get metaHambre(): number {

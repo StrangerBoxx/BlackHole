@@ -18,6 +18,9 @@ describe("efectos de las mejoras", () => {
       intervaloAparicion: 1.6,
       multiplicadorValor: 1,
       ventanaCombo: 2.5,
+      gravedadPasiva: 0,
+      intervaloDron: 9,
+      hayDron: false,
     });
   });
 

@@ -85,6 +85,8 @@
     }
   ],
 
+  "dron": { "orbita": 150, "giroOrbita": 0.6, "tamano": 72, "vueloSegundos": 0.35, "extraVelocidad": 1.12, "velocidadMaxima": 1600 },
+
   "hambre": { "meta": 150, "crecePorJefe": 1.5, "colorVacio": "#b98cff", "colorLleno": "#ff5a4f", "grosor": 7, "distancia": 1.9 },
 
   "especiales": {
@@ -113,7 +115,9 @@
     { "id": "size",  "nombre": "Tamaño",    "max": 7,  "base": 25, "mult": 1.9 },
     { "id": "spawn", "nombre": "Aparición", "max": 10, "base": 12, "mult": 1.5 },
     { "id": "value", "nombre": "Valor",     "max": 20, "base": 40, "mult": 1.7 },
-    { "id": "combo", "nombre": "Combo",     "max": 10, "base": 60, "mult": 1.8 }
+    { "id": "combo", "nombre": "Combo",     "max": 10, "base": 60, "mult": 1.8 },
+    { "id": "gravity", "nombre": "Gravedad", "max": 10, "base": 150, "mult": 1.75 },
+    { "id": "drone", "nombre": "Dron",       "max": 10, "base": 300, "mult": 1.9 }
   ],
 
   "efectos": {
@@ -124,7 +128,9 @@
     "maxObjetos":         { "mejora": "spawn", "base": 4,   "porNivel": 1 },
     "intervaloAparicion": { "mejora": "spawn", "base": 1.6, "factorPorNivel": 0.86, "minimo": 0.35 },
     "multiplicadorValor": { "mejora": "value", "base": 1,   "porNivel": 0.25 },
-    "ventanaCombo":       { "mejora": "combo", "base": 2.5, "porNivel": 0.3 }
+    "ventanaCombo":       { "mejora": "combo", "base": 2.5, "porNivel": 0.3 },
+    "gravedadPasiva":     { "mejora": "gravity", "base": 0, "porNivel": 18 },
+    "intervaloDron":      { "mejora": "drone", "base": 9, "factorPorNivel": 0.84, "minimo": 1.2 }
   },
 
   "sonido": {
@@ -143,7 +149,8 @@
       "bomba": { "archivo": "tragar", "tono": 0.45, "volumen": 1.6 },
       "dorado": { "archivo": "desbloquear", "tono": 1.4, "volumen": 0.7 },
       "jefeAparece": { "archivo": "desbloquear", "tono": 0.6, "volumen": 1.2 },
-      "jefeComido": { "archivo": "tragar", "tono": 0.35, "volumen": 1.8 }
+      "jefeComido": { "archivo": "tragar", "tono": 0.35, "volumen": 1.8 },
+      "dron": { "archivo": "comprar", "tono": 2.2, "volumen": 0.35 }
     }
   },
 

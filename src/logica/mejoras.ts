@@ -1,5 +1,5 @@
 // Mejoras: cuánto cuestan y qué valores le dan al hoyo según el nivel.
-import { IDS_MEJORA, type Balance, type Efecto, type IdMejora, type Mejora } from "./balance";
+import { IDS_MEJORA, type Balance, type Efecto, type IdEfecto, type IdMejora, type Mejora } from "./balance";
 
 export type Niveles = Record<IdMejora, number>;
 
@@ -25,11 +25,15 @@ export interface Estadisticas {
   intervaloAparicion: number;
   multiplicadorValor: number;
   ventanaCombo: number;
+  gravedadPasiva: number;
+  intervaloDron: number;
+  /** El dron trabaja solo si se compró al menos un nivel. */
+  hayDron: boolean;
 }
 
 /** Todos los valores actuales del hoyo según los niveles comprados. */
 export function estadisticas(b: Balance, niveles: Niveles): Estadisticas {
-  const v = (k: keyof Estadisticas) => {
+  const v = (k: IdEfecto) => {
     const ef = b.efectos[k];
     return valorEfecto(ef, niveles[ef.mejora] ?? 0);
   };
@@ -42,6 +46,9 @@ export function estadisticas(b: Balance, niveles: Niveles): Estadisticas {
     intervaloAparicion: v("intervaloAparicion"),
     multiplicadorValor: v("multiplicadorValor"),
     ventanaCombo: v("ventanaCombo"),
+    gravedadPasiva: v("gravedadPasiva"),
+    intervaloDron: v("intervaloDron"),
+    hayDron: (niveles.drone ?? 0) > 0,
   };
 }
 
@@ -72,5 +79,9 @@ export function describirMejora(id: IdMejora, s: Estadisticas): string {
       return `Cada objeto da x${s.multiplicadorValor.toFixed(2)} monedas`;
     case "combo":
       return `El combo dura ${s.ventanaCombo.toFixed(1)} s entre objeto y objeto`;
+    case "gravity":
+      return `Todo el pasto se acerca solo al hoyo (fuerza ${Math.round(s.gravedadPasiva)})`;
+    case "drone":
+      return `Un dron empuja un objeto al hoyo cada ${s.intervaloDron.toFixed(1)} s`;
   }
 }

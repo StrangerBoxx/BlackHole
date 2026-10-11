@@ -41,6 +41,8 @@ export const EVENTOS_GLOBALES = {
   TRAGADO: "tragado",
   /** Mostrar un aviso abajo: (texto: string, segundos: number) */
   AVISO: "aviso",
+  /** El dron empujó un objeto. */
+  DRON: "dron",
   /** Apareció el jefe de la zona: (tipo: TipoObjeto) */
   JEFE: "jefe",
   /** Tiros especiales logrados: (ids: IdTiro[]) */

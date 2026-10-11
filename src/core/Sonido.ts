@@ -38,6 +38,7 @@ export class Sonido {
       if (info.jefe) this.tocarEvento("jefeComido");
     });
     ev.on(EVENTOS_GLOBALES.JEFE, () => this.tocarEvento("jefeAparece"));
+    ev.on(EVENTOS_GLOBALES.DRON, () => this.tocarEvento("dron"));
 
     if (game.sound.locked) game.sound.once(Phaser.Sound.Events.UNLOCKED, () => this.empezarAmbiente());
     else this.empezarAmbiente();

@@ -25,8 +25,8 @@ export interface Zona {
 
 export type IdEspecial = "dorado" | "pesado" | "bomba";
 
-export type IdMejora = "pull" | "force" | "size" | "spawn" | "value" | "combo";
-export const IDS_MEJORA: IdMejora[] = ["pull", "force", "size", "spawn", "value", "combo"];
+export type IdMejora = "pull" | "force" | "size" | "spawn" | "value" | "combo" | "gravity" | "drone";
+export const IDS_MEJORA: IdMejora[] = ["pull", "force", "size", "spawn", "value", "combo", "gravity", "drone"];
 
 export interface Mejora {
   id: IdMejora;
@@ -53,7 +53,9 @@ export type IdEfecto =
   | "maxObjetos"
   | "intervaloAparicion"
   | "multiplicadorValor"
-  | "ventanaCombo";
+  | "ventanaCombo"
+  | "gravedadPasiva"
+  | "intervaloDron";
 
 export type IdSonido = "ambiente" | "tragar" | "moneda" | "comprar" | "desbloquear";
 export const IDS_SONIDO: IdSonido[] = ["ambiente", "tragar", "moneda", "comprar", "desbloquear"];
@@ -98,6 +100,14 @@ export interface Balance {
   };
   objetos: TipoObjeto[];
   zonas: Zona[];
+  dron: {
+    orbita: number;
+    giroOrbita: number;
+    tamano: number;
+    vueloSegundos: number;
+    extraVelocidad: number;
+    velocidadMaxima: number;
+  };
   hambre: {
     meta: number;
     crecePorJefe: number;
