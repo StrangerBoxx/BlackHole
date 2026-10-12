@@ -5,8 +5,8 @@ concepto pero estilos visuales diferentes. Todo vive en la rama `main`.
 
 ```
 BlackHole/
- ├── PortalVersion/     ← proyecto completo estilo "Portal"
- ├── LineArtVersion/    ← proyecto completo estilo "Line Art"
+ ├── PortalVersion/     ← proyecto completo estilo "Portal" (lo trabajo yo)
+ ├── LineArtVersion/    ← proyecto completo estilo "Line Art" (lo trabaja mi compañero)
  ├── .gitignore         ← común para ambos proyectos
  └── README.md
 ```
