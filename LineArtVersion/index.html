@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=VT323&display=swap">
+<title>FEED IT!</title>
+</head>
+<body>
+<header><h1>FEED IT!</h1><div class="r"><div class="coins"><span class="coin"></span><span id="mass">0</span></div>
+<!-- Objects menu: the head button opens a panel that slides down below it, listing every object type (bought, or locked with its price). Built in src/ui.js. -->
+<button id="chars" type="button" aria-expanded="false" aria-controls="roster" data-i18n-aria="objects" aria-label="Objetos"><span class="ic"></span></button>
+<div id="roster" role="region" aria-labelledby="roster-t" inert><div class="mt" id="roster-t" data-i18n="objects">Objetos</div><div id="roster-list"></div></div>
+<div class="sub" id="rate"></div></div></header>
+<div id="stage"><canvas id="cv"></canvas><div id="toast"></div></div>
+<div id="shop"></div>
+<!-- Camcorder frame: sits on top of the whole screen (title, coins, play area, shop and footer are all inside it). -->
+<div id="cam"><div class="bar"><div class="rec"><span class="dot"></span><span class="lbl">REC</span></div><button id="pause" type="button" data-i18n-aria="pause" aria-label="Pausa" aria-haspopup="dialog">&#10074;&#10074;</button><div class="tc"><span class="sp">SP</span><button id="snd" type="button" aria-label="Sonido: sí" aria-pressed="true"><svg viewBox="0 0 26 20" width="26" height="20" aria-hidden="true"><path d="M2 7h5l9-5.5v17L7 13H2z" fill="#000"/><rect x="4.5" y="12" width="3.5" height="6.5" fill="#000"/><g class="on" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round"><path d="M19 6.5q2.6 3.5 0 7"/><path d="M21.8 3.5q5 6.5 0 13"/></g><g class="off" stroke="#000" stroke-width="2.4" stroke-linecap="round"><path d="M18.5 6.5l6 7M24.5 6.5l-6 7"/></g></svg></button><span class="bat"><i></i><i></i><i></i></span><span id="tc">00:00:00</span></div></div><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i></div>
+<!-- Pause menu, styled like a camcorder's on-screen menu. Opened by the pause button (or Esc); wired up in src/menu.js. -->
+<div id="menu" hidden>
+<div class="mbox" id="m-main" role="dialog" aria-modal="true" aria-labelledby="m-main-t">
+<div class="mt" id="m-main-t" data-i18n="menu">Menú</div>
+<button type="button" data-act="resume" data-i18n="resume">Reanudar</button>
+<button type="button" data-act="options" data-i18n="options">Opciones</button>
+<button type="button" data-act="exit" data-i18n="exit">Salir</button>
+</div>
+<div class="mbox" id="m-opt" role="dialog" aria-modal="true" aria-labelledby="m-opt-t" hidden>
+<div class="mt" id="m-opt-t" data-i18n="options">Opciones</div>
+<label class="vol"><span class="vl" data-i18n="volume">Volumen</span><span class="vv" id="volv">100</span>
+<span class="bar" id="volbar" aria-hidden="true"></span><input type="range" id="vol" min="0" max="10" step="1"></label>
+<button type="button" class="lang" data-act="lang" id="langbtn"><span data-i18n="language">Idioma</span><span class="lg"><b data-l="es">ES</b><b data-l="en">EN</b></span></button>
+<!-- Reset needs two taps (the second within 3 s). Dev: infinite money, for testing (buying costs nothing). -->
+<button type="button" data-act="reset" id="rst" data-i18n="reset">Reiniciar progreso</button>
+<button type="button" class="tog" data-act="dev" id="devbtn" aria-pressed="false"><span data-i18n="devMoney">Dev: dinero infinito</span><b id="devv">NO</b></button>
+<button type="button" data-act="back" data-i18n="back">Volver</button>
+</div>
+</div>
+<!-- "Salir": the camcorder switches off (CRT collapse), then waits in standby until tapped. In the phone app it closes. -->
+<div id="off" hidden><div class="crt"></div><button type="button" id="power">Standby<small data-i18n="powerOn">Toca para encender</small></button></div>
+<!-- The tapping thumb, seen from the player's point of view (nail side up, coming from below): a hand-inked drawing with a transparent background (src/assets/images/thumb.png). Thumb tip = 40% from the left, top edge. Moved and animated by pressThumb() in src/ui.js. -->
+<img id="finger" src="/src/assets/images/thumb.png" alt="" aria-hidden="true" draggable="false"><div id="tap"></div>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+{
+  "name": "feed-it",
+  "version": "1.0.0",
+  "private": true,
+  "description": "FEED IT! - a black-and-white incremental game: throw objects into a spinning black hole.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "cap:sync": "npm run build && cap sync",
+    "cap:add:android": "cap add android",
+    "cap:add:ios": "cap add ios",
+    "android": "npm run build && cap sync android && cap open android",
+    "ios": "npm run build && cap sync ios && cap open ios",
+    "assets": "capacitor-assets generate"
+  },
+  "dependencies": {
+    "@capacitor/android": "latest",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/core": "latest",
+    "@capacitor/ios": "latest",
+    "@capacitor/screen-orientation": "latest"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "latest",
+    "@capacitor/cli": "latest",
+    "vite": "latest"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "checkJs": false,
+    "types": ["vite/client"]
+  },
+  "include": ["src", "vite.config.js"]
+}

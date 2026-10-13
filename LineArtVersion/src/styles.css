@@ -1,0 +1,172 @@
+/* The game is a white page by design, so light and dark share the same tokens. */
+:root{--bg:#fff;--fg:#000;--muted:#6b6b6b;--line:#c4c4c4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#fff;--fg:#000;--muted:#6b6b6b;--line:#c4c4c4}}
+:root[data-theme="dark"]{--bg:#fff;--fg:#000;--muted:#6b6b6b;--line:#c4c4c4}
+html{height:100%;background:var(--bg);scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0 auto;height:100%;max-width:640px;position:relative;overflow:clip;background:var(--bg);color:var(--fg);font-family:"VT323",ui-monospace,Menlo,Consolas,monospace;text-transform:uppercase;letter-spacing:.5px;display:flex;flex-direction:column;user-select:none;-webkit-user-select:none;overscroll-behavior:none}
+header{display:flex;justify-content:space-between;align-items:center;padding:46px 28px 0}
+h1{margin:0;font-size:34px;font-weight:400;letter-spacing:2px;line-height:1;text-shadow:1.5px 0 rgba(0,0,0,.3)}
+.r{text-align:right}
+.coins{display:flex;gap:8px;align-items:center;justify-content:flex-end;font-size:36px;line-height:1;text-shadow:1.5px 0 rgba(0,0,0,.3)}
+/* The coin (bitcoin-style B in a ring): src/assets/icons/coin.svg used as a mask, so it takes the text colour. */
+.coin{width:28px;height:28px;background:currentColor;-webkit-mask:url(./assets/icons/coin.svg) center/contain no-repeat;mask:url(./assets/icons/coin.svg) center/contain no-repeat}
+.sub{font-size:15px;color:var(--muted)}
+#stage{flex:1;min-height:0;position:relative}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+#toast{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);background:#000;color:#fff;padding:4px 14px 3px;border-radius:0;font-size:20px;letter-spacing:1px;white-space:nowrap;opacity:0;transition:opacity .25s;pointer-events:none}
+#toast.show{opacity:1}
+#toast::before{content:"▶  "}
+/* Camcorder overlay: black frame, viewfinder corners, blinking REC dot, running timecode and faint scanlines. It never blocks touches. */
+#cam{position:absolute;inset:0;pointer-events:none;box-sizing:border-box;border:5px solid #000;font-family:"VT323",ui-monospace,Menlo,Consolas,monospace;font-weight:400;color:#000;letter-spacing:1px}
+#cam::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(to bottom,rgba(0,0,0,.05) 0 1px,transparent 1px 3px)}
+#cam .rec{position:absolute;top:13px;left:36px;display:flex;align-items:center;gap:7px;font-size:22px}
+#cam .dot{width:12px;height:12px;border-radius:50%;background:#e00;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+@media (prefers-reduced-motion:reduce){#cam .dot{animation:none}}
+#cam .tc{position:absolute;top:13px;right:36px;font-size:22px;display:flex;align-items:center;gap:10px}
+/* Sound on/off: a black megaphone left of the battery, with sound waves when on and an X when off. The frame
+   ignores touches, so the button turns them back on (with some extra room around the icon to hit it). */
+#snd{pointer-events:auto;display:flex;align-items:center;justify-content:center;margin:-8px -4px;padding:8px 4px;border:0;background:none;cursor:pointer}
+#snd svg{display:block}
+#snd .off,#snd[aria-pressed="false"] .on{display:none}
+#snd[aria-pressed="false"] .off{display:inline}
+#snd:hover{opacity:.6}
+#snd:focus-visible{outline:2px dashed #000;outline-offset:1px}
+/* Battery gauge: outline with a nub on the right and three cells. */
+#cam .bat{position:relative;width:24px;height:11px;border:2px solid #000;box-sizing:border-box;padding:1px;display:flex;gap:1px}
+#cam .bat::after{content:"";position:absolute;right:-5px;top:2px;width:3px;height:5px;background:#000}
+#cam .bat i{flex:1;background:#000}
+#cam .c{position:absolute;width:22px;height:22px;border:0 solid #000}
+#cam .tl{top:12px;left:12px;border-top-width:3px;border-left-width:3px}
+#cam .tr{top:12px;right:12px;border-top-width:3px;border-right-width:3px}
+#cam .bl{bottom:12px;left:12px;border-bottom-width:3px;border-left-width:3px}
+#cam .br{bottom:12px;right:12px;border-bottom-width:3px;border-right-width:3px}
+/* Thumb that taps the bought upgrade (fades out toward the bottom, where it comes from). Invisible until a purchase animates it; never blocks touches. */
+#finger{position:absolute;left:0;top:0;width:96px;height:auto;opacity:0;pointer-events:none;z-index:7;transform-origin:40% 0;-webkit-mask-image:linear-gradient(to bottom,#000 55%,transparent 100%);mask-image:linear-gradient(to bottom,#000 55%,transparent 100%);filter:drop-shadow(2px 3px 0 rgba(0,0,0,.18))}
+/* Ring that spreads out from the fingertip when it touches the button. */
+#tap{position:absolute;left:0;top:0;width:18px;height:18px;box-sizing:border-box;border:3px solid #000;border-radius:50%;opacity:0;pointer-events:none;z-index:7}
+#shop{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:0 24px 46px}
+/* Shop buttons look like viewfinder menu items: thick corner brackets over a thin frame, square corners.
+   Hover / press inverts them and shows the menu cursor. */
+.up{--k:var(--fg);position:relative;border:1px solid rgba(0,0,0,.3);border-radius:0;color:var(--fg);padding:7px 2px 5px;font:inherit;display:flex;flex-direction:column;gap:0;align-items:center;cursor:pointer;line-height:1;
+  background:
+    linear-gradient(var(--k),var(--k)) top left/10px 3px,linear-gradient(var(--k),var(--k)) top left/3px 10px,
+    linear-gradient(var(--k),var(--k)) top right/10px 3px,linear-gradient(var(--k),var(--k)) top right/3px 10px,
+    linear-gradient(var(--k),var(--k)) bottom left/10px 3px,linear-gradient(var(--k),var(--k)) bottom left/3px 10px,
+    linear-gradient(var(--k),var(--k)) bottom right/10px 3px,linear-gradient(var(--k),var(--k)) bottom right/3px 10px,
+    var(--bg);
+  background-repeat:no-repeat}
+.up b{display:block;height:clamp(24px,7vw,30px);margin-bottom:3px}
+.up .ic{display:block;height:100%;aspect-ratio:1;background:currentColor;-webkit-mask:var(--icon) center/contain no-repeat;mask:var(--icon) center/contain no-repeat}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.up i{font-style:normal;font-size:clamp(12px,3.2vw,15px);color:var(--muted)}
+.up em{font-style:normal;font-size:clamp(20px,5.4vw,26px);margin-top:2px;text-shadow:1.5px 0 rgba(0,0,0,.3)}
+.up:not(:disabled):active{--k:var(--fg);background-color:var(--fg);color:var(--bg)}
+.up:not(:disabled):active i{color:var(--bg)}
+.up:not(:disabled):active::before{content:"▶";position:absolute;left:4px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--bg);animation:blink 1s steps(1) infinite}
+@media (hover:hover){.up:not(:disabled):hover{background-color:var(--fg);color:var(--bg)}.up:not(:disabled):hover i{color:var(--bg)}.up:not(:disabled):hover::before{content:"▶";position:absolute;left:4px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--bg);animation:blink 1s steps(1) infinite}}
+.up:disabled{--k:var(--line);border-style:dashed;border-color:var(--line);opacity:.5;cursor:default}
+.up:focus-visible{outline:2px dashed var(--fg);outline-offset:2px}
+#hint{padding:6px 28px 0;font-size:15px;color:var(--muted);min-height:18px}
+#hint::before{content:"> "}
+/* ===== Pause button and pause menu (camcorder on-screen menu) ===== */
+#cam{z-index:9}
+#pause{position:absolute;top:8px;left:50%;transform:translateX(-50%);pointer-events:auto;min-width:48px;height:34px;padding:0 10px;border:0;background:none;color:#000;font:inherit;font-size:22px;letter-spacing:-3px;cursor:pointer;text-shadow:1.5px 0 rgba(0,0,0,.3)}
+#pause:hover{opacity:.6}
+#pause:focus-visible{outline:2px dashed #000;outline-offset:2px}
+body.paused #cam .dot{display:none}
+body.paused #cam .rec::before{content:"\275A\275A";letter-spacing:-2px;font-size:16px}
+#menu{position:absolute;inset:0;z-index:8;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55)}
+#menu[hidden],#menu .mbox[hidden],#off[hidden]{display:none}
+.mbox{--k:#fff;position:relative;width:min(300px,calc(100% - 64px));padding:22px 18px 18px;display:flex;flex-direction:column;gap:6px;color:#fff;background:
+    linear-gradient(var(--k),var(--k)) top left/16px 3px,linear-gradient(var(--k),var(--k)) top left/3px 16px,
+    linear-gradient(var(--k),var(--k)) top right/16px 3px,linear-gradient(var(--k),var(--k)) top right/3px 16px,
+    linear-gradient(var(--k),var(--k)) bottom left/16px 3px,linear-gradient(var(--k),var(--k)) bottom left/3px 16px,
+    linear-gradient(var(--k),var(--k)) bottom right/16px 3px,linear-gradient(var(--k),var(--k)) bottom right/3px 16px,
+    rgba(0,0,0,.88);background-repeat:no-repeat;text-shadow:1.5px 0 rgba(255,255,255,.25)}
+.mt{font-size:30px;line-height:1;text-align:center;letter-spacing:3px;padding-bottom:10px;margin-bottom:6px;border-bottom:2px dashed rgba(255,255,255,.5)}
+.mbox button{position:relative;display:block;width:100%;text-align:left;padding:6px 10px 4px 34px;border:0;border-radius:0;background:none;color:#fff;font:inherit;font-size:26px;line-height:1;letter-spacing:1px;cursor:pointer}
+.mbox button:hover,.mbox button:focus-visible{background:#fff;color:#000;outline:none;text-shadow:none}
+.mbox button:hover::before,.mbox button:focus-visible::before{content:"\25B6";position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;animation:blink 1s steps(1) infinite}
+/* Volume: a row of cells like a camcorder level meter. The real (invisible) range input sits on top of it. */
+.vol{position:relative;display:grid;grid-template-columns:1fr auto;align-items:center;row-gap:6px;padding:6px 10px 10px;font-size:24px;line-height:1}
+.vol .vv{text-align:right}
+.vol .bar{grid-column:1 / -1;display:flex;gap:3px;height:22px}
+.vol .bar i{flex:1;border:2px solid #fff}
+.vol .bar i.on{background:#fff}
+.vol input{position:absolute;left:10px;right:10px;bottom:6px;height:30px;width:calc(100% - 20px);margin:0;opacity:0;cursor:pointer}
+.vol:has(input:focus-visible) .bar{outline:2px dashed #fff;outline-offset:3px}
+/* Standby screen after "Salir": black, with the old-TV collapse into a line and a dot. */
+#off{position:absolute;inset:0;z-index:10;background:#000;display:flex;align-items:center;justify-content:center}
+#off .crt{position:absolute;left:0;right:0;top:50%;height:100%;background:#fff;transform:translateY(-50%) scale(1,0);opacity:0;pointer-events:none}
+#off.anim .crt{animation:crt-off .55s ease-in forwards}
+@keyframes crt-off{0%{transform:translateY(-50%) scale(1,1);opacity:.9}45%{transform:translateY(-50%) scale(1,.006);opacity:1}80%{transform:translateY(-50%) scale(.02,.006);opacity:1}100%{transform:translateY(-50%) scale(0,0);opacity:0}}
+#power{opacity:0;background:none;border:0;color:#fff;font:inherit;font-size:34px;letter-spacing:4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;transition:opacity .4s .5s}
+#power small{font-size:18px;letter-spacing:1px;color:#aaa;animation:blink 1.4s steps(1) infinite}
+#off.done #power{opacity:1}
+#power:focus-visible{outline:2px dashed #fff;outline-offset:6px}
+@media (prefers-reduced-motion:reduce){#off.anim .crt{animation:none}#power{transition:none}#power small{animation:none}}
+/* Language: one button that switches between the languages; the current one is shown inverted. */
+.mbox button.lang{display:flex;justify-content:space-between;align-items:center}
+.lang .lg{display:flex;gap:6px}
+.lang .lg b{font-weight:400;font-size:22px;padding:2px 6px 0;border:2px solid currentColor}
+.lang .lg b.on{background:#fff;color:#000}
+.mbox button.lang:hover .lg b.on,.mbox button.lang:focus-visible .lg b.on{background:#000;color:#fff}
+/* ===== Objects menu: the head button under the coins and the panel that slides down below it ===== */
+.r{position:relative}
+#chars{--k:var(--fg);display:block;margin:6px 0 4px auto;width:40px;height:40px;padding:6px;border:1px solid rgba(0,0,0,.3);border-radius:0;color:var(--fg);cursor:pointer;
+  background:
+    linear-gradient(var(--k),var(--k)) top left/9px 3px,linear-gradient(var(--k),var(--k)) top left/3px 9px,
+    linear-gradient(var(--k),var(--k)) top right/9px 3px,linear-gradient(var(--k),var(--k)) top right/3px 9px,
+    linear-gradient(var(--k),var(--k)) bottom left/9px 3px,linear-gradient(var(--k),var(--k)) bottom left/3px 9px,
+    linear-gradient(var(--k),var(--k)) bottom right/9px 3px,linear-gradient(var(--k),var(--k)) bottom right/3px 9px,
+    var(--bg);
+  background-repeat:no-repeat}
+#chars .ic{display:block;width:100%;height:100%;background:currentColor;-webkit-mask:var(--icon) center/contain no-repeat;mask:var(--icon) center/contain no-repeat}
+#chars.on,#chars:active{background-color:var(--fg);color:var(--bg)}
+@media (hover:hover){#chars:hover{background-color:var(--fg);color:var(--bg)}}
+#chars:focus-visible{outline:2px dashed var(--fg);outline-offset:2px}
+/* The panel unrolls downward from under the button (clip-path), dark like the pause menu. */
+#roster{--k:#fff;position:absolute;right:-4px;top:100%;z-index:6;width:min(270px,calc(100vw - 48px));box-sizing:border-box;padding:14px 10px 10px;text-align:left;color:#fff;
+  background:
+    linear-gradient(var(--k),var(--k)) top left/14px 3px,linear-gradient(var(--k),var(--k)) top left/3px 14px,
+    linear-gradient(var(--k),var(--k)) top right/14px 3px,linear-gradient(var(--k),var(--k)) top right/3px 14px,
+    linear-gradient(var(--k),var(--k)) bottom left/14px 3px,linear-gradient(var(--k),var(--k)) bottom left/3px 14px,
+    linear-gradient(var(--k),var(--k)) bottom right/14px 3px,linear-gradient(var(--k),var(--k)) bottom right/3px 14px,
+    rgba(0,0,0,.9);
+  background-repeat:no-repeat;text-shadow:1.5px 0 rgba(255,255,255,.25);
+  clip-path:inset(0 0 100% 0);visibility:hidden;transition:clip-path .28s ease-out,visibility 0s .28s}
+#roster.open{clip-path:inset(0 0 0 0);visibility:visible;transition:clip-path .28s ease-out}
+#roster .mt{font-size:24px;padding-bottom:8px;margin-bottom:6px}
+#roster-list{display:flex;flex-direction:column;gap:2px;max-height:min(58vh,440px);overflow-y:auto;overscroll-behavior:contain}
+/* One row: picture | name over coins it gives | price, "needs size" or owned. */
+.obj{display:grid;grid-template-columns:40px 1fr auto;grid-template-rows:auto auto;column-gap:10px;align-items:center;width:100%;padding:4px 6px;border:0;border-radius:0;background:none;color:#fff;font:inherit;text-align:left;line-height:1;cursor:pointer}
+.obj .pic{grid-row:1 / span 2;width:40px;height:40px;box-sizing:border-box;padding:3px;background:#fff}
+.obj img{display:block;width:100%;height:100%;object-fit:contain;filter:brightness(0)}
+.obj.own img{filter:none}
+.obj .nm{font-size:22px;align-self:end}
+.obj .vl{font-size:15px;color:#aaa;align-self:start}
+.obj .st{grid-column:3;grid-row:1 / span 2;font-size:22px;display:flex;align-items:center;gap:5px}
+.obj .st.pr::before{content:"";width:16px;height:16px;background:currentColor;-webkit-mask:url(./assets/icons/coin.svg) center/contain no-repeat;mask:url(./assets/icons/coin.svg) center/contain no-repeat}
+.obj.own .st{color:#aaa;font-size:17px}
+.obj.own .st::before{content:"\2713";margin-right:2px}
+.obj:disabled{cursor:default}
+.obj:disabled:not(.own) .st{opacity:.45}
+.obj:disabled:not(.own) .nm{opacity:.7}
+.obj:not(:disabled):active,.obj:not(:disabled):focus-visible{background:#fff;color:#000;outline:none;text-shadow:none}
+.obj:not(:disabled):active .vl,.obj:not(:disabled):focus-visible .vl{color:#555}
+@media (hover:hover){.obj:not(:disabled):hover{background:#fff;color:#000;text-shadow:none}.obj:not(:disabled):hover .vl{color:#555}}
+@media (prefers-reduced-motion:reduce){#roster,#roster.open{transition:none}}
+/* On/off switch (dev infinite money): label on the left, SI / NO box on the right, inverted while on. */
+.mbox button.tog{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.tog b{font-weight:400;font-size:22px;padding:2px 6px 0;border:2px solid currentColor;min-width:2.2em;text-align:center}
+.tog b.on{background:#fff;color:#000}
+.mbox button.tog:hover b.on,.mbox button.tog:focus-visible b.on{background:#000;color:#fff}
+/* Top of the frame: REC on the left, pause in the middle, SP / megaphone / battery / timecode on the right, in one
+   row: the pause button stays in the middle while there is room, and on narrow phones it moves aside instead of covering the megaphone.
+   Below 400 px wide the SP label is left out to make room. */
+#cam .bar{position:absolute;top:13px;left:36px;right:36px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+#cam .bar .rec,#cam .bar .tc{position:static;flex:1 1 0}
+#cam .bar .tc{justify-content:flex-end}
+#cam .bar #pause{position:static;transform:none;margin:-6px 0}
+@media (max-width:400px){#cam .sp{display:none}#cam .tc{gap:8px}}

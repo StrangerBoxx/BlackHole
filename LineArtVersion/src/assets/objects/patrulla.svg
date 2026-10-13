@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 88" width="220" height="88">
+<!-- Placeholder cop car, side view, facing right: black hood and trunk, white doors, light bar, two wheels. -->
+<path d="M8 70V47q0-7 9-7h35l18-26h80l22 26 32 2q10 2 10 12v16Z" fill="#fff" stroke="#000" stroke-width="4" stroke-linejoin="round"/>
+<path d="M172 40l32 2q10 2 10 12v16h-42Z" fill="#000"/>
+<path d="M8 70V47q0-7 9-7h35v30Z" fill="#000"/>
+<path d="M60 38l14-18h32v18Z M114 20h34l16 18h-50Z" fill="#000"/>
+<path d="M80 24l-6 9 M122 24l-5 9" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M110 40v28" stroke="#000" stroke-width="2.5"/>
+<rect x="52" y="50" width="120" height="6" fill="#000"/>
+<rect x="92" y="4" width="14" height="10" fill="#e00" stroke="#000" stroke-width="2.5"/>
+<rect x="106" y="4" width="14" height="10" fill="#1a4fd0" stroke="#000" stroke-width="2.5"/>
+<rect x="206" y="47" width="7" height="6" fill="#fff"/>
+<rect x="9" y="47" width="5" height="8" fill="#e00"/>
+<g fill="#000"><circle cx="48" cy="72" r="16"/><circle cx="176" cy="72" r="16"/></g>
+<g fill="#fff"><circle cx="48" cy="72" r="6"/><circle cx="176" cy="72" r="6"/></g>
+</svg>

@@ -1,0 +1,9 @@
+{
+  "appId": "com.example.feedit",
+  "appName": "Feed It",
+  "webDir": "dist",
+  "backgroundColor": "#ffffff",
+  "server": {
+    "androidScheme": "https"
+  }
+}

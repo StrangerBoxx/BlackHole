@@ -1,0 +1,38 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Dev server (npm run dev)",
+      "type": "npm",
+      "script": "dev",
+      "isBackground": true,
+      "problemMatcher": [],
+      "group": "build"
+    },
+    {
+      "label": "Build (npm run build)",
+      "type": "npm",
+      "script": "build",
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Sync to phone projects (npm run cap:sync)",
+      "type": "npm",
+      "script": "cap:sync",
+      "problemMatcher": []
+    },
+    {
+      "label": "Open in Android Studio (npm run android)",
+      "type": "npm",
+      "script": "android",
+      "problemMatcher": []
+    },
+    {
+      "label": "Open in Xcode (npm run ios)",
+      "type": "npm",
+      "script": "ios",
+      "problemMatcher": []
+    }
+  ]
+}
